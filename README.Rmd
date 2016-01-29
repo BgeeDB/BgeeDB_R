@@ -8,9 +8,7 @@ output:
 
 BgeeDB is a collection of functions for everyday usage of Bgee database ( <http://bgee.org/> ) directly into R environment. In this pilot version of package, it is possible to retrieve the annotation of many experiments and libraries and download processed RNA-seq or Affymetrix data into R, according to Bgee pipeline. Currently, Bgee database supports gene expression data of 17 species.
 
-> This package performs:
-  * listing annotation files
-  * downloading gene expression data available in current version of Bgee database
+> This package performs: listing annotation files and downloading gene expression data available in current version of Bgee database.
 
 
 #### **Installation**
