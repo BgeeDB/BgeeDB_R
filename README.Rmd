@@ -45,7 +45,7 @@ bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
 
 ##### Retrieve annotation for Mus musculus RNA-seq data
 
-The __bgee\$get_annotation()__ will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The __bgee\$get_annotation()__ loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. For loading the annotation separately, please use __fread("nameofyourannotaiton.tsv")__. 
+The __bgee\$get_annotation()__ will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The __bgee\$get_annotation()__ loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. For loading the annotation separately, please use __fread("nameofyourannotation.tsv")__. 
 
 ```{r, eval = FALSE}
 # the path where your folder with annotation will be saved. The folder is named after your chosen species.
