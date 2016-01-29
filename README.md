@@ -1,10 +1,11 @@
-#### *BgeeDB: an R package for datasets retrieval from Bgee database*
+**BgeeDB: an R package for datasets retrieval from Bgee database**
+------------------------------------------------------------------
 
 BgeeDB is a collection of functions for everyday usage of Bgee database ( <http://bgee.org/> ) directly into R environment. In this pilot version of package, it is possible to retrieve the annotation of many experiments and libraries and download processed RNA-seq or Affymetrix data into R, according to Bgee pipeline. Currently, Bgee database supports gene expression data of 17 species.
 
-This package performs: - listing annotation files - downloading gene expression data available in current version of Bgee database
+> This package performs: \* listing annotation files \* downloading gene expression data available in current version of Bgee database
 
-#### *Installation*
+#### **Installation**
 
 ##### Install via install\_github()
 
@@ -17,13 +18,14 @@ library(devtools)
 install_github("wirawara/BgeeDB",build_vignettes=FALSE)
 ```
 
-#### *How to use BgeeDB package*
+### **How to use BgeeDB package**
 
 #### *Running example for Mus musculus*
 
 ##### List available species in current version of Bgee
 
 ``` r
+library(BgeeDB)
 listBgeeSpecies()
 ```
 
@@ -37,7 +39,7 @@ bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
 
 ##### Retrieve annotation for Mus musculus RNA-seq data
 
-The *bgee\(get_annotation()* will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The *bgee\)get\_annotation()* loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. For loading the annotation separately, please use *fread("nameofyourannotaiton.tsv")*.
+The **bgee$get\_annotation()** will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The **bgee$get\_annotation()** loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. For loading the annotation separately, please use **fread("nameofyourannotaiton.tsv")**.
 
 ``` r
 # the path where your folder with annotation will be saved. The folder is named after your chosen species.
@@ -56,7 +58,7 @@ head(annotation.libraries)
 
 ##### Download the processed Mus musculus RNA-seq data
 
-The *bgee\(get_data()* will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, *bgee\)get\_data()* will save the downloaded data in your current folder as an *Bgee\_all\_experiment\_counts\_RPKM.rds* object, for later usage. You can load .rds again later using *readRDS(*Bgee\_all\_experiment\_counts\_RPKM.rds)\*.The folder is not created here. Moreover, you can choose only one experiment to be downloaded from Bgee database, as in the example below. The data is then saved in .tsv file in your current folder.
+The **bgee$get\_data()** will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, **bgee$get\_data()** will save the downloaded data in your current folder as an **Bgee\_all\_experiment\_counts\_RPKM.rds** object, for later usage. You can load .rds again later using **readRDS(Bgee\_all\_experiment\_counts\_RPKM.rds)** .The folder is not created here.
 
 ``` r
 # the path where your data will be saved. 
