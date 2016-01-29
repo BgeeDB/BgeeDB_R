@@ -58,7 +58,7 @@ head(annotation.libraries)
 
 ##### Download the processed Mus musculus RNA-seq data
 
-The **bgee$get\_data()** will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, **bgee$get\_data()** will save the downloaded data in your current folder as an **Bgee\_all\_experiment\_counts\_RPKM.rds** object, for later usage. You can load .rds again later using **readRDS(Bgee\_all\_experiment\_counts\_RPKM.rds)** .The folder is not created here.
+The **bgee$get\_data()** will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, **bgee$get\_data()** will save the downloaded data in your current folder as an **Bgee\_all\_experiment\_counts\_RPKM.rds** object, for later usage. You can load .rds again later using **readRDS("Bgee\_all\_experiment\_counts\_RPKM.rds")** from your current folder.
 
 ``` r
 # the path where your data will be saved. 
