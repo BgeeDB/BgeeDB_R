@@ -2,11 +2,15 @@ Package: BgeeDB
 Type: Package
 Title: Annotation and data from Bgee gene expression database
 Version: 0.0.0.9000
-Authors: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
+Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
+Maintainer: Andrea Komljenovic  <andrea.komljenovic@unil.ch>
 Description: A preliminary package for downloading the annotation and expression
     data from Bgee database.
 Depends:
     R (>= 3.2.2)
+Imports:
+    data.table,
+    RCurl
 License: MIT
 VignetteBuilder: knitr
 Suggests:

@@ -50,7 +50,7 @@
 #' # download RPKMs and counts only for GSE30617 for Mus musculus
 #' data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 #'
-#' @import data.table RCurl devtools
+#' @import data.table RCurl
 #'
 #' @export
 
