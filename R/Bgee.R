@@ -51,7 +51,7 @@
 #' data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 #'
 #' @import data.table RCurl devtools
-#' @importFrom data.table fread
+#'
 #' @export
 
 
