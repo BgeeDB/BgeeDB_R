@@ -10,11 +10,8 @@ BgeeDB is a collection of functions for everyday usage of Bgee database ( <http:
 ##### Install via install\_github()
 
 ``` r
-# install dependecies
-install.packages( c("data.table", "RCurl","devtools"))
-
 # install the package
-library(devtools)
+library(devtools) # install.packages("devtools") in case if you don't have devtools installed
 install_github("wirawara/BgeeDB",build_vignettes=FALSE)
 ```
 
