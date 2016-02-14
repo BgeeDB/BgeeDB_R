@@ -1,10 +1,3 @@
-#' Takes a URL and returns a character vector of filenames.
-#'
-#'
-#' @param  url: URL is a ftp site of processed data from Bgee database for RNA seq or Affymetrix.
-#' @param   version: If TRUE, prints last update of the database; if not, not. Default is FALSE.
-#'
-#' @return a character vector of filenames
 
 
 .listDirectories <- function(url, version = FALSE) {
