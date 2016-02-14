@@ -7,31 +7,31 @@
 \title{This function gives annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)}
 \arguments{
 \item{species}{a character of species name as listed from Bgee.
-Options are:          
-         "Anolis_carolinensis"      
-         "Bos_taurus"               
+Options are:
+         "Anolis_carolinensis"
+         "Bos_taurus"
          "Caenorhabditis_elegans"
-         "Danio_rerio" 
-         "Drosophila_melanogaster"  
-         "Gallus_gallus"            
-         "Gorilla_gorilla"          
+         "Danio_rerio"
+         "Drosophila_melanogaster"
+         "Gallus_gallus"
+         "Gorilla_gorilla"
          "Homo_sapiens"
-         "Macaca_mulatta"           
-         "Monodelphis_domestica"    
+         "Macaca_mulatta"
+         "Monodelphis_domestica"
          "Mus_musculus"
-         "Ornithorhynchus_anatinus" 
-         "Pan_paniscus"             
-         "Pan_troglodytes"          
-         "Rattus_norvegicus"        
-         "Sus_scrofa"               
+         "Ornithorhynchus_anatinus"
+         "Pan_paniscus"
+         "Pan_troglodytes"
+         "Rattus_norvegicus"
+         "Sus_scrofa"
          "Xenopus_tropicalis"}
 
 \item{datatype}{a character of data platform.
-Options are: 
+Options are:
          "rna_seq"
          "affymetrix"}
 
-\item{experiment.id}{a character. 
+\item{experiment.id}{a character.
 On default is NULL: takes all available data for that species
 GSE[0-9]+: takes specified experiment, eg. GSE30617}
 }

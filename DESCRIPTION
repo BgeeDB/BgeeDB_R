@@ -11,6 +11,7 @@ License: MIT
 VignetteBuilder: knitr
 Suggests:
     knitr,
-    BiocStyle
+    BiocStyle,
+    testthat
 LazyLoad: yes
 RoxygenNote: 5.0.1
