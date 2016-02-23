@@ -2,15 +2,15 @@
 % Please edit documentation in R/listBgeeSpecies.R
 \name{listBgeeSpecies}
 \alias{listBgeeSpecies}
-\title{Takes a URL and returns a list of available genomes for different platforms in Bgee.}
+\title{List of species in Bgee database}
 \usage{
 listBgeeSpecies(...)
 }
 \arguments{
-\item{...}{an empty parameters}
+\item{...}{an empty parameter}
 }
 \value{
-a list of available RNA-seq and Affymetrix datasets
+A list of available RNA-seq and Affymetrix datasets
 }
 \description{
 Takes a URL and returns a list of available genomes for different platforms in Bgee.

@@ -1,5 +1,5 @@
 ########################
-#' @title Bgee RC
+#' @title Retrieving the Bgee database data
 #' @description A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
 #'
 #'
@@ -32,8 +32,17 @@
 #'          "affymetrix"
 #'
 #' @field experiment.id  A character.
-#' On default is NULL: takes all available data for that species
-#' GSE[0-9]+: takes specified experiment, eg. GSE30617
+#' On default is NULL: takes all available data for that species.
+#' If GSE[0-9]+: takes specified experiment, eg. GSE30617.
+#'
+#' @examples
+#' \dontrun{
+#' bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+#' annotation_bgee_mouse <- bgee$get_annotation()
+#' data_bgee_mouse <- bgee$get_data()
+#' data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
+#' }
+#'
 #'
 #' @import methods
 #' @export Bgee
@@ -116,9 +125,9 @@ Bgee <- setRefClass("Bgee",
               return(data_all)
               cat("Done.")
 
-            } else if(!grepl("^(GSE).*$", experiment.id, perl = TRUE)){
+            } else if(!grepl("^(GSE).*$|^(E-).*$", experiment.id, perl = TRUE)){
 
-                  stop("The experiment needs to be empty (to download all data) or start with GSE (for a specific experiment) e.g. 'GSE30617'  ")
+                  stop("The experiment needs to be empty (to download all data) or start with GSE/E- (for a specific experiment) e.g. 'GSE30617' or 'E-MEXP-2011'  ")
 
             } else {
 

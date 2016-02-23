@@ -4,7 +4,7 @@
 \name{Bgee-class}
 \alias{Bgee}
 \alias{Bgee-class}
-\title{Bgee RC}
+\title{Retrieving the Bgee database data}
 \description{
 A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
 }
@@ -37,7 +37,17 @@ Options are:
          "affymetrix"}
 
 \item{\code{experiment.id}}{A character.
-On default is NULL: takes all available data for that species
-GSE[0-9]+: takes specified experiment, eg. GSE30617}
+On default is NULL: takes all available data for that species.
+If GSE[0-9]+: takes specified experiment, eg. GSE30617.}
 }}
+\examples{
+\dontrun{
+bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+annotation_bgee_mouse <- bgee$get_annotation()
+data_bgee_mouse <- bgee$get_data()
+data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
+}
+
+
+}
 
