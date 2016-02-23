@@ -69,7 +69,7 @@ Bgee <- setRefClass("Bgee",
             gdsurl <- 'ftp://ftp.bgee.org/current/download/processed_expr_values/%s/%s/'
             myurl <- sprintf(gdsurl,datatype,species)
             # first file is the annotation
-            fnames <- try(listDirectories(myurl),silent=TRUE)
+            fnames <- try(.listDirectories(myurl),silent=TRUE)
             getwd()
             dir.create(paste(getwd(), species, sep = "/"))
             setwd(paste(getwd(), species, sep = "/"))
@@ -88,7 +88,7 @@ Bgee <- setRefClass("Bgee",
           get_data = function(..., experiment.id = NULL){
             gdsurl <- 'ftp://ftp.bgee.org/current/download/processed_expr_values/%s/%s/'
             myurl <- sprintf(gdsurl,datatype,species)
-            fnames <- try(listDirectories(myurl),silent=TRUE)
+            fnames <- try(.listDirectories(myurl),silent=TRUE)
 
             if(length(experiment.id) == 0){
               all_expression_values <- fnames[length(fnames)]
