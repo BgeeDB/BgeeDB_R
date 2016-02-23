@@ -7,7 +7,7 @@
 listBgeeSpecies(...)
 }
 \arguments{
-\item{no}{parameters}
+\item{...}{an empty parameters}
 }
 \value{
 a list of available RNA-seq and Affymetrix datasets

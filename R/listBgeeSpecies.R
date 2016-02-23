@@ -11,10 +11,11 @@
 
 #' Takes a URL and returns a list of available genomes for different platforms in Bgee.
 #'
-#' @param no parameters
+#' @param ... an empty parameters
 #'
 #'
 #' @return a list of available RNA-seq and Affymetrix datasets
+#' @import data.table RCurl
 #' @export
 
 listBgeeSpecies <- function(...){
