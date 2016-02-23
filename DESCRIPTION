@@ -10,7 +10,8 @@ Depends:
     R (>= 3.2.2)
 Imports:
     data.table,
-    RCurl
+    RCurl,
+    methods
 License: MIT
 VignetteBuilder: knitr
 Suggests:
