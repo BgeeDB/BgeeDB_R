@@ -1,5 +1,4 @@
 
-
 .listDirectories <- function(url, version = FALSE) {
 	tmpcon <- textConnection(getURL(url), "r")
 	tx <- read.table(tmpcon)
