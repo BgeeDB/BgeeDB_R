@@ -42,7 +42,7 @@ bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
 
 ##### Retrieve annotation for Mus musculus RNA-seq data
 
-The ```{r, eval = FALSE} bgee$get_annotation()``` will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The```{r, eval = FALSE} bgee$get_annotation()``` loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. 
+The ```bgee$get_annotation()``` will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The ```bgee$get_annotation()``` loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. 
 
 ```{r, eval = FALSE}
 # the path where your folder with annotation will be saved. The folder is named after your chosen species.
@@ -55,7 +55,7 @@ lapply(annotation_bgee_mouse, head)
 
 ##### Download the processed Mus musculus RNA-seq data 
 
-The ```{r, eval = FALSE} bgee$get_data()``` will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, ```{r, eval = FALSE} bgee$get_data()``` will save the downloaded data in your current folder for later usage. 
+The ```bgee$get_data()``` will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, ```bgee$get_data()``` will save the downloaded data in your current folder for later usage. 
 
 ```{r, eval = FALSE}
 # the path where your data will be saved. 

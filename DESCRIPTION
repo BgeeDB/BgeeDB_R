@@ -7,7 +7,7 @@ Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, r@bgee.org
 Description: A preliminary package for downloading the annotation and expression
     data from Bgee database.
 Depends:
-    R (>= 3.2.1)
+    R (>= 3.0.0)
 Imports:
     data.table,
     RCurl,
