@@ -1,11 +1,12 @@
 Package: BgeeDB
 Type: Package
-Title: Annotation and data from Bgee gene expression database
+Title: Annotation and gene expression data from Bgee database
 Version: 0.0.1
+Date: 2016-03-15
 Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
-Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, r@bgee.org
-Description: A preliminary package for downloading the annotation and expression
-    data from Bgee database.
+Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, <bgeedb@bgee.org>
+Description: A package for the annotation and gene expression
+    data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms, mapped to genes by expression patterns.
 Depends:
     R (>= 3.0.0)
 Imports:
