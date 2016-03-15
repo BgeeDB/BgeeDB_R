@@ -43,6 +43,9 @@
 #' @field stats A character.
 #' Options are: "rpkm" , "counts", "tpm"
 #'
+#'
+#' @author Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
+#'
 #' @examples
 #' \dontrun{
 #' bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
@@ -92,7 +95,7 @@ Bgee <- setRefClass("Bgee",
             # first file is the annotation
             fnames <- try(.listDirectories(myurl),silent=TRUE)
             getwd()
-            dir.create(file.path(getwd(), species)
+            dir.create(file.path(getwd(), species))
             setwd(file.path(getwd(), species))
             distdir <- getwd()
             download.file(file.path(myurl,fnames[1]),
@@ -101,8 +104,10 @@ Bgee <- setRefClass("Bgee",
 
             unzip( fnames[1])
             temp <- list.files(pattern="*.tsv$")
+            cat("Saved files in ", species, " folder:\n")
             print(temp)
-            myanno<- lapply(temp, fread)
+            myanno <- lapply(temp, as.data.frame(fread))
+            names(myanno) <- c("experiment_annotation", "sample_annotation")
             return(myanno)
           },
 
@@ -176,10 +181,10 @@ Bgee <- setRefClass("Bgee",
 
 
                   l <- split(data, f = data$"Anatomical entity name")
-                  cat("Selecting " calls " calls.\n")
+                  cat("Selecting ", calls, " calls.\n")
                   if(calls == "present") lt <- lapply(l, function(x) x[which(x$"Detection flag" == "present"),]) else lt <- l
 
-                  cat("Selecting " stats " values.\n")
+                  cat("Selecting ", stats, " values.\n")
                   cat("Transforming the data.\n")
 
                   if(stats == "rpkm"){
