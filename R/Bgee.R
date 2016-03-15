@@ -45,6 +45,7 @@
 #'
 #'
 #' @import methods
+#' @import tidyr
 #' @export Bgee
 #' @exportClass Bgee
 
@@ -55,7 +56,10 @@ Bgee <- setRefClass("Bgee",
   fields = list(
         species="character",
         datatype = "character",
-        experiment.id = "character"),
+        experiment.id = "character",
+        data = "data.frame",
+        calls = "character",
+        stats = "character"),
 
 
   methods = list(
@@ -113,7 +117,7 @@ Bgee <- setRefClass("Bgee",
 
               temp2 <- list.files(pattern="*.tsv.zip")
               mydata <- lapply(temp2, unzip)
-              data_all <- lapply(mydata, fread)
+              data_all <- lapply(mydata, function(x) as.data.frame(fread(x)))
 
               ## cleaning up the files
               file.remove(dir(path=distdir,  pattern="*.tsv.zip"))
@@ -150,7 +154,7 @@ Bgee <- setRefClass("Bgee",
               temp3 <- list.files(pattern="*.tsv$")
               kp <- match(experiment.id, sapply(strsplit(sub(".*_", "", temp3), ".", fixed = TRUE), "[[", 1))
               print(temp3[kp])
-              gse <- fread(temp3[kp])
+              gse <- as.data.frame(fread(temp3[kp]))
               return(gse)
               cat("Done.\n")
               }
@@ -159,7 +163,35 @@ Bgee <- setRefClass("Bgee",
               #}
 
 
-            }
+            },
+
+            format_data = function(data, calls, stats) {
+
+                  ## warning messages
+                  if(!(calls %in% c("present", "all"))) stop("Choose between only present calls or all (present and absent).")
+                  if(!(stats %in% c('rpkm', 'counts', 'tpm'))) stop("Choose between RPKM, counts or TPM, e.g. 'rpkm', 'counts', 'tpm' ")
+
+
+
+                  l <- split(data, f = data$"Anatomical entity name")
+                  if(calls == "present") lt <- lapply(l, function(x) x[which(x$"Detection flag" == "present"),]) else lt <- l
+
+                  if(stats == "rpkm"){
+                    expr <- lapply(lt, function(x) x[, c("Library ID", "Gene ID", "RPKM")])
+                    expr.final <- lapply(expr, function(x) x %>% spread("Library ID", "RPKM"))
+
+                  } else {
+                    expr <- lapply(lt, function(x) x[, c("Library ID", "Gene ID", "Read count")])
+                    expr.final <- lapply(expr, function(x) x %>% spread("Library ID", "Read count"))
+
+                  }
+
+                  return(expr.final)
+              }
 
 
           ))
+
+
+
+
