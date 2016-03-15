@@ -7,7 +7,7 @@ The package also offers usage of TopAnat: GO-like enrichment of anatomical terms
 
 > This package performs: 
 >
-> > 1. listing annotation files and downloading gene expression data available in current version of Bgee database
+> > 1. Listing annotation files and downloading gene expression data available in current version of Bgee database
 > > 2. TopAnat analysis
 
 #### **Installation**
