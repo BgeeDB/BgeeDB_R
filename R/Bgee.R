@@ -180,7 +180,7 @@ Bgee <- setRefClass("Bgee",
                     expr <- lapply(lt, function(x) x[, c("Library ID", "Gene ID", "RPKM")])
                     expr.final <- lapply(expr, function(x) x %>% spread("Library ID", "RPKM"))
 
-                  } else {
+                  } else{
                     expr <- lapply(lt, function(x) x[, c("Library ID", "Gene ID", "Read count")])
                     expr.final <- lapply(expr, function(x) x %>% spread("Library ID", "Read count"))
 
