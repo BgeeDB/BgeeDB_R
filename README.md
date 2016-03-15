@@ -85,7 +85,7 @@ gene.expression.mouse.rpkm <- bgee$get_data(data_bgee_mouse_gse30617, "present",
 # only present calls and raw counts
 gene.expression.mouse.counts <- bgee$get_data(data_bgee_mouse_gse30617, "present", "counts")
 # all calls and raw counts
-gene.expression.mouse.all.counts <- bgee$get_data(data_bgee_mouse_gse30617, "present", "counts")
+gene.expression.mouse.all.counts <- bgee$get_data(data_bgee_mouse_gse30617, "all", "counts")
 ```
 
 
