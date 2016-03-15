@@ -8,12 +8,12 @@
 }
 
 
-#' @title List of species in Bgee database
-#' @description Takes a URL and returns a list of available genomes for different platforms in Bgee.
+#' @title List species with Affymetrix or RNA-seq data in the Bgee database
+#' @description Returns a list of available genomes for different platforms in Bgee.
 #' @param ... an empty parameter
 #'
 #'
-#' @return A list of available RNA-seq and Affymetrix datasets
+#' @return A list of species with available Affymetrix or RNA-seq data in the Bgee
 #' @import data.table RCurl
 #' @export
 
