@@ -1,48 +1,56 @@
 ########################
-#' @title Load function allowing to perform GO-like enrichment of anatomical terms using the topGO package
+#' @title Produces an object allowing to perform GO-like enrichment of anatomical terms using the topGO package
 #'
-#' @description This function loads the functions necessary to use topGO on the Uberon ontology instead of the GO ontology
+#' @description This function loads the functions necessary to use topGO on the Uberon ontology instead of the GO ontology. It then produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package.
 #'
-#' @details To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), it is interesting to use the topGO package since it allows to propagate the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment test and decorrelation methods
+#' @details To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), it is interesting to use the topGO package since it allows to propagate the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods.
 #'
-#' @param ...
+#' @param topAnatData a list produced by the function loadTopAnatData().
 #'
-#' @return topAnatObject, a topGO object 
+#' @param geneList Vector indicating foreground and background genes. Names of the vector indicate teh background genes. Vector values are 0 (gene not in foreground) and 1 (gene in foreground).
+#'
+#' @param nodeSize Minimum number of genes mapped to a node for it to be tested. Default is 10.
+#'
+#' @param ... Additional parameters as passed to topGOdata object of topGO package.
+#'
+#' @return topAnatObject, a topGO-compatibe object ready for gene set enrichment testing. 
 #'
 #' @author Julien Roux \email{julien.roux@unil.ch}.
 #'
 #' @examples
-#'   topAnat()
-#'
+#'   myTopAnatObject <- topAnat(myTopAnatData)
+#' 
+#' @import topGO
 #' @export
 
-topAnat <- function(topAnatData){
-  ## topAnatData is a list of:
-  ##list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
+topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
+  ## topAnatData is a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame
 
-  ## TO DO: load topGO modified functions
-  ## Do we even need to load topAnatData? Maybe just check that not empty?
+  ## TO DO: tests if topAnatData not empty
+  ##        test if gene List is fine 
+  ## if (length(geneList) > 0 & length(levels(geneList)) == 2 & length(geneList) >= 20) {
 
+  ## TO DO: if geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes (and add warning)
+  ## geneList <- factor(as.integer(names(gene2anatomy) %in% StringIDs))
 
+  ## TO DO: report to the user how many genes in background / foreground
+  
+  topAnatObject <- makeTopAnatDataObject(
+                                         parentMapping = topAnatData$organ.relationships,
+                                         allGenes = geneList,
+                                         nodeSize = nodeSize,
+                                         gene2Nodes = topAnatData$gene2anatomy
+                                         )
   ## TO DO: implement
 
  
-  ## TO DO: keep this? This could be part of the documentation only!
-  ##   geneIds <- c("")
-  ##   geneList <- factor(as.integer(names(gene2anatomy) %in% StringIDs))
-  ##   names(geneList) <- names(gene2anatomy)
-  ##   print('GeneList:')
-  ##   head(geneList)
-
-  ## topAnatObject <- .maketopAnatDataObject(...)
   
   return(topAnatObject)
 }
 
 ## TO DO: why topGO not in DESCRIPTION file?
 ##        warning when loading topGO: problem?
-## TO DO: topAnat_functions.R: add functions and make them start with a . to stay hidden
-
+## TO DO: I added a . in front of topAnat functions: is it a good idea?
 
 #################################################################
 ## Sets of functions given by Adrian Alexa (author of the topGO package, personnal communication) to make topGO work with another ontology than the Gene Ontology
@@ -143,7 +151,7 @@ topAnat <- function(topAnatData){
 }
 #################################################################
 
-.maketopAnatDataObject <- function(## the child-parrent relationship 
+makeTopAnatDataObject <- function(## the child-parrent relationship 
                                 parentMapping,
                                 ## a named numeric or factor, the names are the genes ID
                                 allGenes, 
@@ -159,9 +167,19 @@ topAnat <- function(topAnatData){
   ## code from new()
   ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
   ## with R > 2.3.1, PACKAGE = "base" doesn't seem to work
-  ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")
-  .Object <- .Call("R_do_new_object", ClassDef)
+  .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")
+  ## .Object <- .Call("R_do_new_object", ClassDef)
 
+  ## TO DO: - resolve namespace problem? Seem to work when called from worksheet
+  ##        - how to access this function from base package?
+  ##        - create a new prototype for topAnatData class instead of topGOdata?
+  ##        - try without Rstudio, with ESS
+  ##        - maybe just source the topGO functions?
+  
+  ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-functionName-quot-not-resolved-from-current-namespace-td4663892.html
+  ## From ?.Call, 'PACKAGE' is I believe meant to name the DLL (libRantsImageRead in this case) rather than the R package.
+
+  
   ## some checking
   if(is.null(names(allGenes)))
     stop("allGenes must be a named vector")

@@ -48,9 +48,8 @@
 #' @author Julien Roux \email{julien.roux at unil.ch}.
 #'
 #' @examples
-#'   topAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
 #'
-#' @import topGO
 #' @export
 
 loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed", confidence="all", stage=NULL, species.specific=TRUE){
@@ -81,13 +80,13 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
  
   ## TO DO? Check parameters. Return error if data type not present for species? Hard code this?
 
-  cat("Submitting URL to Bgee webservice...\n")
+  cat("\nSubmitting URL to Bgee webservice...\n")
   ## TO DO: Launch query to topAnat server
   ## How to do this? Is it like downloading a file?
   ## download.file(file.path(myurl), destfile = getwd())
 
   cat("   Got an answer from Bgee webservice. Result files are written in", getwd(), "\n")
-  cat("Parsing the results...\n")
+  cat("\nParsing the results...\n")
 
   
   ## TO DO: read and format results
