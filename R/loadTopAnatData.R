@@ -54,23 +54,68 @@
 #' @export
 
 loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="present", confidence="all", stage=NULL, species.specific=TRUE){
+  if(length(species)==0) {
+    stop("Problem: you did not specify a species")
+  }
 
-  ## TO DO: implement
+  cat("Building URL to retrieve data from Bgee...\n")
+  ## TO DO: Build URL from options
+  myurl <-  "http://http://bgee.unil.ch/?page=top_anat&action=...&...=..."
+  ## Add species
+  myurl <- paste0(myurl, "&species=", species)
+  ## Add data type
+  for (type in toupper(datatype)){
+    myurl <- paste0(myurl, "&data_type=", type)
+  }
+  ## Add data quality
+  myurl <- paste0(myurl, "&data_qual=", confidence)
+  ## TO DO: works with "all" but not with "high_quality"
 
-  ## Check parameters. Return error if data type not present for species? Hard code this?
+  ## Add call type
+  if (calltype == "present"){
+    myurl <- paste0(myurl, "&expr_type=EXPRESSED")
+  }
+  ## Add developmental stage
+  myurl <- paste0(myurl, "&stage_id=", stage)
+  cat("URL is built:", myurl,"\n")
+ 
+  ## TO DO? Check parameters. Return error if data type not present for species? Hard code this?
 
-  ## To know all species, use: listBgeeSpecies? Is it onl species wiht affy and RNA-seq?
+  cat("Submitting URL to Bgee webservice...\n")
+  ## TO DO: Launch query to topAnat server
+  cat("Got an answer from Bgee webservice. Result files are written in", getwd, ". Now parsing the results...\n")
+  ## download.file(file.path(myurl), destfile = getwd())
 
-  ## Build URL from options
-  url <-  "http://"
-
-  ## Launch query to topAnat server
-
-  
-
-  ## Format results
+  ## TO DO: read and format results
+  temp <- list.files(pattern="*.tsv.zip")
+  mydata <- lapply(temp2, unzip)
+  mydata_all <- lapply(mydata, fread)
   ## tapply, etc
 
+  ## Relationships between tissues
+  organRelationshipsFileName <- "topAnat_AnatEntitiesRelationships_9258.tsv"
+  tab <- read.table(organRelationshipsFileName, header=FALSE, sep="\t")
+  organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+
+  ## Tissue names
+  organNamesFileName <- "topAnat_AnatEntitiesNames_9258.tsv";
+  organNames <- read.table(organNamesFileName, header = FALSE, sep="\t", row.names=1)
+  names(organNames) <- organNames
+
+  ## Mapping of genes to tissues  
+  gene2anatomyFileName <- "topAnat_GeneToAnatEntities_9258_EXPRESSED_UBERON_0000092_AFFYMETRIX_EST_IN_SITU_RNA_SEQ_LOW.tsv";
+  if (file.info(gene2anatomyFileName)$size != 0) {
+    tab <- read.table(geneToOrganFileName, header=FALSE, sep="\t")
+    gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+  }
+
   
-  return(list(gene2anatomy = ..., organ.relationships = ..., organ.names = ...))
+##   ## TO DO: move to topAnat
+##   geneIds <- c("")
+##   geneList <- factor(as.integer(names(gene2anatomy) %in% StringIDs))
+##   names(geneList) <- names(gene2anatomy)
+##   print('GeneList:')
+##   head(geneList)
+
+  return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }

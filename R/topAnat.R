@@ -17,12 +17,23 @@
 #' @export
 
 topAnat <- function(topAnatData){
+  ## topAnatData is a list of:
+  ##list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 
-  ## TO DO: implement
+  ## TO DO: load topGO modified functions
   ## Do we even need to load topAnatData? Maybe just check that not empty?
 
-  ## Load topOBO functions
 
+  ## TO DO: implement
+
+ 
+  ## TO DO: keep this? This could be part of the documentation only!
+  ##   geneIds <- c("")
+  ##   geneList <- factor(as.integer(names(gene2anatomy) %in% StringIDs))
+  ##   names(geneList) <- names(gene2anatomy)
+  ##   print('GeneList:')
+  ##   head(geneList)
+ 
   return()
 }
 
