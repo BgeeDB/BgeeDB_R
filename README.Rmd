@@ -42,27 +42,20 @@ bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
 
 ##### Retrieve annotation for Mus musculus RNA-seq data
 
-The __bgee\$get_annotation()__ will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The __bgee\$get_annotation()__ loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. For loading the annotation separately, please use __fread("nameofyourannotation.tsv")__. 
+The ```{r, eval = FALSE} bgee$get_annotation()``` will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The```{r, eval = FALSE} bgee$get_annotation()``` loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well. 
 
 ```{r, eval = FALSE}
 # the path where your folder with annotation will be saved. The folder is named after your chosen species.
 getwd()
 annotation_bgee_mouse <- bgee$get_annotation()
-# access the experiments
-annotation.experiments <- annotation_bgee_mouse[[1]]
-# check the experiments annotation
-head(annotation.experiments)
-
-# access the libraries
-annotation.libraries <- annotation_bgee_mouse[[2]]
-# check the libraries annotation
-head(annotation.libraries)
+# head the experiments and libraries
+lapply(annotation_bgee_mouse, head)
 
 ```
 
 ##### Download the processed Mus musculus RNA-seq data 
 
-The __bgee\$get_data()__ will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, __bgee\$get_data()__ will save the downloaded data in your current folder as an __Bgee_all_experiment_counts_RPKM.rds__ object, for later usage. You can load .rds again later using __readRDS("Bgee_all_experiment_counts_RPKM.rds")__ from your current folder.
+The ```{r, eval = FALSE} bgee$get_data()``` will download RPKMs and counts for Mus musculus from all available experiments in Bgee database as a list form (see below). In case of downloaded data from all experiments for Mus musculus, ```{r, eval = FALSE} bgee$get_data()``` will save the downloaded data in your current folder for later usage. 
 
 ```{r, eval = FALSE}
 # the path where your data will be saved. 

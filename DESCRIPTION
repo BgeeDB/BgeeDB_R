@@ -3,7 +3,7 @@ Type: Package
 Title: Annotation and data from Bgee gene expression database
 Version: 0.0.1
 Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
-Maintainer: Andrea Komljenovic  <andrea.komljenovic@unil.ch>
+Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, r@bgee.org
 Description: A preliminary package for downloading the annotation and expression
     data from Bgee database.
 Depends:
