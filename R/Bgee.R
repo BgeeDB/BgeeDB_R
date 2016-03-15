@@ -35,6 +35,14 @@
 #' On default is NULL: takes all available data for that species.
 #' If GSE[0-9]+: takes specified experiment, eg. GSE30617.
 #'
+#' @field data A dataframe of downloaded Bgee data.
+#'
+#' @field calls A character.
+#' Options are: "present" or "absent"
+#'
+#' @field stats A character.
+#' Options are: "rpkm" , "counts", "tpm"
+#'
 #' @examples
 #' \dontrun{
 #' bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
@@ -84,8 +92,8 @@ Bgee <- setRefClass("Bgee",
             # first file is the annotation
             fnames <- try(.listDirectories(myurl),silent=TRUE)
             getwd()
-            dir.create(paste(getwd(), species, sep = "/"))
-            setwd(paste(getwd(), species, sep = "/"))
+            dir.create(file.path(getwd(), species)
+            setwd(file.path(getwd(), species))
             distdir <- getwd()
             download.file(file.path(myurl,fnames[1]),
                         destfile=file.path(distdir,fnames[1]),
@@ -102,13 +110,14 @@ Bgee <- setRefClass("Bgee",
             gdsurl <- 'ftp://ftp.bgee.org/current/download/processed_expr_values/%s/%s/'
             myurl <- sprintf(gdsurl,datatype,species)
             fnames <- try(.listDirectories(myurl),silent=TRUE)
+            distdir <- getwd()
 
             if(length(experiment.id) == 0){
               all_expression_values <- fnames[length(fnames)]
 
-            # if(is.null(experiment.id)){
+
               cat("The experiment is not defined. Hence taking all ", datatype," available for ", species, "\n")
-              distdir <- getwd()
+
               download.file(file.path(myurl, all_expression_values),
                       destfile = file.path(distdir, all_expression_values),
                       mode = "wb")
@@ -140,9 +149,6 @@ Bgee <- setRefClass("Bgee",
               pk <- match(experiment.id, sapply(strsplit(sub(".*_", "", fnames), ".", fixed = TRUE), "[[", 1))
               gsedataset <- fnames[pk]
 
-              # setwd(paste(getwd(), species, sep = "/"))
-              distdir <- getwd()
-
               download.file(file.path(myurl,gsedataset),
                       destfile = file.path(distdir, gsedataset),
                       mode = "wb")
@@ -150,7 +156,6 @@ Bgee <- setRefClass("Bgee",
 
               cat("Loading the data...")
 
-              require(data.table)
               temp3 <- list.files(pattern="*.tsv$")
               kp <- match(experiment.id, sapply(strsplit(sub(".*_", "", temp3), ".", fixed = TRUE), "[[", 1))
               print(temp3[kp])
@@ -158,9 +163,6 @@ Bgee <- setRefClass("Bgee",
               return(gse)
               cat("Done.\n")
               }
-              #else {
-              #  stop("The experiment needs to be empty (to download all data) or start with GSE (for a specific experiment) e.g. 'GSE30617'  ")
-              #}
 
 
             },
@@ -174,7 +176,11 @@ Bgee <- setRefClass("Bgee",
 
 
                   l <- split(data, f = data$"Anatomical entity name")
+                  cat("Selecting " calls " calls.\n")
                   if(calls == "present") lt <- lapply(l, function(x) x[which(x$"Detection flag" == "present"),]) else lt <- l
+
+                  cat("Selecting " stats " values.\n")
+                  cat("Transforming the data.\n")
 
                   if(stats == "rpkm"){
                     expr <- lapply(lt, function(x) x[, c("Library ID", "Gene ID", "RPKM")])
@@ -185,7 +191,7 @@ Bgee <- setRefClass("Bgee",
                     expr.final <- lapply(expr, function(x) x %>% spread("Library ID", "Read count"))
 
                   }
-
+                  cat("Done.\n")
                   return(expr.final)
               }
 

@@ -14,6 +14,8 @@
 #'
 #'
 #' @return A list of species with available Affymetrix or RNA-seq data in the Bgee
+#'
+#' @author Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
 #' @import data.table RCurl
 #' @export
 
