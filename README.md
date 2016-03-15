@@ -76,3 +76,16 @@ Moreover, you can choose only one experiment to be downloaded from Bgee database
 # download RPKMs and counts only for GSE30617 for Mus musculus
 data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 ```
+
+To transform the data into genes x samples format with RPKMS:
+
+```{r}
+# only present calls and rpkm values
+gene.expression.mouse.rpkm <- bgee$get_data(data_bgee_mouse_gse30617, "present", "rpkm")
+# only present calls and raw counts
+gene.expression.mouse.counts <- bgee$get_data(data_bgee_mouse_gse30617, "present", "counts")
+# all calls and raw counts
+gene.expression.mouse.all.counts <- bgee$get_data(data_bgee_mouse_gse30617, "present", "counts")
+```
+
+
