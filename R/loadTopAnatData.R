@@ -31,7 +31,7 @@
 #'          "in_situ".
 #' Default is c("rna_seq","affymetrix","est","in_situ")
 #'
-#' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented. Over-expression calls, based on differential expression analysis, will be implemented in the future. Default is "present"
+#' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future. Default is "expressed"
 #'
 #' @param stage A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the metastage ontology used in Bgee (available at \url{ftp://lausanne.isb-sib.ch/pub/databases/Bgee/current/stages.obo}). The ID, not the name of the metastage need to be used (prefix "BilaDO:"). Default is BilaDO:0000001, the root of the metastage ontology, meaning that expression data from all developmental stages will be used.
 #'
@@ -53,7 +53,7 @@
 #' @import topGO
 #' @export
 
-loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="present", confidence="all", stage=NULL, species.specific=TRUE){
+loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed", confidence="all", stage=NULL, species.specific=TRUE){
   if(length(species)==0) {
     stop("Problem: you did not specify a species")
   }
@@ -72,50 +72,54 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## TO DO: works with "all" but not with "high_quality"
 
   ## Add call type
-  if (calltype == "present"){
+  if (calltype == "expressed"){
     myurl <- paste0(myurl, "&expr_type=EXPRESSED")
   }
   ## Add developmental stage
   myurl <- paste0(myurl, "&stage_id=", stage)
-  cat("URL is built:", myurl,"\n")
+  cat("   URL is built:", myurl,"\n")
  
   ## TO DO? Check parameters. Return error if data type not present for species? Hard code this?
 
   cat("Submitting URL to Bgee webservice...\n")
   ## TO DO: Launch query to topAnat server
-  cat("Got an answer from Bgee webservice. Result files are written in", getwd, ". Now parsing the results...\n")
+  ## How to do this? Is it like downloading a file?
   ## download.file(file.path(myurl), destfile = getwd())
 
+  cat("   Got an answer from Bgee webservice. Result files are written in", getwd(), "\n")
+  cat("Parsing the results...\n")
+
+  
   ## TO DO: read and format results
-  temp <- list.files(pattern="*.tsv.zip")
-  mydata <- lapply(temp2, unzip)
-  mydata_all <- lapply(mydata, fread)
-  ## tapply, etc
+
+  ##   ## If data are zipepd
+  ##   temp <- list.files(pattern="*.tsv.zip")
+  ##   mydata <- lapply(temp2, unzip)
+  ##   mydata_all <- lapply(mydata, fread)
+  ##   ## Use data.table=F to get data frame?
 
   ## Relationships between tissues
-  organRelationshipsFileName <- "topAnat_AnatEntitiesRelationships_9258.tsv"
+  organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", species, ".tsv")
   tab <- read.table(organRelationshipsFileName, header=FALSE, sep="\t")
   organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
 
   ## Tissue names
-  organNamesFileName <- "topAnat_AnatEntitiesNames_9258.tsv";
+  organNamesFileName <- paste0("topAnat_AnatEntitiesNames_", species, ".tsv");
   organNames <- read.table(organNamesFileName, header = FALSE, sep="\t", row.names=1)
   names(organNames) <- organNames
 
   ## Mapping of genes to tissues  
-  gene2anatomyFileName <- "topAnat_GeneToAnatEntities_9258_EXPRESSED_UBERON_0000092_AFFYMETRIX_EST_IN_SITU_RNA_SEQ_LOW.tsv";
+  gene2anatomyFileName <- paste0("topAnat_GeneToAnatEntities_", species, "_", toupper(calltype), "_", gsub(":", "_", stage), "_", toupper(paste(sort(datatype), collapse="_")), "_", toupper(confidence), ".tsv")
   if (file.info(gene2anatomyFileName)$size != 0) {
-    tab <- read.table(geneToOrganFileName, header=FALSE, sep="\t")
+    tab <- read.table(gene2anatomyFileName, header=FALSE, sep="\t")
     gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
   }
 
-  
-##   ## TO DO: move to topAnat
-##   geneIds <- c("")
-##   geneList <- factor(as.integer(names(gene2anatomy) %in% StringIDs))
-##   names(geneList) <- names(gene2anatomy)
-##   print('GeneList:')
-##   head(geneList)
+  ## TO DO: filter out species-specific terms (non UBERON only?)
+  if (species.specific == FALSE){
+    
+  }
 
+  cat("Done.\n")
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }
