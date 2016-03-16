@@ -6,60 +6,88 @@
 \usage{
 loadTopAnatData(species, datatype = c("rna_seq", "affymetrix", "est",
   "in_situ"), calltype = "expressed", confidence = "all", stage = NULL,
-  species.specific = TRUE)
+  host = "http://bgee.org", pathToData = getwd())
 }
 \arguments{
-\item{species}{A character indicating species to be used. Options are:
-"Anolis_carolinensis",
-"Bos_taurus",
-"Caenorhabditis_elegans",
-"Danio_rerio",
-"Drosophila_melanogaster",
-"Gallus_gallus",
-"Gorilla_gorilla",
-"Homo_sapiens",
-"Macaca_mulatta",
-"Monodelphis_domestica",
-"Mus_musculus",
-"Ornithorhynchus_anatinus",
-"Pan_paniscus",
-"Pan_troglodytes",
-"Rattus_norvegicus",
-"Sus_scrofa",
-"Xenopus_tropicalis"}
+\item{species}{A numeric indicating the NCBI taxonomic ID of the species to be used. The species has to be among species in Bgee v13, which include:
+\itemize{
+  \item{6239 (Caenorhabditis elegans)}
+  \item{7227 (Drosophila melanogaster)}
+  \item{7955 (Danio rerio)}
+  \item{8364 (Xenopus tropicalis)}
+  \item{9031 (Gallus gallus)}
+  \item{9258 (Ornithorhynchus anatinus)}
+  \item{9544 (Macaca mulatta)}
+  \item{9593 (Gorilla gorilla)}
+  \item{9597 (Pan paniscus)}
+  \item{9598 (Pan troglodytes)}
+  \item{9606 (Homo sapiens)}
+  \item{9823 (Sus scrofa)}
+  \item{9913 (Bos taurus)}
+  \item{10090 (Mus musculus)}
+  \item{10116 (Rattus norvegicus)}
+  \item{13616 (Monodelphis domestica)}
+  \item{28377 (Anolis carolinensis)}
+}}
 
 \item{datatype}{A vector of characters indicating data type(s) to be used. To be chosen among:
-         "rna_seq",
-         "affymetrix"
-         "est",
-         "in_situ".
-Default is c("rna_seq","affymetrix","est","in_situ")}
+\itemize{
+  \item{"rna_seq"}
+  \item{"affymetrix"}
+  \item{"est"}
+  \item{"in_situ"}
+}
+By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. Including a data type that is not present in Bgee for a given species has no effect.}
 
-\item{calltype}{A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future. Default is "expressed"}
+\item{calltype}{A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future.}
 
-\item{confidence}{A character indicating if all expression calls should be retrieved, or only high quality expression calls. Options are:
-         "all",
-         "high_quality".
-Default is "all"}
+\item{confidence}{A character indicating if only high quality expression calls should be retrieved. Options are "all" or "high_quality". Default is "all".}
 
-\item{stage}{A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the metastage ontology used in Bgee (available at \url{ftp://lausanne.isb-sib.ch/pub/databases/Bgee/current/stages.obo}). The ID, not the name of the metastage need to be used (prefix "BilaDO:"). Default is BilaDO:0000001, the root of the metastage ontology, meaning that expression data from all developmental stages will be used.
-TO DO: should we use UBERON stages??}
+\item{stage}{A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage ID is given, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression. This is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology). The most useful stages (going no deeper than level 3 of the ontology) include:
+\itemize{
+  \item{UBERON:0000068 (embryo stage)} 
+  \itemize{
+    \item{UBERON:0000106 (zygote stage)}
+    \item{UBERON:0000107 (cleavage stage)}
+    \item{UBERON:0000108 (blastula stage)}
+    \item{UBERON:0000109 (gastrula stage)}
+    \item{UBERON:0000110 (neurula stage)}
+    \item{UBERON:0000111 (organogenesis stage)}
+    \item{UBERON:0007220 (late embryonic stage)}
+    \item{UBERON:0004707 (pharyngula stage)}
+  }
+  \item{UBERON:0000092 (post-embryonic stage)}
+  \itemize{
+    \item{UBERON:0000069 (larval stage)}
+    \item{UBERON:0000070 (pupal stage)}
+    \item{UBERON:0000066 (fully formed stage)}
+  }
+}}
 
-\item{species.specific}{A character indicating if species-specific anatomical structures from the UBERON ontology should be used.
-Default is 'TRUE': species-specific structures are used.}
+\item{host}{URL to Bgee webservice. Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.}
+
+\item{pathToData}{Path to the directory where the data files are stored / will be stored. Default is the working directory.}
 }
 \value{
-A list of 3 elements. First, the \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls. Second, the \code{organ.names} data frame, with the name corresonding to UBERON IDs, Third, the \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships)
+A list of 3 elements:
+\itemize{
+  \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
+  \item{A \code{organ.names} data frame, with the name corresonding to UBERON IDs.}
+  \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
+}
 }
 \description{
 This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology.
 }
 \details{
-The expression calls come from Bgee (\url{http://bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}).
+The expression calls come from Bgee (\url{http://bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
+
+Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data will likely be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
 }
 \examples{
+\dontrun{
   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
-
+}
 }
 \author{
 Julien Roux \email{julien.roux at unil.ch}.

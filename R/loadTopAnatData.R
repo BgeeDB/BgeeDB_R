@@ -3,54 +3,75 @@
 #'
 #' @description This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology.
 #'
-#' @details The expression calls come from Bgee (\url{http://bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of prpagated expression data will likely be implemented in the future, but meanwhile, it can be obtained using specialized packages like topGO, see the topAnat.R function.
+#' @details The expression calls come from Bgee (\url{http://bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
 #'
-#' @param host URL to Bgee webservice. Chnage host to access development or archive versions of Bgee. Default is "http://bgee.org" to access current Bgee release.
+#' Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data will likely be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
 #'
-#' @param species A numeric indicating the NCBI taxonomic ID of the species to be used among species in Bgee. Species present in bgee v13 include: 
-#'  6239 (Caenorhabditis elegans)
-#'  7227 (Drosophila melanogaster)
-#'  7955 (Danio rerio)
-#'  8364 (Xenopus tropicalis)
-#'  9031 (Gallus gallus)
-#'  9258 (Ornithorhynchus anatinus)
-#'  9544 (Macaca mulatta)
-#'  9593 (Gorilla gorilla)
-#'  9597 (Pan paniscus)
-#'  9598 (Pan troglodytes)
-#'  9606 (Homo sapiens)
-#'  9823 (Sus scrofa)
-#'  9913 (Bos taurus)
-#' 10090 (Mus musculus)
-#' 10116 (Rattus norvegicus)
-#' 13616 (Monodelphis domestica)
-#' 28377 (Anolis carolinensis)
-## TO DO: how to display a bullet point list?
+#' @param species A numeric indicating the NCBI taxonomic ID of the species to be used. The species has to be among species in Bgee v13, which include:
+#' \itemize{
+#'   \item{6239 (Caenorhabditis elegans)}
+#'   \item{7227 (Drosophila melanogaster)}
+#'   \item{7955 (Danio rerio)}
+#'   \item{8364 (Xenopus tropicalis)}
+#'   \item{9031 (Gallus gallus)}
+#'   \item{9258 (Ornithorhynchus anatinus)}
+#'   \item{9544 (Macaca mulatta)}
+#'   \item{9593 (Gorilla gorilla)}
+#'   \item{9597 (Pan paniscus)}
+#'   \item{9598 (Pan troglodytes)}
+#'   \item{9606 (Homo sapiens)}
+#'   \item{9823 (Sus scrofa)}
+#'   \item{9913 (Bos taurus)}
+#'   \item{10090 (Mus musculus)}
+#'   \item{10116 (Rattus norvegicus)}
+#'   \item{13616 (Monodelphis domestica)}
+#'   \item{28377 (Anolis carolinensis)}
+#' }
 #'
 #' @param datatype A vector of characters indicating data type(s) to be used. To be chosen among:
-#'          "rna_seq",
-#'          "affymetrix"
-#'          "est",
-#'          "in_situ".
-#' Default includes all data type for a given species: c("rna_seq","affymetrix","est","in_situ")
+#' \itemize{
+#'   \item{"rna_seq"}
+#'   \item{"affymetrix"}
+#'   \item{"est"}
+#'   \item{"in_situ"}
+#' }
+#' By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. Including a data type that is not present in Bgee for a given species has no effect. 
 #'
-#' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future. Default is "expressed"
+#' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future.
 #'
-#' @param stage A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{TO DO}). If a stage ID is given, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression. Potential examples of useful stage specifications include:
-#' UBERON:00000.. life cycle ## useless, since will give the same results as the default stage=NULL
-#'   UBERON:0000068 embryonic stage
-#'     UBERON...
-#'     UBERON...
-#'     UBERON...
-#'   UBERON:0000092 post-embryonic stage
-#'     UBERON...
-#'     UBERON...
-#'     UBERON...
-## TO DO: how to display a bullet point list?
+#' @param stage A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage ID is given, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression. This is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology). The most useful stages (going no deeper than level 3 of the ontology) include:
+#' \itemize{
+#'   \item{UBERON:0000068 (embryo stage)} 
+#'   \itemize{
+#'     \item{UBERON:0000106 (zygote stage)}
+#'     \item{UBERON:0000107 (cleavage stage)}
+#'     \item{UBERON:0000108 (blastula stage)}
+#'     \item{UBERON:0000109 (gastrula stage)}
+#'     \item{UBERON:0000110 (neurula stage)}
+#'     \item{UBERON:0000111 (organogenesis stage)}
+#'     \item{UBERON:0007220 (late embryonic stage)}
+#'     \item{UBERON:0004707 (pharyngula stage)}
+#'   }
+#'   \item{UBERON:0000092 (post-embryonic stage)}
+#'   \itemize{
+#'     \item{UBERON:0000069 (larval stage)}
+#'     \item{UBERON:0000070 (pupal stage)}
+#'     \item{UBERON:0000066 (fully formed stage)}
+#'   }
+#' }
 #'
 #' @param confidence A character indicating if only high quality expression calls should be retrieved. Options are "all" or "high_quality". Default is "all".
 #'
-#' @return A list of 3 elements. First, a \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls. Second, a \code{organ.names} data frame, with the name corresonding to UBERON IDs, Third, a \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships)
+#' @param host URL to Bgee webservice. Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.
+#'
+#' @param pathToData Path to the directory where the data files are stored / will be stored. Default is the working directory. 
+#'
+#' @return A list of 3 elements:
+#' \itemize{
+#'   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
+#'   \item{A \code{organ.names} data frame, with the name corresonding to UBERON IDs.}
+#'   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
+#' }
 #'
 #' @author Julien Roux \email{julien.roux at unil.ch}.
 #'
@@ -60,7 +81,7 @@
 #' }
 #' @export
 
-loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed", confidence="all", stage=NULL){
+loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed", confidence="all", stage=NULL, host="http://bgee.org", pathToData=getwd()){
   allSpecies <- c(6239, 7227, 7955, 8364, 9031, 9258, 9544, 9593, 9597, 9598, 9606, 9823, 9913, 10090, 10116, 13616, 28377)
   ## Species is the only compulsory parameter
   if( length(species) == 0 ) {
@@ -78,35 +99,43 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if ( length(datatype) != sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) ){
     warning("Warning: you apparently specified a data type that is not among rna_seq, affymetrix, est and in_situ. Please check for typos.")
   }
-  if (calltype != "expressed"){
+  if ( calltype != "expressed" ){
     stop("Problem: no other call types than present / absent can be retrieved for now.")
   }
-  if ((confidence != "all") and (confidence != "high_quality")){
+  if ( (confidence != "all") && (confidence != "high_quality") ){
     stop("Problem: the data confidence parameter specified is not among the allowed values (all or high_quality).")
   }
+  if ( !grepl("^http://", host) ){
+    host <- paste0("http://", host)
+  }
+  if ( !file.exists(pathToData) ){
+    stop("Problem: please specify a valid path to data files.")
+  }
+  if ( !grepl("/$", pathToData) ){
+    pathToData <- paste0(pathToData, "/")
+  }
 
-  
   ## First query: organ relationships
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", species, ".tsv")
   ## Check if file is already in cache
-  if (file.exists(organRelationshipsFileName)){
+  if (file.exists(paste0(pathToData, organRelationshipsFileName))){
     cat("\nThe organ relationships file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee...\n")
 
-    ## TO DO: build URL + query webservice
+    ## TO DO: build URL + query webservice: see below
     ## save organRelationshipsFileName in current working directory 
   }
 
   ## Second query: organ names
   organNamesFileName <- paste0("topAnat_AnatEntitiesNames_", species, ".tsv");
   ## Check if file is already in cache
-  if (file.exists(organNamesFileName)){
+  if (file.exists(paste0(pathToData, organNamesFileName))){
     cat("\nThe organ names file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee...\n")
 
-    ## TO DO: build URL + query webservice
+    ## TO DO: build URL + query webservice: see below
     ## save organNamesFileName in current working directory 
   }
 
@@ -127,67 +156,77 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   gene2anatomyFileName <- paste0(gene2anatomyFileName, ".tsv")
 
   ## Check if file is already in cache
-  if (file.exists(gene2anatomyFileName)){
+  if (file.exists(paste0(pathToData, gene2anatomyFileName))){
     cat("\nThe gene to organs mapping file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
 
-    ## TO DO: build URL + query webservice
+    ## TO DO: build URL + query webservice: see below
     ## save gene2anatomyFileName in current working directory 
   }
 
-  ## TO DO: maybe an argument could be path to the data / path to store the data?
-
-  ## TO DO: URL building:
+  ################################
+  ## URL building
+  ## TO DO: modify and copy paste 3 times above 
   ## Build invariable part of the URL: host and species
-  myurl <-  paste0(host, "/?page=top_anat&action=...&species=", species)
+  myurl <-  paste0(host, "/?page=top_anat&action=...&species=", species, "&host=", host)
+  ## Add developmental stage
+  if ( !is.null(stage) ){
+    myurl <- paste0(myurl, "&stage_id=", stage)
+    ## TO DO: need quotes for stage? is ":" OK?
+  }
   ## Add data type
-  for (type in toupper(datatype)){
-    myurl <- paste0(myurl, "&data_type=", type)
+  if ( sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
+    for (type in toupper(sort(datatype))){
+      myurl <- paste0(myurl, "&data_type=", type)
+    }
   }
   ## Add data quality
   if ( confidence == "high_quality" ){
     myurl <- paste0(myurl, "&data_qual=", confidence)
+    ## TO DO: maybe we need to pass only "high"?
   }
-
   ## Add call type
   if (calltype == "expressed"){
     myurl <- paste0(myurl, "&expr_type=EXPRESSED")
+    ## TO DO: remove?
   }
-  ## Add developmental stage
-  myurl <- paste0(myurl, "&stage_id=", stage)
-  cat(paste0("   URL successfully built (", myurl,")\n"))
+  cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+  ## Launch query to topAnat server
+  download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName))
+  ## TO DO: modify fileName for other calls
+  ##        do we need to increase timeout?
+  cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
+  ################################
 
-  ## TO DO? Check parameters. Return error if data type not present for species? Hard code this?
-
-  cat("   Submitting URL to Bgee webservice (can be long)...\n")
-  ## TO DO: Launch query to topAnat server
-  ## How to do this? Is it like downloading a file?
-  download.file(file.path(myurl), destfile = getwd())
-  ## TO DO: add fileName here?
-
-  cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", getwd(), "\"\n"))
-
-
+  
   ## Process the data and build the final list to return
   cat("\nParsing the results... ")
 
   ## Relationships between organs
-  tab <- read.table(organRelationshipsFileName, header=FALSE, sep="\t")
-  organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
-
+  if (file.info(paste0(pathToData, organRelationshipsFileName))$size != 0) {
+    tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=FALSE, sep="\t")
+    organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+  } else {
+    warning(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+  }
+ 
   ## Organ names
-  organNames <- read.table(organNamesFileName, header = FALSE, sep="\t", row.names=1)
-  names(organNames) <- organNames
-
+  if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
+    organNames <- read.table(paste0(pathToData, organNamesFileName), header = FALSE, sep="\t", row.names=1)
+    names(organNames) <- organNames
+  } else {
+    warning(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+  }
+  
   ## Mapping of genes to tissues
-  if (file.info(gene2anatomyFileName)$size != 0) {
-    tab <- read.table(gene2anatomyFileName, header=FALSE, sep="\t")
+  if (file.info(paste0(pathToData, gene2anatomyFileName))$size != 0) {
+    tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=FALSE, sep="\t")
     gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
   } else {
-    ## TO DO: issue warning. Actually, do it for all files!
+    warning(paste0("File ", gene2anatomyFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
-
   cat("Done.\n")
+
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }

@@ -22,12 +22,11 @@ A data frame with significantly enriched anatomical structures, sorted by FDR
 This function loads the results from the test function (topGO package) and creates an output table with organ names, fold enrichment and FDR
 }
 \examples{
-  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
-  geneList <- c(0,1,0,1)
-  names(geneList) <- c("gene1","gene3","gene3","gene4")
-  myTopAnatObject <- topAnat(myTopAnatData, geneList)
-  TO DO...
-
+  \dontrun{
+    ## Launch topGO test on ata loaded from Bgee
+    resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
+    tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
+  }
 }
 \author{
 Julien Roux \email{julien.roux@unil.ch}.

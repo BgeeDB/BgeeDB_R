@@ -25,10 +25,12 @@ This function loads the functions necessary to use topGO on the Uberon ontology 
 To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), it is interesting to use the topGO package since it allows to propagate the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods.
 }
 \examples{
+ \dontrun{
   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
   geneList <- c(0,1,0,1)
   names(geneList) <- c("gene1","gene3","gene3","gene4")
   myTopAnatObject <- topAnat(myTopAnatData, geneList)
+}
 
 }
 \author{
