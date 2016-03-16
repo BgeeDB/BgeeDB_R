@@ -18,7 +18,12 @@
 #' @author Julien Roux \email{julien.roux@unil.ch}.
 #'
 #' @examples
-#'   myTopAnatObject <- topAnat(myTopAnatData)
+#'  \dontrun{
+#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
+#'   geneList <- c(0,1,0,1)
+#'   names(geneList) <- c("gene1","gene3","gene3","gene4")
+#'   myTopAnatObject <- topAnat(myTopAnatData, geneList)
+#' }
 #'
 #' @import topGO
 #' @export
@@ -228,24 +233,24 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## build the graph starting from the most specific terms ...
   cat("\nBuild DAG topology..................")
   g <- .buildGraph.topology(names(mostSpecificTerms), parentMapping)
-  cat("  (",  graph:::numNodes(g), "terms and", numEdges(g), "relations. )\n")
+  cat("  (",  graph::numNodes(g), "terms and", graph::numEdges(g), "relations. )\n")
 
   ## probably is good to store the levels but for the moment we don't
   .nodeLevel <- buildLevels(g, leafs2root = TRUE)
 
   ## annotate the nodes in the graph with genes
   cat("\nAnnotating nodes... (Can be long)...")
-  g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
+  g <- topGO::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
 
   ## select the feasible genes
   gRoot <- getGraphRoot(g)
-  feasibleGenes <- ls(nodeData(g, n = gRoot, attr = "genes")[[gRoot]])
+  feasibleGenes <- ls(graph::nodeData(g, n = gRoot, attr = "genes")[[gRoot]])
   cat("  (", length(feasibleGenes), "genes annotated to the nodes. )\n")
 
   .Object@feasible <- .Object@allGenes %in% feasibleGenes
 
-  cc <- .countsInNode(g, nodes(g))
-  .Object@graph <- subGraph(names(cc)[cc >= .Object@nodeSize], g)
+  cc <- .countsInNode(g, graph::nodes(g))
+  .Object@graph <- graph::subGraph(names(cc)[cc >= .Object@nodeSize], g)
 
   .Object
 }

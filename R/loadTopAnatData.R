@@ -1,8 +1,8 @@
 ########################
 #' @title Retrieve data from Bgee to perform GO-like enrichment of anatomical terms, mapped to genes by expression patterns.
 #'
-#' @description This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology. 
-#' 
+#' @description This function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology.
+#'
 #' @details The expression calls come from Bgee (\url{http://bgee.org}), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression. Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}).
 #'
 #' @param species A character indicating species to be used. Options are:
@@ -40,7 +40,7 @@
 #'          "all",
 #'          "high_quality".
 #' Default is "all"
-#' 
+#'
 #' @param species.specific A character indicating if species-specific anatomical structures from the UBERON ontology should be used.
 #' Default is 'TRUE': species-specific structures are used.
 #'
@@ -49,8 +49,9 @@
 #' @author Julien Roux \email{julien.roux at unil.ch}.
 #'
 #' @examples
+#' \dontrun{
 #'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
-#'
+#' }
 #' @export
 
 loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed", confidence="all", stage=NULL, species.specific=TRUE){
@@ -78,7 +79,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Add developmental stage
   myurl <- paste0(myurl, "&stage_id=", stage)
   cat(paste0("   URL successfully built (", myurl,")\n"))
- 
+
   ## TO DO? Check parameters. Return error if data type not present for species? Hard code this?
 
   cat("\nSubmitting URL to Bgee webservice...\n")
@@ -89,7 +90,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", getwd(), "\"\n"))
   cat("\nParsing the results... ")
 
-  
+
   ## TO DO: read and format results
 
   ##   ## If data are zipepd
@@ -108,7 +109,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   organNames <- read.table(organNamesFileName, header = FALSE, sep="\t", row.names=1)
   names(organNames) <- organNames
 
-  ## Mapping of genes to tissues  
+  ## Mapping of genes to tissues
   gene2anatomyFileName <- paste0("topAnat_GeneToAnatEntities_", species, "_", toupper(calltype), "_", gsub(":", "_", stage), "_", toupper(paste(sort(datatype), collapse="_")), "_", toupper(confidence), ".tsv")
   if (file.info(gene2anatomyFileName)$size != 0) {
     tab <- read.table(gene2anatomyFileName, header=FALSE, sep="\t")
@@ -117,7 +118,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
   ## TO DO: filter out species-specific terms (non UBERON only?)
   if (species.specific == FALSE){
-    
+
   }
 
   cat("Done.\n")
