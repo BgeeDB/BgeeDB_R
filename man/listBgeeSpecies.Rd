@@ -2,7 +2,7 @@
 % Please edit documentation in R/listBgeeSpecies.R
 \name{listBgeeSpecies}
 \alias{listBgeeSpecies}
-\title{List of species in Bgee database}
+\title{List species with Affymetrix or RNA-seq data in the Bgee database}
 \usage{
 listBgeeSpecies(...)
 }
@@ -10,9 +10,12 @@ listBgeeSpecies(...)
 \item{...}{an empty parameter}
 }
 \value{
-A list of available RNA-seq and Affymetrix datasets
+A list of species with available Affymetrix or RNA-seq data in the Bgee
 }
 \description{
-Takes a URL and returns a list of available genomes for different platforms in Bgee.
+Returns a list of available genomes for different platforms in Bgee.
+}
+\author{
+Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
 }
 

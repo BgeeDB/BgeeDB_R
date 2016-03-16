@@ -34,6 +34,7 @@
 #' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future. Default is "expressed"
 #'
 #' @param stage A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the metastage ontology used in Bgee (available at \url{ftp://lausanne.isb-sib.ch/pub/databases/Bgee/current/stages.obo}). The ID, not the name of the metastage need to be used (prefix "BilaDO:"). Default is BilaDO:0000001, the root of the metastage ontology, meaning that expression data from all developmental stages will be used.
+#' TO DO: should we use UBERON stages??
 #'
 #' @param confidence A character indicating if all expression calls should be retrieved, or only high quality expression calls. Options are:
 #'          "all",
@@ -57,7 +58,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     stop("Problem: you did not specify a species")
   }
 
-  cat("Building URL to retrieve data from Bgee...\n")
+  cat("\nBuilding URL to retrieve data from Bgee...\n")
   ## TO DO: Build URL from options
   myurl <-  "http://http://bgee.unil.ch/?page=top_anat&action=...&...=..."
   ## Add species
@@ -76,7 +77,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   }
   ## Add developmental stage
   myurl <- paste0(myurl, "&stage_id=", stage)
-  cat("   URL is built:", myurl,"\n")
+  cat(paste0("   URL successfully built (", myurl,")\n"))
  
   ## TO DO? Check parameters. Return error if data type not present for species? Hard code this?
 
@@ -85,8 +86,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## How to do this? Is it like downloading a file?
   ## download.file(file.path(myurl), destfile = getwd())
 
-  cat("   Got an answer from Bgee webservice. Result files are written in", getwd(), "\n")
-  cat("\nParsing the results...\n")
+  cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", getwd(), "\"\n"))
+  cat("\nParsing the results... ")
 
   
   ## TO DO: read and format results

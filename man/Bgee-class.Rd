@@ -39,6 +39,14 @@ Options are:
 \item{\code{experiment.id}}{A character.
 On default is NULL: takes all available data for that species.
 If GSE[0-9]+: takes specified experiment, eg. GSE30617.}
+
+\item{\code{data}}{A dataframe of downloaded Bgee data.}
+
+\item{\code{calls}}{A character.
+Options are: "present" or "absent"}
+
+\item{\code{stats}}{A character.
+Options are: "rpkm" , "counts", "tpm"}
 }}
 \examples{
 \dontrun{
@@ -49,5 +57,8 @@ data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 }
 
 
+}
+\author{
+Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
 }
 

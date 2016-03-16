@@ -13,29 +13,32 @@
 #'
 #' @param ... Additional parameters as passed to topGOdata object of topGO package.
 #'
-#' @return topAnatObject, a topGO-compatibe object ready for gene set enrichment testing. 
+#' @return topAnatObject, a topGO-compatibe object ready for gene set enrichment testing.
 #'
 #' @author Julien Roux \email{julien.roux@unil.ch}.
 #'
 #' @examples
 #'   myTopAnatObject <- topAnat(myTopAnatData)
-#' 
-#' @import topGO
+#'
+#' @import topGO graph
 #' @export
 
 topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## topAnatData is a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame
 
+  ## Needed to be able to access topGO functions
+  ## require(topGO)
+
   ## TO DO: tests if topAnatData not empty
-  ##        test if gene List is fine 
+  ##        test if gene List is fine
   ## if (length(geneList) > 0 & length(levels(geneList)) == 2 & length(geneList) >= 20) {
 
   ## TO DO: if geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes (and add warning)
   ## geneList <- factor(as.integer(names(gene2anatomy) %in% StringIDs))
 
   ## TO DO: report to the user how many genes in background / foreground
-  
-  topAnatObject <- makeTopAnatDataObject(
+
+  topAnatObject <- .makeTopAnatDataObject(
                                          parentMapping = topAnatData$organ.relationships,
                                          allGenes = geneList,
                                          nodeSize = nodeSize,
@@ -43,8 +46,8 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
                                          )
   ## TO DO: implement
 
- 
-  
+
+
   return(topAnatObject)
 }
 
@@ -56,7 +59,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 ## Sets of functions given by Adrian Alexa (author of the topGO package, personnal communication) to make topGO work with another ontology than the Gene Ontology
 
 .annFUN.gene2Nodes <- function(feasibleGenes = NULL, gene2Nodes) {
-  ## Restrict the mappings to the feasibleGenes set  
+  ## Restrict the mappings to the feasibleGenes set
   if(!is.null(feasibleGenes))
     gene2Nodes <- gene2Nodes[intersect(names(gene2Nodes), feasibleGenes)]
 
@@ -94,7 +97,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   adjLookUP <- as.list(parentMapping)
 
   ## we use an environment of environments to store edges: (this way is faster)
-  ## in the end we will coerce it to a list of list and build a graphNEL obj. 
+  ## in the end we will coerce it to a list of list and build a graphNEL obj.
   edgeEnv <- new.env(hash = T, parent = emptyenv())
 
   ## add the arc (u --> v) to edgeEnv of type :
@@ -112,7 +115,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     setNodeInDAG(node)    # we visit the node
     assign(node, new.env(hash = T, parent = emptyenv()), envir = edgeEnv) # adj list
 
-    if(node == GENE.ONTO.ROOT) 
+    if(node == GENE.ONTO.ROOT)
       return(2)
 
     adjNodes <- adjLookUP[[node]]
@@ -151,10 +154,10 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 }
 #################################################################
 
-makeTopAnatDataObject <- function(## the child-parrent relationship 
+.makeTopAnatDataObject <- function(## the child-parrent relationship
                                 parentMapping,
                                 ## a named numeric or factor, the names are the genes ID
-                                allGenes, 
+                                allGenes,
                                 ## function to select the signif. genes
                                 geneSelectionFun = NULL,
                                 ## minimum node size
@@ -166,20 +169,27 @@ makeTopAnatDataObject <- function(## the child-parrent relationship
 
   ## code from new()
   ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
+
   ## with R > 2.3.1, PACKAGE = "base" doesn't seem to work
-  .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")
+  ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")
+
+  ## Not mentioning a namespace works if code is sourced, but if part of package function , there is a namespace conflict
   ## .Object <- .Call("R_do_new_object", ClassDef)
+  ## .Object <- base:::.Call("R_do_new_object", ClassDef) ## doesn't work
+  ## .Object <- .Call(base:::"R_do_new_object", ClassDef) ## doesn't work
+
+  ## In fact we should not invoke the base package, see this thread:
+  ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-functionName-quot-not-resolved-from-current-namespace-td4663892.html
+  ## getNativeSymbolInfo("R_do_new_object")
+  .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "SparseM")
 
   ## TO DO: - resolve namespace problem? Seem to work when called from worksheet
   ##        - how to access this function from base package?
   ##        - create a new prototype for topAnatData class instead of topGOdata?
   ##        - try without Rstudio, with ESS
   ##        - maybe just source the topGO functions?
-  
-  ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-functionName-quot-not-resolved-from-current-namespace-td4663892.html
-  ## From ?.Call, 'PACKAGE' is I believe meant to name the DLL (libRantsImageRead in this case) rather than the R package.
+  ## TO DO: remove these lines
 
-  
   ## some checking
   if(is.null(names(allGenes)))
     stop("allGenes must be a named vector")
@@ -211,26 +221,26 @@ makeTopAnatDataObject <- function(## the child-parrent relationship
 
   ## this function is returning a list of terms from the specified ontology
   ## with each entry being a vector of genes
-  cat("\nBuilding 'most specific' Terms .....")
+  cat("\nBuilding 'most specific' Terms......")
   mostSpecificTerms <- .annFUN.gene2Nodes(feasibleGenes = .Object@allGenes, gene2Nodes = gene2Nodes)
-  cat("\t(", length(mostSpecificTerms), "Terms found. )\n")
+  cat("  (", length(mostSpecificTerms), "Terms found. )\n")
 
   ## build the graph starting from the most specific terms ...
-  cat("\nBuild DAG topology ..........")
+  cat("\nBuild DAG topology..................")
   g <- .buildGraph.topology(names(mostSpecificTerms), parentMapping)
-  cat("\t(",  numNodes(g), "terms and", numEdges(g), "relations. )\n")
+  cat("  (",  graph:::numNodes(g), "terms and", numEdges(g), "relations. )\n")
 
-  ## probably is good to store the levels but for the moment we don't 
+  ## probably is good to store the levels but for the moment we don't
   .nodeLevel <- buildLevels(g, leafs2root = TRUE)
 
   ## annotate the nodes in the graph with genes
-  cat("\nAnnotating nodes ...............")
-  g <- mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
+  cat("\nAnnotating nodes... (Can be long)...")
+  g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
 
   ## select the feasible genes
   gRoot <- getGraphRoot(g)
   feasibleGenes <- ls(nodeData(g, n = gRoot, attr = "genes")[[gRoot]])
-  cat("\t(", length(feasibleGenes), "genes annotated to the nodes. )\n")
+  cat("  (", length(feasibleGenes), "genes annotated to the nodes. )\n")
 
   .Object@feasible <- .Object@allGenes %in% feasibleGenes
 
