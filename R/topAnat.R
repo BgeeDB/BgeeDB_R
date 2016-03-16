@@ -20,7 +20,7 @@
 #' @examples
 #'   myTopAnatObject <- topAnat(myTopAnatData)
 #'
-#' @import topGO graph
+#' @import topGO
 #' @export
 
 topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
