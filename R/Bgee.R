@@ -56,7 +56,7 @@
 #'
 #'
 #' @import methods
-#' @import tidyr
+#' @importFrom tidyr spread
 #' @export Bgee
 #' @exportClass Bgee
 
