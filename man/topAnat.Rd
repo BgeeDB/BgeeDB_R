@@ -7,29 +7,29 @@
 topAnat(topAnatData, geneList, nodeSize = 10, ...)
 }
 \arguments{
-\item{topAnatData}{a list produced by the function loadTopAnatData().}
+\item{topAnatData}{a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame, produced by the function loadTopAnatData().}
 
-\item{geneList}{Vector indicating foreground and background genes. Names of the vector indicate teh background genes. Vector values are 0 (gene not in foreground) and 1 (gene in foreground).}
+\item{geneList}{Vector indicating foreground and background genes. Names of the vector indicate the background genes. Values are 1 (gene in foreground) or 0 (gene not in foreground).}
 
 \item{nodeSize}{Minimum number of genes mapped to a node for it to be tested. Default is 10.}
 
-\item{...}{Additional parameters as passed to topGOdata object of topGO package.}
+\item{...}{Additional parameters as passed to build topGOdata object in topGO package.}
 }
 \value{
-topAnatObject, a topGO-compatibe object ready for gene set enrichment testing.
+topAnatObject, a topGO-compatible object ready for gene set enrichment testing.
 }
 \description{
-This function loads the functions necessary to use topGO on the Uberon ontology instead of the GO ontology. It then produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package.
+This function produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package. This object uses the Uberon ontology instead of the GO ontology.
 }
 \details{
-To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), it is interesting to use the topGO package since it allows to propagate the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods.
+To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), the data are formatted to use the topGO package for testing. This package is interesting because it propagates the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods. Expert users should be able to use information from the topAnatObject to test enrichment with other packages than topGO.
 }
 \examples{
  \dontrun{
-  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
-  geneList <- c(0,1,0,1)
-  names(geneList) <- c("gene1","gene3","gene3","gene4")
-  myTopAnatObject <- topAnat(myTopAnatData, geneList)
+  myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+  geneList <- c(0,1,0,1,0,1,0,1)
+  names(geneList) <- c("gene1","gene3","gene3","gene4","gene5","gene6","gene7","gene8")
+  myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=0)
 }
 
 }

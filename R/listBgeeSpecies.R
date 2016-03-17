@@ -26,3 +26,11 @@ listBgeeSpecies <- function(...){
 	return(list(rna_seq = .listDirectories(url_rnaseq), affymetrix = .listDirectories(url_affymetrix)))
 
 }
+
+################################
+## list species
+## http://localhost:8080/?page=dao&action=org.bgee.model.dao.api.species.SpeciesDAO.getAllSpecies&display_type=tsv&attr_list=ID&attr_list=GENUS&attr_list=SPECIES_NAME&attr_list=COMMON_NAME
+## TO DO: this should be the basis of the listBgeeSpecies function (cleaner, more maintenable, etc)
+## TO DO: should output data type too
+################################
+

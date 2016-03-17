@@ -77,7 +77,7 @@
 #'
 #' @examples
 #' \dontrun{
-#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
 #' }
 #' @export
 
@@ -108,6 +108,9 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if ( !grepl("^http://", host) ){
     host <- paste0("http://", host)
   }
+  if ( !grepl("/$", host) ){
+    host <- paste0(host, "/")
+  }
   if ( !file.exists(pathToData) ){
     stop("Problem: please specify a valid path to data files.")
   }
@@ -122,9 +125,12 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     cat("\nThe organ relationships file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee...\n")
+    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", species,"&attr_list=SOURCE_ID&attr_list=TARGET_ID")
 
-    ## TO DO: build URL + query webservice: see below
-    ## save organRelationshipsFileName in current working directory 
+    ## Query webservice
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+    download.file(myurl, destfile = paste0(pathToData, organRelationshipsFileName))
+    cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
   }
 
   ## Second query: organ names
@@ -134,9 +140,12 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     cat("\nThe organ names file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee...\n")
+    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", species,"&attr_list=NAME&attr_list=ID")
 
-    ## TO DO: build URL + query webservice: see below
-    ## save organNamesFileName in current working directory 
+    ## Query webservice
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+    download.file(myurl, destfile = paste0(pathToData, organNamesFileName))
+    cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
   }
 
   ## Third query: gene to organs mapping
@@ -160,71 +169,66 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     cat("\nThe gene to organs mapping file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
+    myurl <-  paste0(host, "org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", species, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
 
-    ## TO DO: build URL + query webservice: see below
-    ## save gene2anatomyFileName in current working directory 
-  }
-
-  ################################
-  ## URL building
-  ## TO DO: modify and copy paste 3 times above 
-  ## Build invariable part of the URL: host and species
-  myurl <-  paste0(host, "/?page=top_anat&action=...&species=", species, "&host=", host)
-  ## Add developmental stage
-  if ( !is.null(stage) ){
-    myurl <- paste0(myurl, "&stage_id=", stage)
-    ## TO DO: need quotes for stage? is ":" OK?
-  }
-  ## Add data type
-  if ( sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
-    for (type in toupper(sort(datatype))){
-      myurl <- paste0(myurl, "&data_type=", type)
+    ## Add data type: only if not all data types needed
+    if ( sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
+      for (type in toupper(sort(datatype))){
+        myurl <- paste0(myurl, "&data_type=", type)
+      }
     }
+    ## Add data quality
+    if ( confidence == "high_quality" ){
+      myurl <- paste0(myurl, "&data_qual=HIGH")
+    }
+    ## TO DO? Add call type?
+    ## if (calltype == "expressed"){
+    ##   myurl <- paste0(myurl, "&expr_type=EXPRESSED")
+    ## }
+    if ( !is.null(stage) ){
+      myurl <- paste0(myurl, "&stage_id=", stage)
+    }
+    
+    ## Query webservice
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+    download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName))
+    cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
   }
-  ## Add data quality
-  if ( confidence == "high_quality" ){
-    myurl <- paste0(myurl, "&data_qual=", confidence)
-    ## TO DO: maybe we need to pass only "high"?
-  }
-  ## Add call type
-  if (calltype == "expressed"){
-    myurl <- paste0(myurl, "&expr_type=EXPRESSED")
-    ## TO DO: remove?
-  }
-  cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
-  ## Launch query to topAnat server
-  download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName))
-  ## TO DO: modify fileName for other calls
-  ##        do we need to increase timeout?
-  cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
-  ################################
-
   
   ## Process the data and build the final list to return
   cat("\nParsing the results... ")
 
   ## Relationships between organs
-  if (file.info(paste0(pathToData, organRelationshipsFileName))$size != 0) {
-    tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=FALSE, sep="\t")
-    organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+  if (file.exists(paste0(pathToData, organRelationshipsFileName))){
+    if (file.info(paste0(pathToData, organRelationshipsFileName))$size != 0) {
+      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=FALSE, sep="\t")
+      organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+    } else {
+      stop(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
   } else {
-    warning(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    stop(paste0("File ", organRelationshipsFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
   }
- 
   ## Organ names
-  if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
-    organNames <- read.table(paste0(pathToData, organNamesFileName), header = FALSE, sep="\t", row.names=1)
-    names(organNames) <- organNames
+  if (file.exists(paste0(pathToData, organNamesFileName))){
+    if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
+      organNames <- read.table(paste0(pathToData, organNamesFileName), header = FALSE, sep="\t", comment.char="")
+    } else {
+      stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
   } else {
-    warning(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    stop(paste0("File ", organNamesFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
   }
-  
   ## Mapping of genes to tissues
-  if (file.info(paste0(pathToData, gene2anatomyFileName))$size != 0) {
-    tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=FALSE, sep="\t")
-    gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+  if (file.exists(paste0(pathToData, gene2anatomyFileName))){
+    if (file.info(paste0(pathToData, gene2anatomyFileName))$size != 0) {
+      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=FALSE, sep="\t")
+      gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+    } else {
+      stop(paste0("File ", gene2anatomyFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
+    }
   } else {
-    warning(paste0("File ", gene2anatomyFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
+    stop(paste0("File ", gene2anatomyFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
   cat("Done.\n")
 

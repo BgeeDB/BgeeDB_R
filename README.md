@@ -5,10 +5,11 @@ BgeeDB is a collection of functions for everyday usage of Bgee database (<http:/
 The package retrieves the annotation of many experiments and download processed RNA-seq or Affymetrix data into R, according to Bgee pipeline. Currently, Bgee database supports gene expression data of 17 species.
 The package also offers usage of TopAnat: GO-like enrichment of anatomical terms, mapped to genes by expression patterns (<http://bgee.org/?page=top_anat#/>).
 
-> This package performs: 
->
-> > 1. Listing annotation files and downloading gene expression data available in current version of Bgee database
-> > 2. TopAnat analysis
+This package performs: 
+\itemize{
+  \item{1. Listing annotation files and downloading gene expression data available in current version of Bgee database}
+  \item{2. TopAnat analysis}
+  } 
 
 #### **Installation**
 

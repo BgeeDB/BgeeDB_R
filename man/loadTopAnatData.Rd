@@ -86,7 +86,7 @@ Anatomical structures are identified using IDs from the Uberon ontology (browsab
 }
 \examples{
 \dontrun{
-  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
+  myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
 }
 }
 \author{
