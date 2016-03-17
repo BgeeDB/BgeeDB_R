@@ -55,13 +55,11 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     
   ## If geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes
   if (sum(names(geneList) %in% topAnatData$gene2anatomy) != length(geneList)){
-    warning("Warning: Some genes in your foreground and/or background list have no expression data in Bgee, and will not be included in the analysis.")
+    cat("Warning: Some genes in your foreground and/or background list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% topAnatData$gene2anatomy), " genes in forground will be kept.\n")
   }
 
-  ## TO DO: message
-  cat("Building the topAnatObject......\n")
-  
   ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
+  cat("\nLaunching building of the topAnatObject..........\n")
   topAnatObject <- .makeTopAnatDataObject(
                                           parentMapping = topAnatData$organ.relationships,
                                           allGenes = geneList,
