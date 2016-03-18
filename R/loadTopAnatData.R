@@ -97,7 +97,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     stop("Problem: you need to specify at least one valid data type to be used among rna_seq, affymetrix, est and in_situ.")
   }
   if ( length(datatype) != sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) ){
-    warning("Warning: you apparently specified a data type that is not among rna_seq, affymetrix, est and in_situ. Please check for typos.")
+    cat("Warning: you apparently specified a data type that is not among rna_seq, affymetrix, est and in_situ. Please check for typos.\n")
   }
   if ( calltype != "expressed" ){
     stop("Problem: no other call types than present / absent can be retrieved for now.")
@@ -169,7 +169,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     cat("\nThe gene to organs mapping file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
-    myurl <-  paste0(host, "org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", species, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
+    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", species, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
 
     ## Add data type: only if not all data types needed
     if ( sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
