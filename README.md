@@ -1,12 +1,13 @@
 # BgeeDB: an R package for datasets retrieval from Bgee database
 
-```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. 
-The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat webservive available at (<http://bgee.org/?page=top_anat#/>).
+```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures.
+ 
+The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat webservive available at (<http://bgee.org/?page=top_anat#/>), and is based on the ```topGO``` package.
 
 This package allows: 
-1. Listing annotation files gene of expression data available in the current version of Bgee database
-2. Downloading the processed gene expression data available in the current version of Bgee database
-3. Downloading the gene expression calls and annotations allowing to perform TopAnat analysis 
+* 1. Listing annotation files gene of expression data available in the current version of Bgee database
+* 2. Downloading the processed gene expression data available in the current version of Bgee database
+* 3. Downloading the gene expression calls and annotations allowing to perform TopAnat analysis 
 
 ## Installation
 
@@ -23,6 +24,7 @@ library("BgeeDB")
 ### Install via classic install
 
 In the terminal:
+
     git clone https://github.com/wirawara/BgeeDB.git
 
 In R:
@@ -131,10 +133,10 @@ ensembl <- useDataset("mmusculus_gene_ensembl", mart=ensembl)
 # Foreground genes are those with a GO annotation "spermatogenesis"
 myGenes <- getBM(attributes= "ensembl_gene_id", filters=c("go_id"), values=list(c("GO:0007283")), mart=ensembl)
 
-# Background will be all genes with a GO annotation
+# Background are all genes with a GO annotation
 universe <- getBM(attributes= "ensembl_gene_id", filters=c("with_go_go"), values=list(c(TRUE)), mart=ensembl)
 
-# Prepares gene list vector 
+# Prepares the gene list vector 
 geneList <- factor(as.integer(universe[,1] %in% myGenes[,1]))
 names(geneList) <- universe[,1]
 head(geneList)
@@ -144,7 +146,7 @@ summary(geneList == 1)
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 ```
 
-*Warning*: This can be long, especially if the gene list is large, since expression calls will be propagated through the ontology (e.g., expression in the forebrain will be counted as expression in parent structures such as the brain, nervous system, etc).
+*Warning*: This can be long, especially if the gene list is large, since the anatomical ontology is large and expression calls will be propagated through the whole ontology (e.g., expression in the forebrain will also be counted as expression in parent structures such as the brain, nervous system, etc). Consider running a script in batch mode if you have multiple analyses to do.
 
 #### Launch an enrichment test for anatomical terms
 
@@ -155,11 +157,11 @@ results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 ```
 
+*Warning*: This can be long because of the size of the ontology. Consider running a script in batch mode if you have multiple analyses to do.
+
 #### Format the table of results after an enrichment test for anatomical terms
 
 We built the ```makeTable``` function to filter and format the test results. Results are sorted by p-value, and FDR values are calculated. 
-
-*Warning*: it is debated if FDR correction is appropriate on enrichment tests, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
 
 ```{r}
 # Display results sigificant at a 1% FDR threshold
@@ -167,3 +169,6 @@ tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, 0.01)
 # Display all results
 tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, 1)
 ```
+
+*Warning*: it is debated if FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
+
