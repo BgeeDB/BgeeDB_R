@@ -1,5 +1,4 @@
 # BgeeDB: an R package for datasets retrieval from Bgee database
-------------------------------------------------------------------
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. 
 The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat webservive available at (<http://bgee.org/?page=top_anat#/>).
@@ -23,8 +22,10 @@ library("BgeeDB")
 
 ### Install via classic install
 
+In the terminal:
     git clone https://github.com/wirawara/BgeeDB.git
 
+In R:
 ``` {r}
 # install the package
 install.packages("./BgeeDB", repos = NULL, type="source")
@@ -99,7 +100,7 @@ gene.expression.mouse.counts <- bgee$format_data(data_bgee_mouse_gse30617, "pres
 gene.expression.mouse.all.counts <- bgee$format_data(data_bgee_mouse_gse30617, "all", "counts")
 ```
 
-#### Download the data allowing to perform GO-like enrichment test for anatomical terms, for Mus musculus
+#### Download the data allowing to perform GO-like enrichment test for anatomical terms
 
 The ```loadTopAnatData()``` function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures.
 
@@ -111,15 +112,14 @@ myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq")
 myTopAnatData <- loadTopAnatData(species=10090, datatype=c("rna_seq","affymetrix","est","in_situ"), confidence="high")
 # Loading calls observed in embryonic stages only
 myTopAnatData <- loadTopAnatData(species=10090, datatype=c("rna_seq","affymetrix","est","in_situ"), stage="UBERON:0000068")
-# Look at the result object
-head(myTopAnatData$organ.relationships)
-head(myTopAnatData$organ.names)
-head(myTopAnatData$gene2anatomy)
+
+# Look at the data
+lapply(myTopAnatData, head)
 ```
 
 #### Prepare a topGO object allowing to perform GO-like enrichment test for anatomical terms, for Mus musculus
 
-First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 depending if a gene is in the foreground or not. In this example we will look at spermatogenesis genes 
+First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). 
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
@@ -148,7 +148,7 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 
 #### Launch an enrichment test for anatomical terms
 
-This is not dependent on the ```BgeeDB``` package, and you can readily use the ```topGO``` package and all its functionalities for this step. For example:
+This part is not dependent on the ```BgeeDB``` package, and you can readily use the ```topGO``` package and all its functionalities for this step. See the vignette of the ```topGO``` package for more details. For example:
 ```{r}
 results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 # You can also use the topGO decorrelation methods, for example the "weight" method to get less redundant results
@@ -157,7 +157,8 @@ results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 
 #### Format the table of results after an enrichment test for anatomical terms
 
-We have built the ```makeTable``` function to help filter and format the results. Results are sorted by p-value, and a FDR values are proposed. 
+We built the ```makeTable``` function to filter and format the test results. Results are sorted by p-value, and FDR values are calculated. 
+
 *Warning*: it is debated if FDR correction is appropriate on enrichment tests, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
 
 ```{r}
