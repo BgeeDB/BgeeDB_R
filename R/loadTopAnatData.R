@@ -122,13 +122,13 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", species, ".tsv")
   ## Check if file is already in cache
   if (file.exists(paste0(pathToData, organRelationshipsFileName))){
-    cat("\nThe organ relationships file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+    cat("\nWarning: an organ relationships file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
-    cat("\nBuilding URLs to retrieve organ relationships from Bgee...\n")
+    cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", species,"&attr_list=SOURCE_ID&attr_list=TARGET_ID")
 
     ## Query webservice
-    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     download.file(myurl, destfile = paste0(pathToData, organRelationshipsFileName))
     cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
   }
@@ -137,13 +137,13 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   organNamesFileName <- paste0("topAnat_AnatEntitiesNames_", species, ".tsv");
   ## Check if file is already in cache
   if (file.exists(paste0(pathToData, organNamesFileName))){
-    cat("\nThe organ names file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+    cat("\nWarning: an organ names file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
-    cat("\nBuilding URLs to retrieve organ names from Bgee...\n")
+    cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", species,"&attr_list=NAME&attr_list=ID")
 
     ## Query webservice
-    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     download.file(myurl, destfile = paste0(pathToData, organNamesFileName))
     cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
   }
@@ -166,7 +166,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
   ## Check if file is already in cache
   if (file.exists(paste0(pathToData, gene2anatomyFileName))){
-    cat("\nThe gene to organs mapping file is already in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+    cat("\nWarning: a gene to organs mapping file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", species, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
@@ -190,13 +190,13 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     }
     
     ## Query webservice
-    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)...\n"))
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName))
     cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
   }
   
   ## Process the data and build the final list to return
-  cat("\nParsing the results... ")
+  cat("\nParsing the results...............................................")
 
   ## Relationships between organs
   if (file.exists(paste0(pathToData, organRelationshipsFileName))){
@@ -213,6 +213,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if (file.exists(paste0(pathToData, organNamesFileName))){
     if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
       organNames <- read.table(paste0(pathToData, organNamesFileName), header = FALSE, sep="\t", comment.char="")
+      names(organNames) <- c("organId", "organName")
     } else {
       stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
     }
@@ -230,7 +231,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   } else {
     stop(paste0("File ", gene2anatomyFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
-  cat("Done.\n")
+  cat(" Done.\n")
 
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }

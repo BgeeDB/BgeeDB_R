@@ -31,6 +31,7 @@
 topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
   ## Test if topAnatData not empty
+  cat("\nChecking topAnatData object.........\n")
   if( length(topAnatData$gene2anatomy) == 0 ) {
     stop("Problem: the gene2anatomy list of your topAnatData object is empty.")
   }
@@ -42,7 +43,10 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   }
   
   ## Test if gene list is fine
-  geneList <- as.factor(geneList)
+  cat("\nChecking gene list..................\n")
+  if (!is.factor(geneList)){
+    geneList <- as.factor(geneList)
+  }
   if (length(geneList) == 0){
     stop("Problem: the gene list provided is empty.")
   }
@@ -52,17 +56,17 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   if (length(geneList) < 100) {
     cat("Warning: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
   }
-    
   ## If geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes
-  if (sum(names(geneList) %in% topAnatData$gene2anatomy) != length(geneList)){
-    cat("Warning: Some genes in your foreground and/or background list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% topAnatData$gene2anatomy), " genes in forground will be kept.\n")
+  if (sum(names(geneList) %in% names(topAnatData$gene2anatomy)) != length(geneList)){
+    cat("Warning: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
   }
 
   ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
-  cat("\nLaunching building of the topAnatObject..........\n")
   topAnatObject <- .makeTopAnatDataObject(
                                           parentMapping = topAnatData$organ.relationships,
                                           allGenes = geneList,
+                                          description = "topGO object, ready for anatomical ontology enrichment test",
+                                          ontology = "UBERON animal anatomical structures ontology",
                                           nodeSize = nodeSize,
                                           gene2Nodes = topAnatData$gene2anatomy
                                          )
@@ -238,7 +242,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   .nodeLevel <- buildLevels(g, leafs2root = TRUE)
 
   ## annotate the nodes in the graph with genes
-  cat("\nAnnotating nodes....(Can be long)...")
+  cat("\nAnnotating nodes (Can be long)......")
   g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
 
   ## select the feasible genes
