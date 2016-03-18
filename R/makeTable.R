@@ -24,6 +24,12 @@
 #' @export
 
 makeTable <- function(topAnatData, topAnatObject, results, cutoff){
+  ## TO DO: check input objects
+  ## score(results)
+  ## is.numeric(cutoff)
+  ## termStat(topAnatObject, ...)
+  ## topAnatData$organ.names not empty (see topAnat.R)
+
   ## retrieve p-values for the enrichment
   scores <- score(results)
   fdr <- p.adjust(p=scores, method = "fdr")
@@ -31,6 +37,7 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff){
   topTerms <- as.data.frame(topTerms)
 
   if( nrow(topTerms) != 0 ){
+    cat("\nBuilding the results table for the", nrow(topTerms), "significant terms at FDR threshold of", cutoff, "... ")
     odds <- termStat(topAnatObject, row.names(topTerms))
     foldEnrichment <- odds[2]/odds[3]
 
@@ -40,13 +47,14 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff){
     fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)
 
     topTerms <- cbind(odds, foldEnrichment, topTerms, fdr[row.names(topTerms)])
-    topTable <- merge(topAnatData$organ.names, topTerms, by.x=0, by.y=0)
-    names(topTable) <- c("organId", "organName", "annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")
-    topTable <- topTable[order(as.numeric(topTable$p)), ]
+    names(topTerms) <- c("annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")
+    topTable <- merge(topAnatData$organ.names, topTerms, by.x=1, by.y=0)
+    topTable <- topTable[order(as.numeric(topTable$pValue)), ]
 
+    cat("Done\n\n")
     return(topTable)
   } else {
-    cat("There is no significant term with a FDR threshold of", cutoff, "\n")
+    cat("\nWarning: there was no significant term at a FDR threshold of", cutoff, "\n\n")
     return(NA)
   }
 }
