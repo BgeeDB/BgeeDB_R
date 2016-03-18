@@ -2,28 +2,28 @@
 % Please edit documentation in R/makeTable.R
 \name{makeTable}
 \alias{makeTable}
-\title{Formats the results obtained from gene set enrichment test on anatomical structures}
+\title{Formats results of the enrichment test on anatomical structures.}
 \usage{
-makeTable(topAnatData, topAnatObject, results, cutoff)
+makeTable(topAnatData, topAnatObject, results, cutoff = 1)
 }
 \arguments{
 \item{topAnatData}{A list produced by the function loadTopAnatData().}
 
 \item{topAnatObject}{An object produced by the function topAnat().}
 
-\item{results}{A result object, produced for example by the runtest() function of topGO}
+\item{results}{A result object, produced by the runtest() function of topGO.}
 
-\item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff will be in the output. Default is 1.}
+\item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included. Default is 1, meaning that all terms are included.}
 }
 \value{
-A data frame with significantly enriched anatomical structures, sorted by FDR
+A data frame with significantly enriched anatomical structures, sorted by p-value.
 }
 \description{
-This function loads the results from the test function (topGO package) and creates an output table with organ names, fold enrichment and FDR
+This function loads the results from the topGO test and creates an output table with organ names, fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
 }
 \examples{
   \dontrun{
-    ## Launch topGO test on ata loaded from Bgee
+    ## Launch topGO test on data loaded from Bgee
     resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
     tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
   }
