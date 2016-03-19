@@ -35,13 +35,13 @@
 #'   \item{"est"}
 #'   \item{"in_situ"}
 #' }
-#' By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. Including a data type that is not present in Bgee for a given species has no effect. 
+#' By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. Including a data type that is not present in Bgee for a given species has no effect.
 #'
 #' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future.
 #'
 #' @param stage A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage ID is given, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression. This is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology). The most useful stages (going no deeper than level 3 of the ontology) include:
 #' \itemize{
-#'   \item{UBERON:0000068 (embryo stage)} 
+#'   \item{UBERON:0000068 (embryo stage)}
 #'   \itemize{
 #'     \item{UBERON:0000106 (zygote stage)}
 #'     \item{UBERON:0000107 (cleavage stage)}
@@ -64,7 +64,7 @@
 #'
 #' @param host URL to Bgee webservice. Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.
 #'
-#' @param pathToData Path to the directory where the data files are stored / will be stored. Default is the working directory. 
+#' @param pathToData Path to the directory where the data files are stored / will be stored. Default is the working directory.
 #'
 #' @return A list of 3 elements:
 #' \itemize{
@@ -89,23 +89,23 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   } else if ( length(species) > 1 ){
     stop("Problem: only one species is allowed.")
   } else if ( sum(species %in% allSpecies) == 0 ){
-    stop("Problem: the specified speciesId is not amongthe list of species in Bgee.")
+    stop("Problem: the specified speciesId is not among the list of species in Bgee.")
   }
 
   ## Test if parameters are in the range of allowed parameters
   if ( !sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
-    stop("Problem: you need to specify at least one valid data type to be used among rna_seq, affymetrix, est and in_situ.")
+    stop("Problem: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\".")
   }
   if ( length(datatype) != sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) ){
-    cat("Warning: you apparently specified a data type that is not among rna_seq, affymetrix, est and in_situ. Please check for typos.\n")
+    cat("Warning: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for typos.\n")
   }
   if ( calltype != "expressed" ){
     stop("Problem: no other call types than present / absent can be retrieved for now.")
   }
   if ( (confidence != "all") && (confidence != "high_quality") ){
-    stop("Problem: the data confidence parameter specified is not among the allowed values (all or high_quality).")
+    stop("Problem: the data confidence parameter specified is not among the allowed values (\"all\" or \"high_quality\").")
   }
-  if ( !grepl("^http://", host) ){
+  if ( !grepl("^http://", host) && !grepl("^https://", host) ){
     host <- paste0("http://", host)
   }
   if ( !grepl("/$", host) ){
@@ -118,6 +118,9 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     pathToData <- paste0(pathToData, "/")
   }
 
+  ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
+  options(internet.info=2)
+  
   ## First query: organ relationships
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", species, ".tsv")
   ## Check if file is already in cache
@@ -129,8 +132,20 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    download.file(myurl, destfile = paste0(pathToData, organRelationshipsFileName))
-    cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
+    download.file(myurl, destfile = paste0(pathToData, organRelationshipsFileName, ".tmp"))
+
+    ## Read 5 last lines of file: should be empty indicating success of data transmission
+    ## We cannot use a system call to UNIX command since some user might be on Windows 
+    tmp <- tail(read.table(paste0(pathToData, organRelationshipsFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F), n=5)
+    if (length(tmp[,1]) == 5 && sum(tmp[,1] == "") == 5){
+      ## The file transfer was successful, we rename the temporary file
+      file.rename(paste0(pathToData, organRelationshipsFileName, ".tmp"), paste0(pathToData, organRelationshipsFileName))
+    } else {
+      ## delete the temporary file
+      file.remove(paste0(pathToData, organRelationshipsFileName, ".tmp"))
+      stop(paste0("File ", organRelationshipsFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
+    cat(paste0("   Got results from Bgee webservice. Files are written in \"", pathToData, "\"\n"))
   }
 
   ## Second query: organ names
@@ -140,12 +155,24 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     cat("\nWarning: an organ names file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
-    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", species,"&attr_list=NAME&attr_list=ID")
+    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", species,"&attr_list=ID&attr_list=NAME")
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    download.file(myurl, destfile = paste0(pathToData, organNamesFileName))
-    cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
+    download.file(myurl, destfile = paste0(pathToData, organNamesFileName, ".tmp"))
+
+    ## Read 5 last lines of file: should be empty indicating success of data transmission
+    ## We cannot use a system call to UNIX command since some user might be on Windows 
+    tmp <- tail(read.table(paste0(pathToData, organNamesFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F), n=5)
+    if (length(tmp[,1]) == 5 && sum(tmp[,1] == "") == 5){
+      ## The file transfer was successful, we rename the temporary file
+      file.rename(paste0(pathToData, organNamesFileName, ".tmp"), paste0(pathToData, organNamesFileName))
+    } else {
+      ## delete the temporary file
+      file.remove(paste0(pathToData, organNamesFileName, ".tmp"))
+      stop(paste0("File ", organNamesFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
+    cat(paste0("   Got results from Bgee webservice. Files are written in \"", pathToData, "\"\n"))
   }
 
   ## Third query: gene to organs mapping
@@ -181,27 +208,35 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     if ( confidence == "high_quality" ){
       myurl <- paste0(myurl, "&data_qual=HIGH")
     }
-    ## TO DO? Add call type?
-    ## if (calltype == "expressed"){
-    ##   myurl <- paste0(myurl, "&expr_type=EXPRESSED")
-    ## }
     if ( !is.null(stage) ){
       myurl <- paste0(myurl, "&stage_id=", stage)
     }
-    
+
     ## Query webservice
     cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName))
-    cat(paste0("   Got answer from Bgee webservice. Result files are written in \"", pathToData, "\"\n"))
+    download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName, ".tmp"))
+
+    ## Read 5 last lines of file: should be empty indicating success of data transmission
+    ## We cannot use a system call to UNIX command since some user might be on Windows 
+    tmp <- tail(read.table(paste0(pathToData, gene2anatomyFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F), n=5)
+    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+      ## The file transfer was successful, we rename the temporary file
+      file.rename(paste0(pathToData, gene2anatomyFileName, ".tmp"), paste0(pathToData, gene2anatomyFileName))
+    } else {
+      ## delete the temporary file
+      file.remove(paste0(pathToData, gene2anatomyFileName, ".tmp"))
+      stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
+    cat(paste0("   Got results from Bgee webservice. Files are written in \"", pathToData, "\"\n"))
   }
-  
+
   ## Process the data and build the final list to return
-  cat("\nParsing the results...............................................")
+  cat("\nParsing the results...............................................\n")
 
   ## Relationships between organs
   if (file.exists(paste0(pathToData, organRelationshipsFileName))){
     if (file.info(paste0(pathToData, organRelationshipsFileName))$size != 0) {
-      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=FALSE, sep="\t")
+      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=T, sep="\t", blank.lines.skip=T)
       organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
     } else {
       stop(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
@@ -212,7 +247,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Organ names
   if (file.exists(paste0(pathToData, organNamesFileName))){
     if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
-      organNames <- read.table(paste0(pathToData, organNamesFileName), header = FALSE, sep="\t", comment.char="")
+      organNames <- read.table(paste0(pathToData, organNamesFileName), header=T, sep="\t", comment.char="", blank.lines.skip=T)
       names(organNames) <- c("organId", "organName")
     } else {
       stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
@@ -223,15 +258,31 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Mapping of genes to tissues
   if (file.exists(paste0(pathToData, gene2anatomyFileName))){
     if (file.info(paste0(pathToData, gene2anatomyFileName))$size != 0) {
-      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=FALSE, sep="\t")
-      gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=T, sep="\t", blank.lines.skip=T)
+      if(length(tab[,1]) != 0){
+        gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+      } else {
+        stop(paste0("There was no mapping of genes to anatomical structures found. Probably the parameters are too stringent, or this data type is absent in this species."))
+      }
     } else {
       stop(paste0("File ", gene2anatomyFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
     }
   } else {
     stop(paste0("File ", gene2anatomyFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
-  cat(" Done.\n")
+
+  cat("\nAdding BGEE:0, the unique root of all terms of the ontology.......\n")
+  ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
+
+  ## TO DO:
+  ##   - for all organs in organ.names, check how many are not in source column of organs.relationship
+  ##     organNames[!organNames[,1] %in% names(organRelationships), 1]
+  ##   - add rows in organs.relationship to have them be source of target "BGEE:0"
+	##     (source = child / target = parent)
+  ##     (name of list = child / values = parents) 
+  ##     Add new names in list, wiht value = BGEE:0
+
+  cat("\nDone.\n")
 
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }

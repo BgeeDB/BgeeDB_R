@@ -29,7 +29,7 @@ listBgeeSpecies <- function(...){
 
 ################################
 ## list species
-## http://localhost:8080/?page=dao&action=org.bgee.model.dao.api.species.SpeciesDAO.getAllSpecies&display_type=tsv&attr_list=ID&attr_list=GENUS&attr_list=SPECIES_NAME&attr_list=COMMON_NAME
+## http://devbgee.unil.ch/?page=dao&action=org.bgee.model.dao.api.species.SpeciesDAO.getAllSpecies&display_type=tsv&attr_list=id&attr_list=genus&attr_list=species_name&attr_list=common_name
 ## TO DO: this should be the basis of the listBgeeSpecies function (cleaner, more maintenable, etc)
 ## TO DO: should output data type too
 ################################

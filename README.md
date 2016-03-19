@@ -119,6 +119,8 @@ myTopAnatData <- loadTopAnatData(species=10090, datatype=c("rna_seq","affymetrix
 lapply(myTopAnatData, head)
 ```
 
+*Note*: the results are stored in files (see the ```pathToData``` arguments). To save time, if the user queries again with the exact same parameters, these cache files will be read instead of queryng the webservice. So do not delete the files in the working folder if youplan to do additional queries
+
 #### Prepare a topGO object allowing to perform GO-like enrichment test for anatomical terms, for Mus musculus
 
 First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). 
