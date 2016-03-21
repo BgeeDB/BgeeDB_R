@@ -68,13 +68,14 @@ User can retrieve only expressed (present) calls, or mixed (present and absent) 
 The default is RPKMs.}
 }}
 \examples{
-\dontrun{
-bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
-annotation_bgee_mouse <- bgee$get_annotation()
-data_bgee_mouse <- bgee$get_data()
-data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
-gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
-}
+{
+ bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+ annotation_bgee_mouse <- bgee$get_annotation()
+ data_bgee_mouse <- bgee$get_data()
+ data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
+ gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
+ calltype = "expressed", stats = "rpkm")
+ }
 
 
 }

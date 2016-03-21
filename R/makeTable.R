@@ -1,7 +1,8 @@
 ########################
 #' @title Formats results of the enrichment test on anatomical structures.
 #'
-#' @description This function loads the results from the topGO test and creates an output table with organ names, fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
+#' @description This function loads the results from the topGO test and creates an output table with organ names,
+#' fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
 #'
 #' @param topAnatData A list produced by the function loadTopAnatData().
 #'
@@ -9,18 +10,20 @@
 #'
 #' @param results A result object, produced by the runtest() function of topGO.
 #'
-#' @param cutoff An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included. Default is 1, meaning that all terms are included.
+#' @param cutoff An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
+#' Default is 1, meaning that all terms are included.
 #'
 #' @return A data frame with significantly enriched anatomical structures, sorted by p-value.
 #'
 #' @author Julien Roux \email{julien.roux@unil.ch}.
 #'
-#' @examples
-#'   \dontrun{
-#'     ## Launch topGO test on data loaded from Bgee
-#'     resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
-#'     tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
-#'   }
+#' @examples{
+#'  ## Launch topGO test on data loaded from Bgee
+#'  myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", host="http://devbgee.unil.ch/")
+#'  myTopAnatObject <-  topAnat(myTopAnatData, geneList)
+#'  resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
+#'  tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
+#' }
 #' @export
 
 makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){

@@ -25,7 +25,7 @@ This function produces a topAnatObject, ready to use for gene set enrichment tes
 To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), the data are formatted to use the topGO package for testing. This package is interesting because it propagates the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods. Expert users should be able to use information from the topAnatObject to test enrichment with other packages than topGO.
 }
 \examples{
- \dontrun{
+{
   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
   geneList <- c(0,1,0,1,0,1,0,1)
   names(geneList) <- c("gene1","gene3","gene3","gene4","gene5","gene6","gene7","gene8")

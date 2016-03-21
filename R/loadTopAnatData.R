@@ -35,11 +35,21 @@
 #'   \item{"est"}
 #'   \item{"in_situ"}
 #' }
-#' By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. Including a data type that is not present in Bgee for a given species has no effect.
+#' By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}.
+#' Including a data type that is not present in Bgee for a given species has no effect.
 #'
-#' @param calltype A character of indicating the type of expression calls to be used for enrichment. Only calls for significant presence of expression are implemented ("expressed"). Over-expression calls, based on differential expression analysis, will be implemented in the future.
+#' @param calltype A character of indicating the type of expression calls to be used for enrichment.
+#' Only calls for significant presence of expression are implemented ("expressed").
+#' Over-expression calls, based on differential expression analysis, will be implemented in the future.
 #'
-#' @param stage A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage ID is given, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression. This is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology). The most useful stages (going no deeper than level 3 of the ontology) include:
+#' @param stage A character indicating the targeted developmental stages for the analysis.
+#' Developmental stages can be chosen from the developmental stage ontology used in Bgee
+#' (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}).
+#' If a stage ID is given, the expression pattern mapped to this stage and all children
+#' developmental stages (substages) will be retrieved.
+#' Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression.
+#' This is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology).
+#' The most useful stages (going no deeper than level 3 of the ontology) include:
 #' \itemize{
 #'   \item{UBERON:0000068 (embryo stage)}
 #'   \itemize{
@@ -60,9 +70,11 @@
 #'   }
 #' }
 #'
-#' @param confidence A character indicating if only high quality expression calls should be retrieved. Options are "all" or "high_quality". Default is "all".
+#' @param confidence A character indicating if only high quality expression calls should be retrieved.
+#'  Options are "all" or "high_quality". Default is "all".
 #'
-#' @param host URL to Bgee webservice. Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.
+#' @param host URL to Bgee webservice.
+#' Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.
 #'
 #' @param pathToData Path to the directory where the data files are stored / will be stored. Default is the working directory.
 #'
@@ -70,18 +82,19 @@
 #' \itemize{
 #'   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
 #'   \item{A \code{organ.names} data frame, with the name corresonding to UBERON IDs.}
-#'   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
+#'   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures
+#'   in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
 #' }
 #'
 #' @author Julien Roux \email{julien.roux at unil.ch}.
 #'
-#' @examples
-#' \dontrun{
+#' @examples{
 #'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
 #' }
 #' @export
 
-loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed", confidence="all", stage=NULL, host="http://bgee.org", pathToData=getwd()){
+loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed",
+                            confidence="all", stage=NULL, host="http://bgee.org", pathToData=getwd()){
   allSpecies <- c(6239, 7227, 7955, 8364, 9031, 9258, 9544, 9593, 9597, 9598, 9606, 9823, 9913, 10090, 10116, 13616, 28377)
   ## Species is the only compulsory parameter
   if( length(species) == 0 ) {
@@ -120,7 +133,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
-  
+
   ## First query: organ relationships
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", species, ".tsv")
   ## Check if file is already in cache
@@ -135,8 +148,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     download.file(myurl, destfile = paste0(pathToData, organRelationshipsFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
-    ## We cannot use a system call to UNIX command since some user might be on Windows 
-    tmp <- tail(read.table(paste0(pathToData, organRelationshipsFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F, as.is=T), n=5)
+    ## We cannot use a system call to UNIX command since some user might be on Windows
+    tmp <- tail(read.table(paste0(pathToData, organRelationshipsFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
     if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(pathToData, organRelationshipsFileName, ".tmp"), paste0(pathToData, organRelationshipsFileName))
@@ -162,8 +175,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     download.file(myurl, destfile = paste0(pathToData, organNamesFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
-    ## We cannot use a system call to UNIX command since some user might be on Windows 
-    tmp <- tail(read.table(paste0(pathToData, organNamesFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F, as.is=T, quote = ""), n=5)
+    ## We cannot use a system call to UNIX command since some user might be on Windows
+    tmp <- tail(read.table(paste0(pathToData, organNamesFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE, quote = ""), n=5)
     if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(pathToData, organNamesFileName, ".tmp"), paste0(pathToData, organNamesFileName))
@@ -217,8 +230,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     download.file(myurl, destfile = paste0(pathToData, gene2anatomyFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
-    ## We cannot use a system call to UNIX command since some user might be on Windows 
-    tmp <- tail(read.table(paste0(pathToData, gene2anatomyFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F, as.is=T), n=5)
+    ## We cannot use a system call to UNIX command since some user might be on Windows
+    tmp <- tail(read.table(paste0(pathToData, gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
     if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(pathToData, gene2anatomyFileName, ".tmp"), paste0(pathToData, gene2anatomyFileName))
@@ -236,7 +249,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Relationships between organs
   if (file.exists(paste0(pathToData, organRelationshipsFileName))){
     if (file.info(paste0(pathToData, organRelationshipsFileName))$size != 0) {
-      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=T, sep="\t", blank.lines.skip=T, as.is=T)
+      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
       organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
     } else {
       stop(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
@@ -247,7 +260,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Organ names
   if (file.exists(paste0(pathToData, organNamesFileName))){
     if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
-      organNames <- read.table(paste0(pathToData, organNamesFileName), header=T, sep="\t", comment.char="", blank.lines.skip=T, as.is=T, quote = "")
+      organNames <- read.table(paste0(pathToData, organNamesFileName), header=TRUE, sep="\t", comment.char="", blank.lines.skip=TRUE, as.is=TRUE, quote = "")
       names(organNames) <- c("organId", "organName")
     } else {
       stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
@@ -258,7 +271,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Mapping of genes to tissues
   if (file.exists(paste0(pathToData, gene2anatomyFileName))){
     if (file.info(paste0(pathToData, gene2anatomyFileName))$size != 0) {
-      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=T, sep="\t", blank.lines.skip=T, as.is=T)
+      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
       if(length(tab[,1]) != 0){
         gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
       } else {
@@ -278,10 +291,10 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
   ## Add new keys
-  names(organRelationships)[(length(organRelationships)-length(missingParents)+1):length(organRelationships)] = as.character(missingParents)  
+  names(organRelationships)[(length(organRelationships)-length(missingParents)+1):length(organRelationships)] = as.character(missingParents)
   ## Add BGEE:0	/ root to organNames
   organNames <- rbind(organNames, c("BGEE:0", "root"))
-  
+
   cat("\nDone.\n")
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }

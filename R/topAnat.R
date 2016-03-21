@@ -3,7 +3,7 @@
 #'
 #' @description This function produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package. This object uses the Uberon ontology instead of the GO ontology.
 #'
-#' @details To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), the data are formatted to use the topGO package for testing. This package is interesting because it propagates the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods. Expert users should be able to use information from the topAnatObject to test enrichment with other packages than topGO. 
+#' @details To perform the enrichment test for expression in anatomical structures for each term of Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}), the data are formatted to use the topGO package for testing. This package is interesting because it propagates the mapping of gene to terms to parent terms, and it possesses a pannel of enrichment tests and decorrelation methods. Expert users should be able to use information from the topAnatObject to test enrichment with other packages than topGO.
 #'
 #' @param topAnatData a list including a gene2anatomy list, an organ.relationships list and an organ.names data.frame, produced by the function loadTopAnatData().
 #'
@@ -17,8 +17,7 @@
 #'
 #' @author Julien Roux \email{julien.roux@unil.ch}.
 #'
-#' @examples
-#'  \dontrun{
+#' @examples{
 #'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
 #'   geneList <- c(0,1,0,1,0,1,0,1)
 #'   names(geneList) <- c("gene1","gene3","gene3","gene4","gene5","gene6","gene7","gene8")
@@ -41,7 +40,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   if( length(topAnatData$organ.names[,1]) == 0 ) {
     stop("Problem: the organ.names data frame of your topAnatData object is empty.")
   }
-  
+
   ## Test if gene list is fine
   cat("\nChecking gene list..................\n")
   if (!is.factor(geneList)){
@@ -98,7 +97,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
 .buildGraph.topology <- function(knownNodes, parentMapping) {
   ## first build the lookUp table for the terms
-  nodeLookUp <- new.env(hash = T, parent = emptyenv())
+  nodeLookUp <- new.env(hash = TRUE, parent = emptyenv())
 
   ## warping functions for a easier acces to the lookUp table
   isNodeInDAG <- function(node) {
@@ -117,7 +116,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
   ## we use an environment of environments to store edges: (this way is faster)
   ## in the end we will coerce it to a list of list and build a graphNEL obj.
-  edgeEnv <- new.env(hash = T, parent = emptyenv())
+  edgeEnv <- new.env(hash = TRUE, parent = emptyenv())
 
   ## add the arc (u --> v) to edgeEnv of type :
   envAddEdge <- function(u, v) {
@@ -132,7 +131,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
     ## we put the node in the graph and we get his parents
     setNodeInDAG(node)    # we visit the node
-    assign(node, new.env(hash = T, parent = emptyenv()), envir = edgeEnv) # adj list
+    assign(node, new.env(hash = TRUE, parent = emptyenv()), envir = edgeEnv) # adj list
 
     if(node == GENE.ONTO.ROOT)
       return(2)
@@ -186,16 +185,17 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
                                 ## additional parameters
                                 ...) {
 
-  ## code from new()
-  ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
-  ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")  ## with R > 2.3.1, PACKAGE = "base" doesn't seem to work
-  ## .Object <- .Call("R_do_new_object", ClassDef) ## works if code is sourced, but if part of package function, there is a namespace conflict
-  ## .Object <- base:::.Call("R_do_new_object", ClassDef) ## doesn't work
-  ## .Object <- .Call(base:::"R_do_new_object", ClassDef) ## doesn't work
+## code from new()
+ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
+## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")  ## with R > 2.3.1,
+##  PACKAGE = "base" doesn't seem to work
+## .Object <- .Call("R_do_new_object", ClassDef) ## works if code is sourced,
+##  but if part of package function, there is a namespace conflict
+## .Object <- base:::.Call("R_do_new_object", ClassDef) ## doesn't work
+## .Object <- .Call(base:::"R_do_new_object", ClassDef) ## doesn't work
 
-  ## In fact we should not invoke the base package! See this thread:
-  ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-functionName-quot-not-resolved-from-current-namespace-td4663892.html
-  ## getNativeSymbolInfo("R_do_new_object")
+
+## getNativeSymbolInfo("R_do_new_object")
   .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "SparseM")
 
   ## some checking

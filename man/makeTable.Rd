@@ -13,20 +13,24 @@ makeTable(topAnatData, topAnatObject, results, cutoff = 1)
 
 \item{results}{A result object, produced by the runtest() function of topGO.}
 
-\item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included. Default is 1, meaning that all terms are included.}
+\item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
+Default is 1, meaning that all terms are included.}
 }
 \value{
 A data frame with significantly enriched anatomical structures, sorted by p-value.
 }
 \description{
-This function loads the results from the topGO test and creates an output table with organ names, fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
+This function loads the results from the topGO test and creates an output table with organ names,
+fold enrichment and FDR. Data are sorted by p-value and only terms below the specified FDR cutoff are included.
 }
 \examples{
-  \dontrun{
-    ## Launch topGO test on data loaded from Bgee
-    resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
-    tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
-  }
+{
+ ## Launch topGO test on data loaded from Bgee
+ myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", host="http://devbgee.unil.ch/")
+ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
+ resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
+ tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
+}
 }
 \author{
 Julien Roux \email{julien.roux@unil.ch}.

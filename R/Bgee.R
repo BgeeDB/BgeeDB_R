@@ -69,14 +69,14 @@
 #'
 #' @author Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
 #'
-#' @examples
-#' \dontrun{
-#' bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
-#' annotation_bgee_mouse <- bgee$get_annotation()
-#' data_bgee_mouse <- bgee$get_data()
-#' data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
-#' gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
-#' }
+#' @examples{
+#'  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+#'  annotation_bgee_mouse <- bgee$get_annotation()
+#'  data_bgee_mouse <- bgee$get_data()
+#'  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
+#'  gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
+#'  calltype = "expressed", stats = "rpkm")
+#'  }
 #'
 #'
 #' @import methods
@@ -104,13 +104,10 @@ Bgee <- setRefClass("Bgee",
           callSuper(...)
 
           if(length(species)==0) {
-            cat("WARNING: You didn't specify species. Setting to Homo sapiens.\n")
-            species <<- "Homo_sapiens"
+            cat("WARNING: You didn't specify species.\n")
           }
           if(length(datatype)==0) {
-            cat("WARNING: You didn't specify a data type. Choose 'affymetrix' or 'rna_seq'. Setting to RNAseq for now.\n")
-            datatype <<- "rna_seq"
-
+            cat("WARNING: You didn't specify a data type. Choose 'affymetrix' or 'rna_seq'.\n")
           }},
 
           get_annotation = function(...){
