@@ -25,7 +25,7 @@
 
 makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
   ## Perform some checks on the input data
-  if(is.na(score(results)) | length(score(results)) == 0){
+  if(is.na(score(results)) || length(score(results)) == 0){
     stop("Problem: the results object is empty.")
   }
   if (!is.numeric(cutoff)){
