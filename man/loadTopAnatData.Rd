@@ -45,7 +45,7 @@ By default all data type are included: \code{c("rna_seq","affymetrix","est","in_
 
 \item{stage}{A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage ID is given, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the stage of expression. This is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology). The most useful stages (going no deeper than level 3 of the ontology) include:
 \itemize{
-  \item{UBERON:0000068 (embryo stage)} 
+  \item{UBERON:0000068 (embryo stage)}
   \itemize{
     \item{UBERON:0000106 (zygote stage)}
     \item{UBERON:0000107 (cleavage stage)}

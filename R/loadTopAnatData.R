@@ -136,8 +136,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
     ## We cannot use a system call to UNIX command since some user might be on Windows 
-    tmp <- tail(read.table(paste0(pathToData, organRelationshipsFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F), n=5)
-    if (length(tmp[,1]) == 5 && sum(tmp[,1] == "") == 5){
+    tmp <- tail(read.table(paste0(pathToData, organRelationshipsFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F, as.is=T), n=5)
+    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(pathToData, organRelationshipsFileName, ".tmp"), paste0(pathToData, organRelationshipsFileName))
     } else {
@@ -163,8 +163,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
     ## We cannot use a system call to UNIX command since some user might be on Windows 
-    tmp <- tail(read.table(paste0(pathToData, organNamesFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F), n=5)
-    if (length(tmp[,1]) == 5 && sum(tmp[,1] == "") == 5){
+    tmp <- tail(read.table(paste0(pathToData, organNamesFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F, as.is=T, quote = ""), n=5)
+    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(pathToData, organNamesFileName, ".tmp"), paste0(pathToData, organNamesFileName))
     } else {
@@ -218,7 +218,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
     ## We cannot use a system call to UNIX command since some user might be on Windows 
-    tmp <- tail(read.table(paste0(pathToData, gene2anatomyFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F), n=5)
+    tmp <- tail(read.table(paste0(pathToData, gene2anatomyFileName, ".tmp"), header=T, sep="\t", comment.char="", blank.lines.skip=F, as.is=T), n=5)
     if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
       ## The file transfer was successful, we rename the temporary file
       file.rename(paste0(pathToData, gene2anatomyFileName, ".tmp"), paste0(pathToData, gene2anatomyFileName))
@@ -236,7 +236,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Relationships between organs
   if (file.exists(paste0(pathToData, organRelationshipsFileName))){
     if (file.info(paste0(pathToData, organRelationshipsFileName))$size != 0) {
-      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=T, sep="\t", blank.lines.skip=T)
+      tab <- read.table(paste0(pathToData, organRelationshipsFileName), header=T, sep="\t", blank.lines.skip=T, as.is=T)
       organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
     } else {
       stop(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
@@ -247,7 +247,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Organ names
   if (file.exists(paste0(pathToData, organNamesFileName))){
     if (file.info(paste0(pathToData, organNamesFileName))$size != 0) {
-      organNames <- read.table(paste0(pathToData, organNamesFileName), header=T, sep="\t", comment.char="", blank.lines.skip=T)
+      organNames <- read.table(paste0(pathToData, organNamesFileName), header=T, sep="\t", comment.char="", blank.lines.skip=T, as.is=T, quote = "")
       names(organNames) <- c("organId", "organName")
     } else {
       stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
@@ -258,7 +258,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   ## Mapping of genes to tissues
   if (file.exists(paste0(pathToData, gene2anatomyFileName))){
     if (file.info(paste0(pathToData, gene2anatomyFileName))$size != 0) {
-      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=T, sep="\t", blank.lines.skip=T)
+      tab <- read.table(paste0(pathToData, gene2anatomyFileName), header=T, sep="\t", blank.lines.skip=T, as.is=T)
       if(length(tab[,1]) != 0){
         gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
       } else {
@@ -271,18 +271,17 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     stop(paste0("File ", gene2anatomyFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
 
-  cat("\nAdding BGEE:0, the unique root of all terms of the ontology.......\n")
+  cat("\nAdding BGEE:0 as unique root of all terms of the ontology.........\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
-
-  ## TO DO:
-  ##   - for all organs in organ.names, check how many are not in source column of organs.relationship
-  ##     organNames[!organNames[,1] %in% names(organRelationships), 1]
-  ##   - add rows in organs.relationship to have them be source of target "BGEE:0"
-	##     (source = child / target = parent)
-  ##     (name of list = child / values = parents) 
-  ##     Add new names in list, wiht value = BGEE:0
-
+  ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
+  missingParents <- organNames[!organNames[,1] %in% names(organRelationships), 1]
+  ## Add new values
+  organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
+  ## Add new keys
+  names(organRelationships)[(length(organRelationships)-length(missingParents)+1):length(organRelationships)] = as.character(missingParents)  
+  ## Add BGEE:0	/ root to organNames
+  organNames <- rbind(organNames, c("BGEE:0", "root"))
+  
   cat("\nDone.\n")
-
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
 }
