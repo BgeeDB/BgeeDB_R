@@ -2,7 +2,7 @@
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures.
  
-The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat webservive available at (<http://bgee.org/?page=top_anat#/>), and is based on the ```topGO``` package.
+The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), and is based on the ```topGO``` package.
 
 This package allows: 
 * 1. Listing annotation files gene of expression data available in the current version of Bgee database
@@ -95,11 +95,9 @@ The data from different samples will be listed in rows, one after the other. It 
 
 ```{r}
 # only present calls and rpkm values
-gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, "present", "rpkm")
-# only present calls and raw counts
-gene.expression.mouse.counts <- bgee$format_data(data_bgee_mouse_gse30617, "present", "counts")
-# all calls and raw counts
-gene.expression.mouse.all.counts <- bgee$format_data(data_bgee_mouse_gse30617, "all", "counts")
+gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "expressed", stats = "rpkm")
+names(gene.expression.mouse.rpkm)
+head(gene.expression.mouse.rpkm$"Ammon's horn")
 ```
 
 #### Download the data allowing to perform GO-like enrichment test for anatomical terms
@@ -107,13 +105,10 @@ gene.expression.mouse.all.counts <- bgee$format_data(data_bgee_mouse_gse30617, "
 The ```loadTopAnatData()``` function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures.
 
 ```{r}
-myTopAnatData <- loadTopAnatData(species=10090, datatype=c("rna_seq","affymetrix","est","in_situ"))
 # Loading calls of expression based on RNA-seq data only
-myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq")
-# Loading high-quality calls only
-myTopAnatData <- loadTopAnatData(species=10090, datatype=c("rna_seq","affymetrix","est","in_situ"), confidence="high")
+myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", host="http://devbgee.unil.ch/")
 # Loading calls observed in embryonic stages only
-myTopAnatData <- loadTopAnatData(species=10090, datatype=c("rna_seq","affymetrix","est","in_situ"), stage="UBERON:0000068")
+myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERON:0000068", host="http://devbgee.unil.ch/")
 
 # Look at the data
 lapply(myTopAnatData, head)
