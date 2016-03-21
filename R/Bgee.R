@@ -196,17 +196,17 @@ Bgee <- setRefClass("Bgee",
 
             },
 
-            format_data = function(data, calltype = "expressed", stats = "rpkm") {
+            format_data = function(data, calltype = NULL, stats = NULL) {
 
                   ## warning messages
-                  if(!(calltypes %in% c("expressed", "all"))) stop("Choose between only expressed(present) calls or all (present and absent).")
-                  if(!(stats %in% c('rpkm', 'counts', 'tpm'))) stop("Choose between RPKM, counts or TPM, e.g. 'rpkm', 'counts', 'tpm' ")
+                  if(!(calltype %in% c("expressed", "all"))) stop("Choose between only expressed(present) calls or all (present and absent).")
+                  if(!(stats %in% c('rpkm', 'counts'))) stop("Choose between RPKM, counts or TPM, e.g. 'rpkm', 'counts', 'tpm' ")
 
 
 
                   l <- split(data, f = data$"Anatomical entity name")
                   cat("Selecting ", calltype, " calls.\n")
-                  if(calls == "expressed") lt <- lapply(l, function(x) x[which(x$"Detection flag" == "present"),]) else lt <- l
+                  if(calltype == "expressed") lt <- lapply(l, function(x) x[which(x$"Detection flag" == "present"),]) else lt <- l
 
                   cat("Selecting ", stats, " values.\n")
                   cat("Transforming the data.\n")

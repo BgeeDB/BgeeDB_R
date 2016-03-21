@@ -18,6 +18,7 @@ Imports:
     methods
 License: MIT
 VignetteBuilder: knitr
+biocViews: Software, DataImport, Annotation
 Suggests:
     knitr,
     BiocStyle,
