@@ -11,7 +11,7 @@ vignette: >
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures.
  
-The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat webservive available at (<http://bgee.org/?page=top_anat#/>), and is based on the ```topGO``` package.
+The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), and is based on the ```topGO``` package.
 
 This package allows: 
 1. Listing annotation files gene of expression data available in the current version of Bgee database
