@@ -1,0 +1,7 @@
+CHANGES IN VERSION 0.0.1
+=========================
+
+    o Added topAnat script.
+      This function produces a topAnatObject,
+      ready to use for gene set enrichment testing
+      using functions from the topGO package
