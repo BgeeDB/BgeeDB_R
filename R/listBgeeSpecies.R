@@ -22,15 +22,18 @@
 listBgeeSpecies <- function(...){
 	url_rnaseq <-  "ftp://ftp.bgee.org/current/download/processed_expr_values/rna_seq/"
 	url_affymetrix <-  "ftp://ftp.bgee.org/current/download/processed_expr_values/affymetrix/"
-	cat("Last update:" , .listDirectories(url_rnaseq, version = TRUE), "\n")
-	return(list(rna_seq = .listDirectories(url_rnaseq), affymetrix = .listDirectories(url_affymetrix)))
+
+  species.taxid <- c(9606, 10090, 7955, 7227, 6239, 9598, 9597, 9593, 9544, 10116, 9913, 9823, 13616, 9258, 9031, 28377, 8364, 9600, 99883)
+  genus.name <- c("Homo", "Mus", "Danio", "Drosophila", "Caenorhabditis", "Pan", "Pan", "Gorilla", "Macaca", "Rattus", "Bos", "Sus", "Monodelphis", "Ornithorhynchus", "Gallus", "Anolis", "Xenopus", "Pongo", "Tetraodon")
+  species.name <- c("sapiens", "musculus", "rerio", "melanogaster", "elegans", "troglodytes", "paniscus", "gorilla", "mulatta", "norvegicus", "taurus", "scrofa", "domestica", "anatinus", "gallus", "carolinensis", "tropicalis", "pygmaeus", "nigroviridis")
+  common.name <- c("human", "mouse", "zebrafish", "fruitfly", "c.elegans", "chimpanzee", "bonobo", "gorilla", "macacque", "rat", "cow", "pig", "opossum", "platypus", "chicken", "anolis", "xenopus", "orangutan", "tetraodon")
+
+  df.species.db <- data.frame(ID = species.taxid, GENUS = genus.name, SPECIES = species.name, COMMON = common.name)
+
+  cat("Last update:" , .listDirectories(url_rnaseq, version = TRUE), "\n")
+	return(list("Species in the Database"= df.species.db, RNAseq = .listDirectories(url_rnaseq), Affymetrix = .listDirectories(url_affymetrix)))
 
 }
 
-################################
-## list species
-## http://devbgee.unil.ch/?page=dao&action=org.bgee.model.dao.api.species.SpeciesDAO.getAllSpecies&display_type=tsv&attr_list=id&attr_list=genus&attr_list=species_name&attr_list=common_name
-## TO DO: this should be the basis of the listBgeeSpecies function (cleaner, more maintenable, etc)
-## TO DO: should output data type too
-################################
+
 

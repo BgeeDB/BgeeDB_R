@@ -5,36 +5,49 @@
 \alias{Bgee}
 \alias{Bgee-class}
 \title{Retrieving the Bgee database data}
+\value{
+\itemize{
+ \item{A \code{get_annotation()} list, lists the annotation of experiments for chosen species.}
+ \item{A \code{get_data()}, if empty returns a list of experiments, if chosen experiment ID, then returns the dataframe of the chosen experiment; for chosen species}
+ \item{A \code{format_data()}, transforms the data into matrix of expression values, e.g. RPKMs or raw counts}}
+}
 \description{
 A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
+}
+\details{
+The expression calls come from Bgee (http://bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
+This Class retrieves annotation of all experiments in Bgee database (get_annotation), downloading the data (get_data), and formating the data into expression matrix (format_data). See examples and vignette.
 }
 \section{Fields}{
 
 \describe{
-\item{\code{species}}{A character of species name as listed from Bgee.
-Options are:
-         "Anolis_carolinensis",
-         "Bos_taurus",
-         "Caenorhabditis_elegans",
-         "Danio_rerio",
-         "Drosophila_melanogaster",
-         "Gallus_gallus",
-         "Gorilla_gorilla",
-         "Homo_sapiens",
-         "Macaca_mulatta",
-         "Monodelphis_domestica",
-         "Mus_musculus",
-         "Ornithorhynchus_anatinus",
-         "Pan_paniscus",
-         "Pan_troglodytes",
-         "Rattus_norvegicus",
-         "Sus_scrofa",
-         "Xenopus_tropicalis"}
+\item{\code{species}}{A character of species name as listed from Bgee. The species are:
+\itemize{
+   \item{"Anolis_carolinensis"}
+   \item{"Bos_taurus"}
+   \item{"Caenorhabditis_elegans"}
+   \item{"Danio_rerio"}
+   \item{"Drosophila_melanogaster"}
+   \item{"Gallus_gallus"}
+   \item{"Gorilla_gorilla"}
+   \item{"Homo_sapiens"}
+   \item{"Macaca_mulatta"}
+   \item{"Monodelphis_domestica"}
+   \item{"Mus_musculus"}
+   \item{"Ornithorhynchus_anatinus"}
+   \item{"Pan_paniscus"}
+   \item{"Pan_troglodytes"}
+   \item{"Rattus_norvegicus"}
+   \item{"Sus_scrofa"}
+   \item{"Xenopus_tropicalis"}}
 
-\item{\code{datatype}}{A character of data platform.
-Options are:
-         "rna_seq",
-         "affymetrix"}
+Homo sapiens is default species.}
+
+\item{\code{datatype}}{A character of data platform. Two types of datasets can be downloaded:
+\itemize{
+     \item{"rna_seq"}
+     \item{"affymetrix"}}
+By default, RNA-seq data is retrieved from database.}
 
 \item{\code{experiment.id}}{A character.
 On default is NULL: takes all available data for that species.
@@ -42,11 +55,17 @@ If GSE[0-9]+: takes specified experiment, eg. GSE30617.}
 
 \item{\code{data}}{A dataframe of downloaded Bgee data.}
 
-\item{\code{calls}}{A character.
-Options are: "present" or "absent"}
+\item{\code{calltype}}{A character. There exist two types of expression calls in Bgee - present and absent.
+ \itemize{
+   \item{"expressed"}
+   \item{"all"}}
+User can retrieve only expressed (present) calls, or mixed (present and absent) calls. The default is expressed (present) calltype.}
 
-\item{\code{stats}}{A character.
-Options are: "rpkm" , "counts", "tpm"}
+\item{\code{stats}}{A character. The expression values can be retrieved in RPKMs and raw counts:
+ \itemize{
+   \item{"rpkm"}
+   \item{"counts"}}
+The default is RPKMs.}
 }}
 \examples{
 \dontrun{
@@ -54,6 +73,7 @@ bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
 annotation_bgee_mouse <- bgee$get_annotation()
 data_bgee_mouse <- bgee$get_data()
 data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
+gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
 }
 
 
