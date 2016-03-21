@@ -16,7 +16,7 @@ Imports:
     data.table,
     RCurl,
     methods
-License: MIT
+License: GPL-2
 VignetteBuilder: knitr
 biocViews: Software, DataImport, Annotation
 Suggests:

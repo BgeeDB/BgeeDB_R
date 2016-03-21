@@ -22,6 +22,16 @@ citEntry(entry="article",
          issue = "5109",
          pages= "124-31",
          textVersion =
-           paste("Bastian F, Parmentier G, Roux J, et al. (2008):",
+           paste("Bastian F, Parmentier G, Roux J, et al. (2008).",
                  "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species.",
-                 "Data Integration Life Sci", "5109", "124-31" ) )
+                 "Data Integration Life Sci. Lecture Notes in Computer Science", "5109", "124-31" ) )
+
+citEntry(entry = "manual",
+    title = "topGO: topGO: Enrichment analysis for Gene Ontology",
+    author = "Adrian Alexa and Jorg Rahnenfuhrer",
+    year = "2010",
+    note = "R package version 2.22.0",
+     textVersion =
+        paste("Alexa A, Rahnenfuhrer J (2010).",
+              "topGO: topGO: Enrichment analysis for Gene Ontology",
+              "R package version 2.22.0"))
