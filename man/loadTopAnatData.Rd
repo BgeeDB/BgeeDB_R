@@ -28,7 +28,8 @@ loadTopAnatData(species, datatype = c("rna_seq", "affymetrix", "est",
   \item{10116 (Rattus norvegicus)}
   \item{13616 (Monodelphis domestica)}
   \item{28377 (Anolis carolinensis)}
-}}
+}
+See the listBgeeSpecies() function to get an up-to-date list of species.}
 
 \item{datatype}{A vector of characters indicating data type(s) to be used. To be chosen among:
 \itemize{

@@ -19,10 +19,13 @@
 #'
 #' @examples{
 #'  ## Launch topGO test on data loaded from Bgee
-#'  myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", host="http://devbgee.unil.ch/")
-#'  myTopAnatObject <-  topAnat(myTopAnatData, geneList)
-#'  resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
-#'  tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
+#'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+#'   geneList <- c(0,1,0,1,0,1,0,1)
+#'   names(geneList) <- c("gene1","gene3","gene3","gene4","gene5","gene6","gene7","gene8")
+#'   myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=0
+#'   resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
+#'  ## Format results
+#'   tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 #' }
 #' @export
 

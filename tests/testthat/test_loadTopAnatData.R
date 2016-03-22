@@ -6,7 +6,7 @@ test_that("Loading of topAnatData files is working", {
 
   expect_that( myTopAnatData, is_a("list") )
   expect_that( length(myTopAnatData), equals(3) )
-  expect_that( myTopAnatData$gene2anatomy, is_a("list") )
+  expect_that( myTopAnatData$gene2anatomy, is_a("array") )
   expect_that( myTopAnatData$organ.relationships, is_a("list") )
   expect_that( myTopAnatData$organ.names, is_a("data.frame") )
 

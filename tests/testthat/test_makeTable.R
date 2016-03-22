@@ -1,7 +1,7 @@
 context("expect_output")
 
 
-test_that("Creating the topAnat object is working", {
+test_that("Creating the result table is working", {
   myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERON:0000068")
   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367", 
