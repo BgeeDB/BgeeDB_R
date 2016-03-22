@@ -114,7 +114,7 @@ myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERO
 lapply(myTopAnatData, head)
 ```
 
-*Note*: the results are stored in files (see the ```pathToData``` arguments). To save time, if the user queries again with the exact same parameters, these cache files will be read instead of queryng the webservice. So do not delete the files in the working folder if youplan to do additional queries
+*Note*: the results are stored in files (see the ```pathToData``` arguments). To save time, if the user queries again with the exact same parameters, these cache files will be read instead of querying the web-service. So do not delete the files in the working folder if you plan to do additional queries.
 
 #### Prepare a topGO object allowing to perform GO-like enrichment test for anatomical terms, for Mus musculus
 
@@ -147,7 +147,8 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 
 #### Launch an enrichment test for anatomical terms
 
-This part is not dependent on the ```BgeeDB``` package, and you can readily use the ```topGO``` package and all its functionalities for this step. See the vignette of the ```topGO``` package for more details. For example:
+For this step, you can directly use the tests implemented in the ```topGO package```. See the vignette of the ```topGO package``` for more details. For example:
+
 ```{r}
 results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 # You can also use the topGO decorrelation methods, for example the "weight" method to get less redundant results
