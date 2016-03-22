@@ -79,7 +79,7 @@ data_bgee_mouse <- bgee$get_data()
 # the number of experiments downloaded from Bgee
 length(data_bgee_mouse)
 # check the data
-sapply(data_bgee_mouse, head)
+lapply(data_bgee_mouse, head)
 # see your first experiment
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
