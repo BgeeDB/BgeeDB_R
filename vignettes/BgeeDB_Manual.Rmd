@@ -59,11 +59,6 @@ lapply(annotation_bgee_mouse, head)
 
 The ```bgee$get_data()``` will download read counts and RPKMs for Mus musculus from all available experiments in Bgee database as a list (see below). In case of downloaded data from all experiments for Mus musculus, ```bgee$get_data()``` will save the downloaded data in your current folder for later usage. 
 
-``` {r}
-# the path where your data will be saved. 
-getwd()
-```
-
 ```{r}
 # download all RPKMs and counts for Mus musculus
 data_bgee_mouse <- bgee$get_data()
