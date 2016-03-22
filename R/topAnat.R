@@ -60,6 +60,10 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     cat("Warning: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
   }
 
+  if (nodeSize == 0){
+    stop("Problem: the node size parameter has to be at least 1.")
+  }
+  
   ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
   topAnatObject <- .makeTopAnatDataObject(
                                           parentMapping = topAnatData$organ.relationships,
