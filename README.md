@@ -1,13 +1,13 @@
 # BgeeDB: an R package for datasets retrieval from Bgee database
 
-```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures.
+```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from humans and many animals.
  
-The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. Currently, Bgee database includes gene expression data from 17 species. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This gives similar results as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), and is based on the ```topGO``` package.
+The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the data reprocessed by the Bgee pipeline. It works for all the species in Bgee. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns. This is the same as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), but with more flexibility in the choice of parameters and developmental stages, and is based on the ```topGO``` package.
 
 This package allows: 
 * 1. Listing annotation files gene of expression data available in the current version of Bgee database
 * 2. Downloading the processed gene expression data available in the current version of Bgee database
-* 3. Downloading the gene expression calls and annotations allowing to perform TopAnat analysis 
+* 3. Downloading the gene expression calls and annotations and using them to perform TopAnat analyses 
 
 ## Installation
 
@@ -84,14 +84,14 @@ lapply(data_bgee_mouse, head)
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
 
-Alternatively, you can choose to download only one experiment from Bgee, as in the example below. The data is then saved in .tsv file in your current folder.
+Alternatively, you can choose to download only one experiment from Bgee, as in the example below. The data is then saved as a .tsv file in your current folder.
 
 ``` {r}
 # download RPKMs and counts only for GSE30617 for Mus musculus
 data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 ```
 
-The data from different samples will be listed in rows, one after the other. It is sometimes easier to work with data organized as a matrix, where different columns represent different samples. To transform the data into a matrix with genes in rows and samples in columns, you can use the ```bgee$format_data()``` function. This function also allows to filter out genes that are not called present in a given sample (gives NA values).
+The data from different samples will be listed in rows, one after the other. It is sometimes easier to work with data organized as a matrix, where different columns represent different samples. To transform the data into a matrix with genes in rows and samples in columns, you can use the ```bgee$format_data()``` function. This function also allows to filter out genes that are not called present in a given sample (giving them NA values).
 
 ```{r}
 # only present calls and rpkm values
@@ -100,7 +100,7 @@ names(gene.expression.mouse.rpkm)
 head(gene.expression.mouse.rpkm$"Ammon's horn")
 ```
 
-#### Download the data allowing to perform GO-like enrichment test for anatomical terms
+#### Download the data to perform GO-like enrichment test for anatomical terms
 
 The ```loadTopAnatData()``` function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures.
 
@@ -114,7 +114,7 @@ myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERO
 lapply(myTopAnatData, head)
 ```
 
-*Note*: the results are stored in files (see the ```pathToData``` arguments). To save time, if the user queries again with the exact same parameters, these cache files will be read instead of querying the web-service. So do not delete the files in the working folder if you plan to do additional queries.
+*Note*: the results are stored in files (see the ```pathToData``` arguments). To save time, if you query again with the exact same parameters, these cache files will be read instead of querying the web-service. So do not delete the files in the working folder if you plan to perform additional queries.
 
 #### Prepare a topGO object allowing to perform GO-like enrichment test for anatomical terms, for Mus musculus
 
@@ -147,7 +147,7 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 
 #### Launch an enrichment test for anatomical terms
 
-For this step, you can directly use the tests implemented in the ```topGO package```. See the vignette of the ```topGO package``` for more details. For example:
+For this step, see the vignette of the ```topGO``` package for more details, as you have to directly use the tests implemented in the ```topGO``` package, as shown in this example:
 
 ```{r}
 results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
@@ -168,5 +168,5 @@ tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, 0.01)
 tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, 1)
 ```
 
-*Warning*: it is debated if FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
+*Warning*: it is debated whether FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
 
