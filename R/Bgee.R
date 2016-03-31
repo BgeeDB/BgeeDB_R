@@ -115,7 +115,6 @@ Bgee <- setRefClass("Bgee",
             myurl <- sprintf(gdsurl,datatype,species)
             # first file is the annotation
             fnames <- try(.listDirectories(myurl),silent=TRUE)
-            getwd()
             dir.create(file.path(getwd(), species))
             setwd(file.path(getwd(), species))
             distdir <- getwd()
@@ -129,6 +128,7 @@ Bgee <- setRefClass("Bgee",
             print(temp)
             myanno <- lapply(temp, function(x) as.data.frame(fread(x)))
             names(myanno) <- c("experiment_annotation", "sample_annotation")
+            file.remove(dir(path=distdir,  pattern="*.zip"))
             return(myanno)
           },
 

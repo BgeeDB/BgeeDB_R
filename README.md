@@ -30,8 +30,12 @@ In the terminal:
 In R:
 ``` {r}
 # install the package
-install.packages("./BgeeDB", repos = NULL, type="source")
-library("BgeeDB")
+# install.packages("./BgeeDB", repos = NULL, type="source")
+# library("BgeeDB")
+
+source("https://bioconductor.org/biocLite.R")
+biocLite("BgeeDB")
+
 ```
 
 ## How to use BgeeDB package

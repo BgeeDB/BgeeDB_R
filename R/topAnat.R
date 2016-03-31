@@ -57,7 +57,7 @@
 #'   myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=1)
 #' }
 #'
-#' @import topGO
+#' @import topGO graph
 #' @export
 
 topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
@@ -221,7 +221,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
                                 gene2Nodes,
                                 ## additional parameters
                                 ...) {
-  
+
   ## code from new()
   ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
   ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")  ## with R > 2.3.1,
@@ -230,13 +230,13 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ##  but if part of package function, there is a namespace conflict
   ## .Object <- base:::.Call("R_do_new_object", ClassDef) ## doesn't work
   ## .Object <- .Call(base:::"R_do_new_object", ClassDef) ## doesn't work
-  
+
   ## In fact we should not invoke the base package. See this thread:
   ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-
   ##        functionName-quot-not-resolved-from-current-namespace-td4663892.html
   ## 'PACKAGE' is meant to name the DLL rather than the R package...
   packageName <- getNativeSymbolInfo("R_do_new_object")$package[['name']]
-  .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)       
+  .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)
 
   ## some checking
   if(is.null(names(allGenes)))

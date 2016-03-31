@@ -60,6 +60,7 @@
 #'  ## Format results
 #'   tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 #' }
+#' @import stats
 #' @export
 
 makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
@@ -70,7 +71,7 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
   if (!is.numeric(cutoff)){
     cutoff <- as.numeric(cutoff)
   }
-  if(is.null(myTopAnatObject)){
+  if(is.null(topAnatObject)){
     stop("Problem: the topAnatObject is empty.")
   }
   if( length(topAnatData$organ.names[,1]) == 0 ) {

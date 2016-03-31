@@ -20,7 +20,7 @@
 #' }
 #'
 #' @author Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
-#' @import data.table RCurl
+#' @import data.table RCurl utils
 #' @export
 
 listBgeeSpecies <- function(...){

@@ -102,6 +102,7 @@ Anatomical structures are identified using IDs from the Uberon ontology (browsab
 {
   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
 }
+
 }
 \author{
 Julien Roux \email{julien.roux at unil.ch}.

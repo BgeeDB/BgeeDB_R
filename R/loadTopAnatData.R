@@ -92,6 +92,8 @@
 #' @examples{
 #'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
 #' }
+#'
+#' @import utils
 #' @export
 
 loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed",
@@ -136,7 +138,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   options(internet.info=2)
   ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
   options(timeout = 600)
-  
+
   ## First query: organ relationships
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", species, ".tsv")
   ## Check if file is already in cache
