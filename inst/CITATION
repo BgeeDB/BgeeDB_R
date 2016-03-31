@@ -11,7 +11,7 @@ citEntry(entry = "manual",
     url = "http://github.com/wirawara/BgeeDB",
     textVersion  = paste("Komljenovic A, Roux J (2016).",
         "BgeeDB: an R package for annotation and gene expression data retrieval from Bgee database.",
-        "version 0.99.0")
+        "version 0.99.2")
 )
 
 citEntry(entry="article",
