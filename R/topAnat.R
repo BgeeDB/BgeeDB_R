@@ -41,7 +41,7 @@
 #'                     "ENSMUSG00000038537", "ENSMUSG00000078716", "ENSMUSG00000096820",
 #'                     "ENSMUSG00000075089", "ENSMUSG00000049971", "ENSMUSG00000014303",
 #'                     "ENSMUSG00000056054", "ENSMUSG00000033082", "ENSMUSG00000020801",
-#'                    "ENSMUSG00000030590", "ENSMUSG00000026188", "ENSMUSG00000014301",
+#'                     "ENSMUSG00000030590", "ENSMUSG00000026188", "ENSMUSG00000014301",
 #'                     "ENSMUSG00000073491", "ENSMUSG00000014529", "ENSMUSG00000036960",
 #'                     "ENSMUSG00000058748", "ENSMUSG00000047388", "ENSMUSG00000002204",
 #'                     "ENSMUSG00000034285", "ENSMUSG00000109129", "ENSMUSG00000035275",
@@ -224,20 +224,25 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
   ## code from new()
   ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
-  ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")  ## with R > 2.3.1,
-  ##  PACKAGE = "base" doesn't seem to work
-  ## .Object <- .Call("R_do_new_object", ClassDef) ## works if code is sourced,
-  ##  but if part of package function, there is a namespace conflict
-  ## .Object <- base:::.Call("R_do_new_object", ClassDef) ## doesn't work
-  ## .Object <- .Call(base:::"R_do_new_object", ClassDef) ## doesn't work
 
-  ## In fact we should not invoke the base package. See this thread:
-  ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-
-  ##        functionName-quot-not-resolved-from-current-namespace-td4663892.html
-  ## 'PACKAGE' is meant to name the DLL rather than the R package...
-  packageName <- getNativeSymbolInfo("R_do_new_object")$package[['name']]
-  .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)
-
+  ## On Windows, the symbol has a different name:
+  if (Sys.info()['sysname'] == "Windows"){
+    packageName <- getNativeSymbolInfo("new_object")$package[['name']]
+    .Object <- .Call("new_object", ClassDef, PACKAGE=packageName)
+  } else {
+    ## Mac or Linux:
+    ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")
+    ## ## With R > 2.3.1, PACKAGE = "base" doesn't seem to work
+    ## .Object <- .Call("R_do_new_object", ClassDef)
+    ## ## Works if code is sourced, but there is a namespace conflict.
+    ## ## In fact we should not invoke the base package. See this thread:
+    ## ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-
+    ## ##        functionName-quot-not-resolved-from-current-namespace-td4663892.html
+    ## ## 'PACKAGE' is meant to name the DLL rather than the R package...
+    packageName <- getNativeSymbolInfo("R_do_new_object")$package[['name']]
+    .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)
+  }
+  
   ## some checking
   if(is.null(names(allGenes)))
     stop("allGenes must be a named vector")
