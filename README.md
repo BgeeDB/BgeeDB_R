@@ -1,4 +1,8 @@
+---
+output: html_document
+---
 # BgeeDB: an R package for datasets retrieval from Bgee database
+##### Andrea Komljenović, Julien Roux, Marc Robinson-Rechavi, Frédéric Bastian
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from humans and many animals.
  
