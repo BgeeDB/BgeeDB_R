@@ -15,6 +15,19 @@ This package allows:
 
 ## Installation
 
+### Install via classic install
+
+In R:
+``` {r}
+source("https://bioconductor.org/biocLite.R")
+biocLite("BgeeDB")
+
+```
+
+In the terminal:
+
+    git clone https://github.com/wirawara/BgeeDB.git
+
 ### Install via install\_github()
 
 ``` {r}
@@ -25,22 +38,6 @@ install_github("wirawara/BgeeDB", build_vignettes=FALSE)
 library("BgeeDB")
 ```
 
-### Install via classic install
-
-In the terminal:
-
-    git clone https://github.com/wirawara/BgeeDB.git
-
-In R:
-``` {r}
-# install the package
-# install.packages("./BgeeDB", repos = NULL, type="source")
-# library("BgeeDB")
-
-source("https://bioconductor.org/biocLite.R")
-biocLite("BgeeDB")
-
-```
 
 ## How to use BgeeDB package
 
