@@ -14,7 +14,7 @@ citEntry(entry = "manual",
         "version 0.99.4")
 )
 
-citEntry(entry="manual",
+citEntry(entry="Article",
          title = "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species",
          author = personList( as.person("Frederic Bastian")),
          year = "2008",
