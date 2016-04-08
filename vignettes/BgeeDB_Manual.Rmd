@@ -1,6 +1,6 @@
 ---
 title: "BgeeDB: an R package for datasets retrieval from Bgee database"
-author: "Andrea Komljenovic, Julien Roux, Marc Robinson-Rechavi, Frederic Bastian"
+author: "Andrea Komljenovic, Julien Roux"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
