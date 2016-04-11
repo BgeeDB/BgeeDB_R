@@ -11,27 +11,19 @@ citEntry(entry = "manual",
     url = "http://github.com/wirawara/BgeeDB",
     textVersion  = paste("Komljenovic A, Roux J (2016).",
         "BgeeDB: an R package for annotation and gene expression data retrieval from Bgee database.",
-        "version 0.99.2")
+        "version 0.99.4")
 )
 
-citEntry(entry="article",
+citEntry(entry="Article",
          title = "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species",
-         author = personList( as.person("Bastian F"), as.person("Parmentier G"), as.person("Roux J")),
+         author = personList( as.person("Frederic Bastian")),
          year = "2008",
          journal = "Data Integration Life Sci. Lecture Notes in Computer Science",
          issue = "5109",
          pages= "124-31",
          textVersion =
-           paste("Bastian F, Parmentier G, Roux J, et al. (2008).",
+           paste("Bastian F et al. (2008).",
                  "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species.",
                  "Data Integration Life Sci. Lecture Notes in Computer Science", "5109", "124-31" ) )
 
-citEntry(entry = "manual",
-    title = "topGO: topGO: Enrichment analysis for Gene Ontology",
-    author = "Adrian Alexa and Jorg Rahnenfuhrer",
-    year = "2010",
-    note = "R package version 2.22.0",
-     textVersion =
-        paste("Alexa A, Rahnenfuhrer J (2010).",
-              "topGO: topGO: Enrichment analysis for Gene Ontology",
-              "R package version 2.22.0"))
+
