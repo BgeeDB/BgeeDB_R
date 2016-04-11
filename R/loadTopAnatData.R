@@ -75,7 +75,7 @@
 #'  Options are "all" or "high_quality". Default is "all".
 #'
 #' @param host URL to Bgee webservice.
-#' Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.
+#' Change host to access development or archive versions of Bgee. Default is "\url{http://r.bgee.org}" to access current Bgee release.
 #'
 #' @param pathToData Path to the directory where the data files are stored / will be stored. Default is the working directory.
 #'
@@ -97,7 +97,7 @@
 #' @export
 
 loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed",
-                            confidence="all", stage=NULL, host="http://bgee.org", pathToData=getwd()){
+                            confidence="all", stage=NULL, host="http://r.bgee.org", pathToData=getwd()){
   allSpecies <- c(6239, 7227, 7955, 8364, 9031, 9258, 9544, 9593, 9597, 9598, 9606, 9823, 9913, 10090, 10116, 13616, 28377)
   ## Species is the only compulsory parameter
   if( length(species) == 0 ) {
