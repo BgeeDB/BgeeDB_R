@@ -23,7 +23,7 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("BgeeDB")
 ```
 
-*Warning:* you will be installing the package as it is in the `bioconductor` branch of the project, not the `master` branch. There could be minor differences.
+*Warning:* you will be installing the package as it is in the `bioconductor` branch of the project, not the `master` branch. There could be minor differences, in particular you will need the very last version of R installed.
  
 ### Install via classic install
 
