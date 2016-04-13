@@ -29,7 +29,7 @@ biocLite("BgeeDB")
 
 In the terminal:
 
-    git clone https://github.com/wirawara/BgeeDB.git
+    git clone https://github.com/BgeeDB/BgeeDB_R.git
 
 Or, download the project (`master` branch) by clicking the `Download ZIP` button on the web interface, and unzip it.
 
@@ -44,7 +44,7 @@ install.packages("./BgeeDB", repos = NULL, type="source")
 # install the package
 install.packages("devtools") # if you don't have devtools installed
 library(devtools) 
-install_github("wirawara/BgeeDB", build_vignettes=FALSE)
+install_github("BgeeDB/BgeeDB_R", build_vignettes=FALSE)
 ```
 
 
