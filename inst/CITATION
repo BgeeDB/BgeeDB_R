@@ -6,7 +6,7 @@ citHeader("To cite reports in publications, please use:")
 citEntry(entry = "manual",
     title = "BgeeDB: an R package for annotation and gene expression data retrieval from Bgee database",
     author = personList( as.person("Andrea Komljenovic"), as.person("Julien Roux")),
-    note = "version 0.99.0",
+    note = "version 0.99.4",
     year = "2016",
     url = "http://github.com/wirawara/BgeeDB",
     textVersion  = paste("Komljenovic A, Roux J (2016).",
