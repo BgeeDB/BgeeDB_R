@@ -15,18 +15,32 @@ This package allows:
 
 ## Installation
 
-### Install via classic install
+### Install via Bioconductor
 
 In R:
 ``` {r}
 source("https://bioconductor.org/biocLite.R")
 biocLite("BgeeDB")
-
 ```
+
+*Warning:* you will be installing the package as it is in the `bioconductor` branch of the project, not the `master` branch. There could be minor differences, in particular you will need the very last version of R installed.
+ 
+### Install via classic install
 
 In the terminal:
 
     git clone https://github.com/wirawara/BgeeDB.git
+
+Then in R:
+``` {r}
+install.packages("./BgeeDB", repos = NULL, type="source")
+```
+Or, download the project (`master` branch) by clicking the `Download ZIP` button on the web interface, and unzip it.
+
+Then in R:
+``` {r}
+install.packages("./BgeeDB-master", repos = NULL, type="source")
+```
 
 ### Install via install\_github()
 
@@ -35,18 +49,21 @@ In the terminal:
 install.packages("devtools") # if you don't have devtools installed
 library(devtools) 
 install_github("wirawara/BgeeDB", build_vignettes=FALSE)
-library("BgeeDB")
 ```
 
 
 ## How to use BgeeDB package
+
+### Load the package
+``` {r}
+library(BgeeDB)
+```
 
 ### Running example for Mus musculus
 
 #### List available species in current version of Bgee
 
 ``` {r}
-library(BgeeDB)
 listBgeeSpecies()
 ```
 
