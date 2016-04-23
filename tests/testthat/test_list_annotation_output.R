@@ -10,5 +10,5 @@ test_that("Annotation files", {
   expect_that( length(annotation_bgee_mouse), equals(2) )
   expect_that( unique(names(annotation_bgee_mouse) %in% c("experiment_annotation", "sample_annotation")), is_true() )
   expect_message(message("Saved files "))
-  expect_true(dir.exists(file.path("..", "Mus_musculus")))
+  # expect_true(dir.exists(file.path("..", "Mus_musculus")))
 })

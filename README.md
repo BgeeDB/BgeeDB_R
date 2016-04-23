@@ -1,4 +1,8 @@
+---
+output: html_document
+---
 # BgeeDB: an R package for datasets retrieval from Bgee database
+##### Andrea Komljenović, Julien Roux, Marc Robinson-Rechavi, Frédéric Bastian
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from humans and many animals.
  
@@ -11,6 +15,33 @@ This package allows:
 
 ## Installation
 
+### Install via Bioconductor
+
+In R:
+``` {r}
+source("https://bioconductor.org/biocLite.R")
+biocLite("BgeeDB")
+```
+
+*Warning:* you will be installing the package as it is in the `bioconductor` branch of the project, not the `master` branch. There could be minor differences, in particular you will need the very last version of R installed.
+ 
+### Install via classic install
+
+In the terminal:
+
+    git clone https://github.com/wirawara/BgeeDB.git
+
+Then in R:
+``` {r}
+install.packages("./BgeeDB", repos = NULL, type="source")
+```
+Or, download the project (`master` branch) by clicking the `Download ZIP` button on the web interface, and unzip it.
+
+Then in R:
+``` {r}
+install.packages("./BgeeDB-master", repos = NULL, type="source")
+```
+
 ### Install via install\_github()
 
 ``` {r}
@@ -18,34 +49,21 @@ This package allows:
 install.packages("devtools") # if you don't have devtools installed
 library(devtools) 
 install_github("wirawara/BgeeDB", build_vignettes=FALSE)
-library("BgeeDB")
 ```
 
-### Install via classic install
-
-In the terminal:
-
-    git clone https://github.com/wirawara/BgeeDB.git
-
-In R:
-``` {r}
-# install the package
-# install.packages("./BgeeDB", repos = NULL, type="source")
-# library("BgeeDB")
-
-source("https://bioconductor.org/biocLite.R")
-biocLite("BgeeDB")
-
-```
 
 ## How to use BgeeDB package
+
+### Load the package
+``` {r}
+library(BgeeDB)
+```
 
 ### Running example for Mus musculus
 
 #### List available species in current version of Bgee
 
 ``` {r}
-library(BgeeDB)
 listBgeeSpecies()
 ```
 
