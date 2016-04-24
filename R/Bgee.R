@@ -1,8 +1,13 @@
 .reformatData <- function(dataframe, calltype, stats){
 
   # check the format
-  if(class(dataframe) == "matrix") dataframe <- as.data.frame(dataframe)
-  if(class(dataframe) == "vector") stop("Data can not be a vector.")
+  if(class(dataframe) == "dataframe"){
+    dataframe
+  } else if(class(dataframe) == "matrix"){
+    dataframe <- as.data.frame(dataframe)
+  } else if(class(dataframe) == "vector") {
+    stop("Data can not be a vector.")
+  }
 
   l <- split(dataframe, f = dataframe$"Anatomical entity name")
   cat("Selecting ", calltype, " calls.\n")
