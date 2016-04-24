@@ -1,7 +1,7 @@
 .reformatData <- function(dataframe, calltype, stats){
 
   # check the format
-  if(class(dataframe) == "dataframe"){
+  if(class(dataframe) == "data.frame"){
     dataframe
   } else if(class(dataframe) == "matrix"){
     dataframe <- as.data.frame(dataframe)
