@@ -5,8 +5,8 @@
     dataframe
   } else if(class(dataframe) == "matrix"){
     dataframe <- as.data.frame(dataframe)
-  } else if(class(dataframe) == "vector") {
-    stop("Data can not be a vector.")
+  } else {
+    stop("Data has to be a dataframe.")
   }
 
   l <- split(dataframe, f = dataframe$"Anatomical entity name")
