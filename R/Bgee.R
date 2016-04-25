@@ -269,9 +269,9 @@ Bgee <- setRefClass("Bgee",
           } else {
             temp.files <- list.files(path = destdir, pattern=".*_RPKM_.*.zip$")
           }
-          # print(temp.files)
+          ## print(temp.files)
           mydata <- lapply(file.path(destdir, temp.files), unzip, exdir=destdir)
-          print(head(mydata))
+          ## print(head(mydata))
           data_all <- lapply(unlist(mydata, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
           cat("Saving all data in .rds file...\n")
