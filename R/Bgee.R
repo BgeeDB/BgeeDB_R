@@ -29,7 +29,7 @@
     expr.final <- lapply(expr, function(x) x %>% spread("Chip ID", "Log of normalized signal intensity"))
 
   }
-  expr.final <- as.data.frame(expr.final[[1]])
+
   return(expr.final)
 
 }
