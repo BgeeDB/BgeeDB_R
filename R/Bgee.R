@@ -2,11 +2,11 @@
 
   # check the format
   if(class(dataframe) == "data.frame"){
-      dataframe
+    dataframe
   } else if(class(dataframe) == "matrix"){
-      dataframe <- as.data.frame(dataframe)
+    dataframe <- as.data.frame(dataframe)
   } else {
-      stop("Data has to be a dataframe.")
+    stop("Data has to be a dataframe.")
   }
 
   l <- split(dataframe, f = dataframe$"Anatomical entity name")
@@ -29,7 +29,7 @@
     expr.final <- lapply(expr, function(x) x %>% spread("Chip ID", "Log of normalized signal intensity"))
 
   }
-  expr.final <- as.data.frame(expr.final[[1]])
+
   return(expr.final)
 
 }
@@ -269,9 +269,9 @@ Bgee <- setRefClass("Bgee",
           } else {
             temp.files <- list.files(path = destdir, pattern=".*_RPKM_.*.zip$")
           }
-          # print(temp.files)
+          ## print(temp.files)
           mydata <- lapply(file.path(destdir, temp.files), unzip, exdir=destdir)
-          print(head(mydata))
+          ## print(head(mydata))
           data_all <- lapply(unlist(mydata, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
           cat("Saving all data in .rds file...\n")
@@ -289,7 +289,7 @@ Bgee <- setRefClass("Bgee",
           } else if (datatype == "rna_seq"){
             expression_values <- paste0(species, "_RNA-Seq_read_counts_RPKM_", experiment.id,".tsv.zip")
           }
-          ## TO DO: check if RDS file already in cache. If so, skip download step
+          ## check if RDS file already in cache. If so, skip download step
           if (file.exists(paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
             cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id, ".
               These will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
@@ -331,7 +331,7 @@ Bgee <- setRefClass("Bgee",
     format_data = function(data, calltype = NULL, stats = NULL) {
 
       ## warning messages
-      if(!(calltype %in% c("expressed", "all"))) stop("Choose between only expressed(present) calls or all (present and absent).")
+      if(!(calltype %in% c("expressed", "all"))) stop("Choose between only expressed (present) calls or all (present and absent).")
       if(!(stats %in% c('rpkm', 'counts', 'intensities'))) stop("Choose between RPKM, counts or affymetrix intensities, e.g. 'rpkm', 'counts', 'intensities' ")
 
       if(class(data) == "list"){
