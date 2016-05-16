@@ -35,7 +35,7 @@ listBgeeSpecies <- function(...){
   df.species.db <- data.frame(ID = species.taxid, GENUS = genus.name, SPECIES = species.name, COMMON = common.name)
 
   cat("Last update:" , .listDirectories(url_rnaseq, version = TRUE), "\n")
-	return(list("Species in the Database"= df.species.db, RNAseq = .listDirectories(url_rnaseq), Affymetrix = .listDirectories(url_affymetrix)))
+	return(list("Species in the Database"= df.species.db, "RNAseq" = .listDirectories(url_rnaseq), "Affymetrix" = .listDirectories(url_affymetrix)))
 
 }
 

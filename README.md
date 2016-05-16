@@ -31,11 +31,15 @@ In the terminal:
 
     git clone https://github.com/BgeeDB/BgeeDB_R.git
 
+Then in R:
+``` {r}
+install.packages("./BgeeDB", repos = NULL, type="source")
+```
 Or, download the project (`master` branch) by clicking the `Download ZIP` button on the web interface, and unzip it.
 
 Then in R:
 ``` {r}
-install.packages("./BgeeDB", repos = NULL, type="source")
+install.packages("./BgeeDB-master", repos = NULL, type="source")
 ```
 
 ### Install via install\_github()
