@@ -6,7 +6,7 @@
             xtt <- xt %>% spread_(v1[1], v1[3])
             rownames(xtt) <- xtt[,v1[2]]
             xtt[,-1, drop = FALSE] })
-        
+
         features <- mapply(.subsetting.feature, calls, expr, v1[2], v2 )
         phenos <- mapply(.subsetting.pheno, calls, v1[1] )
     } else {
@@ -24,9 +24,7 @@
     }
     return(list(assayData = expr, pheno = phenos, features = features, calls = calls))
 }
-
-
-# this works
+#this works
 .subsetting.feature <- function(x, y, v1, v2){
     cat("building the feature data...\n")
     cat("building the feature data...\n")
@@ -34,7 +32,7 @@
         fdata <- x[match(rownames(y), x[,v1]), v1, drop = FALSE]
         rownames(fdata) <- fdata[,v1]
         fdata <- as(fdata, "AnnotatedDataFrame")
-        
+
     } else {
         fdata <- x[match(rownames(y), x[,v1]), c(v1,v2), drop = FALSE]
         rownames(fdata) <- fdata[,v1]
@@ -177,7 +175,7 @@ methods = list(
 
 initialize=function(...) {
     callSuper(...)
-    
+
     ## Species is a compulsory parameter
     allSpecies <- c("Homo_sapiens", "Mus_musculus", "Danio_rerio", "Drosophila_melanogaster",
     "Caenorhabditis_elegans", "Pan_troglodytes", "Pan_paniscus",
@@ -190,7 +188,7 @@ initialize=function(...) {
     onlyRNAseqSpecies <- c("Pan_paniscus", "Pan_troglodytes", "Gorilla_gorilla", "Macaca_mulatta", "Rattus_norvegicus", "Bos_taurus",
     "Sus_scrofa", "Monodelphis_domestica", "Anolis_carolinensis", "Xenopus_tropicalis", "Tetraodon_nigroviridis",
     "Pongo_pygmaeus", "Gallus_gallus", "Ornithorhynchus_anatinus")
-    
+
     if(length(species)==0) {
         stop("ERROR: You didn't specify species.")
     } else if ( length(species) > 1 ){
@@ -201,40 +199,40 @@ initialize=function(...) {
         Examples: 'Homo_sapiens', 'Mus_musculus', 'Drosophila_melanogaster', 'Caenorhabditis_elegans'.
         See listBgeeSpecies() for all species available.\n")
     }
-    
+
     ## check datatype
     if(length(datatype)==0) {
         stop("ERROR: You didn't specify a data type. Choose 'affymetrix' or 'rna_seq'.")
     } else if ((length(datatype) > 1) || (length(datatype) == 1 && datatype %in% c("rna_seq", "affymetrix") == "FALSE")){
         stop("ERROR: Choose correct datatype argument: 'affymetrix' or 'rna_seq'.")
     }
-    
+
     # check species type
     if( datatype == "rna_seq" && species %in% onlyAffymetrixSpecies){
         stop("ERROR: For this species there is no RNAseq data. Please change the datatype to 'affymetrix'.")
     } else if(datatype == "affymetrix" && species %in% onlyRNAseqSpecies){
         stop("ERROR: For this species there is no Affymetrix data. Please change the datatype to 'rna_seq'.")
     }
-    
+
     # Creating the folder - common to get_data and get_annotation
     gdsurl <- 'ftp://ftp.bgee.org/current/download/processed_expr_values/%s/%s/'
     ## Built FTP URL for this datatype and species
     myurl <<- sprintf(gdsurl, datatype, species)
     ## list files in this folder
     fnames <<- try(.listDirectories(myurl), silent=TRUE)
-    
+
     ## create a folder with species name to store downloaded files
     destdir <<- file.path(getwd(), species)
     if (!file.exists(destdir)){
         dir.create(destdir)
     }
-    
-    
+
+
 },
 
 
 get_annotation = function(...){
-    
+
     ## Annotation file names
     if (datatype == "affymetrix"){
         annotation.experiments <- paste0(destdir, "/", species, "_Affymetrix_experiments.tsv")
@@ -243,7 +241,7 @@ get_annotation = function(...){
         annotation.experiments <- paste0(destdir, "/", species, "_RNA-Seq_experiments.tsv")
         annotation.samples     <- paste0(destdir, "/", species, "_RNA-Seq_libraries.tsv")
     }
-    
+
     ## Check if file is already in cache. If so, skip download step
     if (file.exists(annotation.experiments) && file.exists(annotation.samples)){
         cat("WARNING: annotation files for this species were found in the download directory and will be used as is.\n
@@ -266,7 +264,7 @@ get_annotation = function(...){
         ## Clean directory
         file.remove(file.path(destdir, annotation.file))
     }
-    
+
     ## Read the 2 annotation files
     myanno <- list(sample_annotation=as.data.frame(fread(annotation.samples)), experiment_annotation=as.data.frame(fread(annotation.experiments)))
     return(myanno)
@@ -274,17 +272,17 @@ get_annotation = function(...){
 
 
 get_data = function(..., experiment.id = NULL){
-    
+
     if (length(experiment.id) == 0){
         cat("The experiment is not defined. Hence taking all", datatype, "available for", species, ".\n")
-        
+
         ## expression data file name
         if (datatype == "affymetrix"){
             all_expression_values <- paste0(species, "_Affymetrix_probesets.zip")
         } else if (datatype == "rna_seq"){
             all_expression_values <- paste0(species, "_RNA-Seq_read_counts_RPKM.zip")
         }
-        
+
         ## check if RDS file already in cache. If so, skip download step
         if (file.exists(paste0(destdir, "/", datatype, "_all_experiments_expression_data.rds"))){
             cat("WARNING: expression data file (.rds file) was found in the download directory and will be used as is.
@@ -310,7 +308,7 @@ get_data = function(..., experiment.id = NULL){
             mydata <- lapply(file.path(destdir, temp.files), unzip, exdir=destdir)
             print(head(mydata))
             data_all <- lapply(unlist(mydata, rec = T), function(x) as.data.frame(suppressWarnings(fread(x))))
-            
+
             cat("Saving all data in .rds file...\n")
             saveRDS(data_all, file = paste0(destdir, "/", datatype, "_all_experiments_expression_data.rds"))
         }
@@ -319,7 +317,7 @@ get_data = function(..., experiment.id = NULL){
             stop("The experiment.id field need to be in GEO or ArrayExpress format, e.g., 'GSE30617' or 'E-MEXP-2011'")
         } else {
             cat("Downloading expression data for the experiment", experiment.id, "\n")
-            
+
             ## expression data file name
             if (datatype == "affymetrix"){
                 expression_values <- paste0(species, "_Affymetrix_probesets_", experiment.id,".zip")
@@ -343,7 +341,7 @@ get_data = function(..., experiment.id = NULL){
                 cat("Unzipping file...\n")
                 mydata <- lapply(file.path(destdir, expression_values), unzip, exdir=destdir)
                 data_all <- lapply(mydata, function(x) as.data.frame(fread(x)))
-                
+
                 data_all <- as.data.frame(data_all[[1]])
                 cat("Saving all data in .rds file...\n")
                 saveRDS(data_all, file = paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))
@@ -366,13 +364,13 @@ get_data = function(..., experiment.id = NULL){
 
 
 format_data = function(data, calltype, stats){
-    
+
     if(!(stats %in% c('rpkm', 'counts', 'intensities'))) stop("Choose between RPKM, counts or affymetrix intensities,
     e.g. 'rpkm', 'counts', 'intensities' ")
-    
+
     if(!(calltype %in% c('expressed','expressed high quality','none'))) stop("Choose between expressed, expressed high quality or none,
     e.g. 'expressed', 'expressed high quality', 'none' ")
-    
+
     if(length(data) == 1) data[[1]] else data
     v2 <- "Gene ID"
     if(stats  == "rpkm"){
@@ -386,8 +384,8 @@ format_data = function(data, calltype, stats){
         v1 <- c("Chip ID", "Probeset ID", "Log of normalized signal intensity")
         expr <- .subsetting(data, v1, v2, calltype, "Log of normalized signal intensity")
     }
-    
-    
+
+
     if(length(expr$assayData) == 1){
         eset2 <- new('ExpressionSet', exprs= as.matrix(expr$assayData),
         phenoData= expr$pheno,
@@ -396,7 +394,7 @@ format_data = function(data, calltype, stats){
         assaydata <- expr$assayData
         phenodata <- expr$pheno
         featdata <- expr$features
-        
+
         eset2 <- mapply(function(x,y,z)
         new('ExpressionSet', exprs= as.matrix(x), phenoData= y, featureData = z),
         assaydata, phenodata, featdata)
