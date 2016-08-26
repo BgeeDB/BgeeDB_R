@@ -1,70 +1,104 @@
-.subsetting <- function(st, v1, v2 , calltype, column){
-    if(class(st) == "list"){
-        calls <- lapply(st, function(x) .calling(x, calltype, column))
-        expr <- lapply(calls, function(x) {
-            xt <- x[, v1]
-            xtt <- xt %>% spread_(v1[1], v1[3])
-            rownames(xtt) <- xtt[,v1[2]]
-            xtt[,-1, drop = FALSE] })
+# TO DO: remove later
+# v2 <- "Gene ID"
+# if(stats  == "rpkm"){
+#   v1 <- c("Library ID", "Gene ID", "RPKM")
+#   expr <- .extract.data(data, v1, v2, calltype, "RPKM")
+# } else if (stats == "counts"){
+#   v1 <- c("Library ID", "Gene ID", "Read count")
+#   expr <- .extract.data(data, v1, v2, calltype, "Read count")
+# } else {
+#   cat("Extracting intensities...\n")
+#   v1 <- c("Chip ID", "Probeset ID", "Log of normalized signal intensity")
+#   expr <- .extract.data(data, v1, v2, calltype, "Log of normalized signal intensity")
+# }
+#
+#
+#
+# v1 = columns[1:3]
+# v2 = columns[4] for affy
+# column = v1[3]
 
-        features <- mapply(.subsetting.feature, calls, expr, v1[2], v2 )
-        phenos <- mapply(.subsetting.pheno, calls, v1[1] )
-    } else {
-        calls <- .calling(st, calltype, column)
-        dt <- calls[, v1]
-        dtt <- dt %>% spread_(v1[1], v1[3])
-        rownames(dtt) <- dtt[,v1[2]]
-        expr <- dtt[,-1,  drop = FALSE]
-        cat("Subseting features...\n")
-        features <- .subsetting.feature( calls, expr, v1[2], v2)
+# Takes in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
+.extract.data <- function(data, columns, calltype){
+    # if multiple data frames (multiple experiments or chips)
+    if(class(data) == "list"){
+        calls <- lapply(data, function(x) .calling(x, calltype, columns[3]))
+        expr <- lapply(calls,
+                       function(x) {
+                         # subset the data to keep relevant columns
+                         xt <- x[, columns[1:3]]
+                         # from sample and feature columns, create a matrix with features as rows and samples as columns
+                         xtt <- xt %>% spread_(columns[1], columns[3])
+                         rownames(xtt) <- xtt[,columns[2]]
+                         # Remove feature column to keep only data
+                         xtt[,-1, drop = FALSE]
+                       }
+                     )
+        cat("Extracting features...\n")
+        features <- mapply(.extract.data.feature, calls, expr, columns)
         cat("Done...\n")
-        cat("Subseting pheno...\n")
-        phenos <- .subsetting.pheno( calls, v1[1] )
+        cat("Extracting pheno...\n")
+        phenos <- mapply(.extract.data.pheno, calls, columns[1])
+        cat("Done...\n")
+    } else {
+        # if only a single dataframe
+        calls <- .calling(data, calltype, columns[3])
+        # subset the data to keep relevant columns
+        xt <- calls[, columns[1:3]]
+        xtt <- xt %>% spread_(columns[1], columns[3])
+        rownames(xtt) <- xtt[,columns[2]]
+        # Remove feature column to keep only data
+        expr <- xtt[,-1,  drop = FALSE]
+
+        cat("Extracting features...\n")
+        features <- .extract.data.feature( calls, expr, columns[2])
+        cat("Done...\n")
+        cat("Extracting pheno...\n")
+        phenos <- .extract.data.pheno( calls, columns[1])
         cat("Done...\n")
     }
     return(list(assayData = expr, pheno = phenos, features = features, calls = calls))
 }
-#this works
-.subsetting.feature <- function(x, y, v1, v2){
+
+# Extract feature data (probesets or genes)
+.extract.data.feature <- function(calls, expr, columns){
     cat("building the feature data...\n")
-    cat("building the feature data...\n")
-    if(v1 == v2){
-        fdata <- x[match(rownames(y), x[,v1]), v1, drop = FALSE]
-        rownames(fdata) <- fdata[,v1]
+    # RNA-seq
+    if(length(columns) == 3){
+        fdata <- calls[match(rownames(expr), calls[, columns]), columns, drop = FALSE]
+        rownames(fdata) <- fdata[, columns]
         fdata <- as(fdata, "AnnotatedDataFrame")
 
     } else {
-        fdata <- x[match(rownames(y), x[,v1]), c(v1,v2), drop = FALSE]
-        rownames(fdata) <- fdata[,v1]
+      # Affymetrix, 4 columns
+        fdata <- calls[match(rownames(expr), calls[, columns[1:3]]), columns, drop = FALSE]
+        rownames(fdata) <- fdata[,columns[1:3]]
         fdata <- as(fdata, "AnnotatedDataFrame")
     }
     return(fdata)
 }
 
-
-
-.subsetting.pheno <- function(x, v4){
+# Extract annotation of samples
+.extract.data.pheno <- function(calls, column){
     cat("building the pheno data...\n")
-    phdata <- x[, c(v4, "Anatomical entity ID", "Anatomical entity name", "Stage ID", "Stage name")]
-    phdata <- phdata[!duplicated(phdata[,v4]),]
-    rownames(phdata) <- phdata[,v4]
-    phdata <- as(phdata,"AnnotatedDataFrame")
+    phdata <- calls[, c(column, "Anatomical entity ID", "Anatomical entity name", "Stage ID", "Stage name")]
+    phdata <- phdata[!duplicated(phdata[,column]), drop = FALSE]
+    rownames(phdata) <- phdata[, column]
+    phdata <- as(phdata, "AnnotatedDataFrame")
     return(phdata)
 }
+## TO DO:
+##  Error: ExpressionSet 'phenoData' is class 'character' but should be or extend 'AnnotatedDataFrame'
+## Apparently the class is not set correctly
 
-
-# this works
 .calling <- function(x, calltype, column){
     ## check datatype
     if(calltype == "expressed"){
-        cat("calling expressed...\n")
+        cat("keeping only expressed genes...\n")
         x[(x$"Detection flag" == "absent"), column] <- NA
     } else if (calltype == "expressed high quality"){
-        cat("calling expressed and high quality...\n")
+        cat("keeping only expressed high quality genes...\n")
         x[which(x$"Detection flag" == "absent" | x$"Detection quality" == "poor quality"), column] <- NA
-    } else {
-        cat("calling both present and absent calls with all type of quality...")
-        x
     }
     return(x)
 }
@@ -76,9 +110,6 @@
 #'
 #' @details The expression calls come from Bgee (http://r.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
 #' This Class retrieves annotation of all experiments in Bgee database (get_annotation), downloading the data (get_data), and formating the data into expression matrix (format_data). See examples and vignette.
-#'
-#'
-#'
 #'
 #' @field species A character of species name as listed from Bgee. The species are:
 #' \itemize{
@@ -99,45 +130,39 @@
 #'    \item{"Rattus_norvegicus"}
 #'    \item{"Sus_scrofa"}
 #'    \item{"Xenopus_tropicalis"}}
-#'
-#' Homo sapiens is default species.
-#'
-#'
+#' Homo sapiens is the default species.
 #'
 #' @field datatype A character of data platform. Two types of datasets can be downloaded:
 #' \itemize{
 #'      \item{"rna_seq"}
 #'      \item{"affymetrix"}}
-#' By default, RNA-seq data is retrieved from database.
+#' By default, RNA-seq data is retrieved.
 #'
-#'
-#' @field experiment.id  A character.
-#' On default is NULL: takes all available data for that species.
-#' If GSE[0-9]+: takes specified experiment, eg. GSE30617.
+#' @field experiment.id  An ArrayExpress or GEO accession, e.g., GSE30617
+#' On default is NULL: takes all available experiments for specified species and datatype.
 #'
 #' @field data A dataframe of downloaded Bgee data.
 #'
-#' @field calltype A character. There exist two types of expression calls in Bgee - present and absent.
+#' @field calltype A character.
 #'  \itemize{
 #'    \item{"expressed"}
+#'    \item{"expressed high quality"}
 #'    \item{"all"}}
-#' User can retrieve only expressed (present) calls, or mixed (present and absent) calls. The default is expressed (present) calltype.
-#'
+#' Retrieve intensities only for expressed (present) genes, expressed high quality genes, or all genes. The default is expressed.
 #'
 #' @field stats A character. The expression values can be retrieved in RPKMs and raw counts:
 #'  \itemize{
 #'    \item{"rpkm"}
-#'    \item{"counts"}}
-#'The default is RPKMs.
-#'
-#'
+#'    \item{"counts"}
+#'    \item{"intensities"}
+#'    }
+#'The default is RPKMs for RNA-seq and intensities for microarray.
 #'
 #' @return
 #' \itemize{
-#'  \item{A \code{get_annotation()} list, lists the annotation of experiments for chosen species.}
-#'  \item{A \code{get_data()}, if empty returns a list of experiments, if chosen experiment ID, then returns the dataframe of the chosen experiment; for chosen species}
-#'  \item{A \code{format_data()}, transforms the data into matrix of expression values, e.g. RPKMs or raw counts}}
-#'
+#'  \item{\code{get_annotation()} returns a list of the annotation of experiments for chosen species.}
+#'  \item{\code{get_data()}, if experiment ID is empty, returns a list of experiments. If specified experiment ID, then returns the dataframe of the chosen experiment}
+#'  \item{\code{format_data()}, if experiment ID is empty, returns a list of ExpressionSet objects. If specified experiment ID, then returns an ExpressionSet object}}
 #'
 #' @author Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
 #'
@@ -169,7 +194,6 @@ stats = "character",
 myurl = "character",
 destdir = "character",
 fnames = "character"),
-
 
 methods = list(
 
@@ -314,15 +338,15 @@ get_data = function(..., experiment.id = NULL){
         }
     } else if( length(experiment.id) == 1){
         if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$", experiment.id, perl = TRUE)){
-            stop("The experiment.id field need to be in GEO or ArrayExpress format, e.g., 'GSE30617' or 'E-MEXP-2011'")
+            stop("The experiment.id field needs to be a GEO or ArrayExpress accession, e.g., 'GSE30617' or 'E-MEXP-2011'")
         } else {
             cat("Downloading expression data for the experiment", experiment.id, "\n")
 
             ## expression data file name
             if (datatype == "affymetrix"){
-                expression_values <- paste0(species, "_Affymetrix_probesets_", experiment.id,".zip")
+                temp.file <- paste0(species, "_Affymetrix_probesets_", experiment.id,".zip")
             } else if (datatype == "rna_seq"){
-                expression_values <- paste0(species, "_RNA-Seq_read_counts_RPKM_", experiment.id,".tsv.zip")
+                temp.file <- paste0(species, "_RNA-Seq_read_counts_RPKM_", experiment.id,".tsv.zip")
             }
             ## TO DO: check if RDS file already in cache. If so, skip download step
             if (file.exists(paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
@@ -331,18 +355,19 @@ get_data = function(..., experiment.id = NULL){
                 data_all <- readRDS(paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")
-                if (sum( expression_values %in% fnames) == 0){
+                if (sum( temp.file %in% fnames) == 0){
                     stop("WARNING. The expression data file for this experiment was not found on the FTP repository.")
                 }
-                download.file(file.path(myurl, expression_values),
-                destfile=file.path(destdir, expression_values),
-                mode='wb')
+                download.file(file.path(myurl, temp.file),
+                destfile=file.path(destdir, temp.file), mode='wb')
                 cat("Saved expression data file in", species, "folder.\n")
                 cat("Unzipping file...\n")
-                mydata <- lapply(file.path(destdir, expression_values), unzip, exdir=destdir)
+                # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
+                mydata <- unzip(file.path(destdir, temp.file), exdir=destdir)
                 data_all <- lapply(mydata, function(x) as.data.frame(fread(x)))
-
-                data_all <- as.data.frame(data_all[[1]])
+                if (length(data_all) == 1){
+                  data_all <- as.data.frame(data_all[[1]])
+                }
                 cat("Saving all data in .rds file...\n")
                 saveRDS(data_all, file = paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             }
@@ -350,7 +375,7 @@ get_data = function(..., experiment.id = NULL){
     } else {
         stop("Please provide only one experiment ID. If you want to get all data for this species and datatype, leave experiment.id empty")
     }
-    ## cleaning up the files
+    ## cleaning up downloaded files
     if(datatype == "affymetrix"){
         try(file.remove(file.path(destdir, list.files(path=destdir,  pattern=".*_probesets.*.zip"))))
         try(file.remove(file.path(destdir, list.files(path=destdir,  pattern=".*_probesets.*.tsv"))))
@@ -363,49 +388,45 @@ get_data = function(..., experiment.id = NULL){
 },
 
 
-format_data = function(data, calltype, stats){
-
-    if(!(stats %in% c('rpkm', 'counts', 'intensities'))) stop("Choose between RPKM, counts or affymetrix intensities,
-    e.g. 'rpkm', 'counts', 'intensities' ")
-
-    if(!(calltype %in% c('expressed','expressed high quality','none'))) stop("Choose between expressed, expressed high quality or none,
-    e.g. 'expressed', 'expressed high quality', 'none' ")
-
-    if(length(data) == 1) data[[1]] else data
-    v2 <- "Gene ID"
-    if(stats  == "rpkm"){
-        v1 <- c("Library ID", "Gene ID", "RPKM")
-        expr <- .subsetting(data, v1, v2, calltype, "RPKM")
-    } else if (stats == "counts"){
-        v1 <- c("Library ID", "Gene ID", "Read count")
-        expr <- .subsetting(data, v1, v2, calltype, "Read count")
-    } else {
-        cat("Subseting intensities...\n")
-        v1 <- c("Chip ID", "Probeset ID", "Log of normalized signal intensity")
-        expr <- .subsetting(data, v1, v2, calltype, "Log of normalized signal intensity")
+format_data = function(..., data, calltype = "all", stats = NULL){
+    if (datatype == "affymetrix" & stats != "intensities"){
+        stop("For Affymetrix microarray data, stats shoudl be set to \"intensities\"")
+    } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts'))){
+        stop("Choose whether data formatting should create a matrix of RPKMs or read counts")
+    }
+    if(!(calltype %in% c('expressed','expressed high quality','all'))){
+      stop("Choose between displaying intensities for expressed genes, expressed high quality genes or all genes, e.g., 'expressed', 'expressed high quality', 'all' ")
     }
 
+    if(length(data) == 1) data[[1]] else data
 
+    if(stats  == "rpkm"){
+        columns <- c("Library ID", "Gene ID", "RPKM")
+        expr <- .extract.data(data, columns, calltype)
+    } else if (stats == "counts"){
+        columns <- c("Library ID", "Gene ID", "Read count")
+        expr <- .extract.data(data, columns, calltype)
+    } else {
+        cat("Extracting intensities...\n")
+        columns <- c("Chip ID", "Probeset ID", "Log of normalized signal intensity", "Gene ID")
+        expr <- .extract.data(data, columns, calltype)
+    }
     if(length(expr$assayData) == 1){
-        eset2 <- new('ExpressionSet', exprs= as.matrix(expr$assayData),
-        phenoData= expr$pheno,
-        featureData = expr$features)
+        eset <- new('ExpressionSet',
+                     exprs=as.matrix(expr$assayData),
+                     phenoData= expr$pheno,
+                     featureData = expr$features)
     } else {
         assaydata <- expr$assayData
         phenodata <- expr$pheno
         featdata <- expr$features
 
-        eset2 <- mapply(function(x,y,z)
-        new('ExpressionSet', exprs= as.matrix(x), phenoData= y, featureData = z),
-        assaydata, phenodata, featdata)
-    }
+        eset <- mapply(function(x,y,z){
+                         new('ExpressionSet', exprs= as.matrix(x), phenoData= y, featureData = z)
+                       },
+                       assaydata, phenodata, featdata)
+        }
     cat("Done.\n")
-    return(eset2)
+    return(eset)
 }
-
-
-
 ))
-
-
-
