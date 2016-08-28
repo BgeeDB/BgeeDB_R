@@ -1,23 +1,3 @@
-# TO DO: remove later
-# v2 <- "Gene ID"
-# if(stats  == "rpkm"){
-#   v1 <- c("Library ID", "Gene ID", "RPKM")
-#   expr <- .extract.data(data, v1, v2, calltype, "RPKM")
-# } else if (stats == "counts"){
-#   v1 <- c("Library ID", "Gene ID", "Read count")
-#   expr <- .extract.data(data, v1, v2, calltype, "Read count")
-# } else {
-#   cat("Extracting intensities...\n")
-#   v1 <- c("Chip ID", "Probeset ID", "Log of normalized signal intensity")
-#   expr <- .extract.data(data, v1, v2, calltype, "Log of normalized signal intensity")
-# }
-#
-#
-#
-# v1 = columns[1:3]
-# v2 = columns[4] for affy
-# column = v1[3]
-
 # Takes in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
 .extract.data <- function(data, columns, calltype){
     # if multiple data frames (multiple experiments or chips)
@@ -35,10 +15,10 @@
                        }
                      )
         cat("Extracting features...\n")
-        features <- mapply(.extract.data.feature, calls, expr, columns)
+        features <- mapply(.extract.data.feature, calls, expr, rep(list(columns), times=length(calls)))
         cat("Done...\n")
         cat("Extracting pheno...\n")
-        phenos <- mapply(.extract.data.pheno, calls, columns[1])
+        phenos <- mapply(.extract.data.pheno, calls, rep(list(columns[1]), times=length(calls)))
         cat("Done...\n")
     } else {
         # if only a single dataframe
@@ -48,10 +28,10 @@
         xtt <- xt %>% spread_(columns[1], columns[3])
         rownames(xtt) <- xtt[,columns[2]]
         # Remove feature column to keep only data
-        expr <- xtt[,-1,  drop = FALSE]
+        expr <- xtt[,-1, drop = FALSE]
 
         cat("Extracting features...\n")
-        features <- .extract.data.feature( calls, expr, columns[2])
+        features <- .extract.data.feature( calls, expr, columns)
         cat("Done...\n")
         cat("Extracting pheno...\n")
         phenos <- .extract.data.pheno( calls, columns[1])
@@ -62,17 +42,16 @@
 
 # Extract feature data (probesets or genes)
 .extract.data.feature <- function(calls, expr, columns){
-    cat("building the feature data...\n")
     # RNA-seq
     if(length(columns) == 3){
-        fdata <- calls[match(rownames(expr), calls[, columns]), columns, drop = FALSE]
-        rownames(fdata) <- fdata[, columns]
+        fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[2], drop = FALSE]
+        rownames(fdata) <- fdata[, columns[2]]
         fdata <- as(fdata, "AnnotatedDataFrame")
-
-    } else {
-      # Affymetrix, 4 columns
-        fdata <- calls[match(rownames(expr), calls[, columns[1:3]]), columns, drop = FALSE]
-        rownames(fdata) <- fdata[,columns[1:3]]
+    }
+    # Affymetrix, 4 columns
+    else if(length(columns) == 4){
+        fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[c(2,4)], drop = FALSE]
+        rownames(fdata) <- fdata[,columns[2]]
         fdata <- as(fdata, "AnnotatedDataFrame")
     }
     return(fdata)
@@ -80,16 +59,18 @@
 
 # Extract annotation of samples
 .extract.data.pheno <- function(calls, column){
-    cat("building the pheno data...\n")
     phdata <- calls[, c(column, "Anatomical entity ID", "Anatomical entity name", "Stage ID", "Stage name")]
-    phdata <- phdata[!duplicated(phdata[,column]), drop = FALSE]
+    phdata <- phdata[!duplicated(phdata[,column]), ]
     rownames(phdata) <- phdata[, column]
-    phdata <- as(phdata, "AnnotatedDataFrame")
-    return(phdata)
+    phdata <- as.data.frame(phdata)
+    metadata <- data.frame(labelDescription=colnames(phdata),
+                           row.names=colnames(phdata))
+    phenodata <- new("AnnotatedDataFrame",
+                     data=phdata,
+                     varMetadata=metadata
+                     )
+    return(phenodata)
 }
-## TO DO:
-##  Error: ExpressionSet 'phenoData' is class 'character' but should be or extend 'AnnotatedDataFrame'
-## Apparently the class is not set correctly
 
 .calling <- function(x, calltype, column){
     ## check datatype
@@ -330,7 +311,6 @@ get_data = function(..., experiment.id = NULL){
             }
             # print(temp.files)
             mydata <- lapply(file.path(destdir, temp.files), unzip, exdir=destdir)
-            print(head(mydata))
             data_all <- lapply(unlist(mydata, rec = T), function(x) as.data.frame(suppressWarnings(fread(x))))
 
             cat("Saving all data in .rds file...\n")
@@ -348,7 +328,7 @@ get_data = function(..., experiment.id = NULL){
             } else if (datatype == "rna_seq"){
                 temp.file <- paste0(species, "_RNA-Seq_read_counts_RPKM_", experiment.id,".tsv.zip")
             }
-            ## TO DO: check if RDS file already in cache. If so, skip download step
+            ## check if RDS file already in cache. If so, skip download step
             if (file.exists(paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
                 cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id, ".
                 These will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
@@ -388,9 +368,9 @@ get_data = function(..., experiment.id = NULL){
 },
 
 
-format_data = function(..., data, calltype = "all", stats = NULL){
+format_data = function(data, calltype = "all", stats = NULL){
     if (datatype == "affymetrix" & stats != "intensities"){
-        stop("For Affymetrix microarray data, stats shoudl be set to \"intensities\"")
+        stop("For Affymetrix microarray data, stats parmeter should be set to \"intensities\"")
     } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts'))){
         stop("Choose whether data formatting should create a matrix of RPKMs or read counts")
     }
@@ -411,22 +391,22 @@ format_data = function(..., data, calltype = "all", stats = NULL){
         columns <- c("Chip ID", "Probeset ID", "Log of normalized signal intensity", "Gene ID")
         expr <- .extract.data(data, columns, calltype)
     }
-    if(length(expr$assayData) == 1){
+    if(is.data.frame(expr$assayData)){
+        # one data matrix
         eset <- new('ExpressionSet',
                      exprs=as.matrix(expr$assayData),
-                     phenoData= expr$pheno,
-                     featureData = expr$features)
-    } else {
-        assaydata <- expr$assayData
-        phenodata <- expr$pheno
-        featdata <- expr$features
-
-        eset <- mapply(function(x,y,z){
-                         new('ExpressionSet', exprs= as.matrix(x), phenoData= y, featureData = z)
+                     phenoData=expr$pheno,
+                     featureData=expr$features)
+    } else if(is.list(expr$assayData)){
+      # multiple data matrices
+      eset <- mapply(function(x,y,z){
+                       new('ExpressionSet',
+                             exprs=as.matrix(x),
+                             phenoData=y,
+                             featureData=z)
                        },
-                       assaydata, phenodata, featdata)
+                       expr$assayData, expr$pheno, expr$features)
         }
-    cat("Done.\n")
     return(eset)
 }
 ))
