@@ -45,15 +45,13 @@
     # RNA-seq
     if(length(columns) == 3){
         fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[2], drop = FALSE]
-        rownames(fdata) <- fdata[, columns[2]]
-        fdata <- as(fdata, "AnnotatedDataFrame")
     }
     # Affymetrix, 4 columns
     else if(length(columns) == 4){
         fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[c(2,4)], drop = FALSE]
-        rownames(fdata) <- fdata[,columns[2]]
-        fdata <- as(fdata, "AnnotatedDataFrame")
     }
+    rownames(fdata) <- fdata[, columns[2]]
+    fdata <- as(fdata, "AnnotatedDataFrame")
     return(fdata)
 }
 
