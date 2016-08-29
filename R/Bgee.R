@@ -224,7 +224,7 @@ initialize=function(...) {
     ## Built FTP URL for this datatype and species
     myurl <<- sprintf(gdsurl, datatype, species)
     ## list files in this folder
-    fnames <<- try(.listDirectories(myurl), silent=TRUE)
+    fnames <<- try(.listDirectories(myurl), silent=FALSE)
 
     ## create a folder with species name to store downloaded files
     destdir <<- file.path(getwd(), species)
@@ -372,7 +372,7 @@ format_data = function(data, calltype = "all", stats = NULL){
     if (datatype == "affymetrix" & stats != "intensities"){
         stop("For Affymetrix microarray data, stats parmeter should be set to \"intensities\"")
     } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts'))){
-        stop("Choose whether data formatting should create a matrix of RPKMs or read counts")
+        stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
     }
     if(!(calltype %in% c('expressed','expressed high quality','all'))){
       stop("Choose between displaying intensities for expressed genes, expressed high quality genes or all genes, e.g., 'expressed', 'expressed high quality', 'all' ")
