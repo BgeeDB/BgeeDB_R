@@ -156,6 +156,7 @@
 #'
 #'
 #' @import methods
+#' @import Biobase
 #' @importFrom dplyr %>%
 #' @importFrom tidyr spread
 #' @export Bgee
