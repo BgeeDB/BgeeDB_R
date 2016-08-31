@@ -6,7 +6,7 @@ test_that("Formatting gene expression files", {
   data_bgee_mouse_exp <- bgee$get_data(experiment.id  = "GSE30617")
   gene.expression <- bgee$format_data(data_bgee_mouse_exp, calltype = "expressed", stats = "rpkm")
 
-  expect_that( gene.expression, is_a("list") )
-  expect_true(class(gene.expression[[1]]) == "ExpressionSet" )
+  # expect_that( gene.expression, is_a("list") )
+  expect_true(class(gene.expression) == "ExpressionSet" )
 
 })
