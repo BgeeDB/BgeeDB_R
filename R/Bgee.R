@@ -158,7 +158,7 @@
 #' @import methods
 #' @import Biobase
 #' @importFrom dplyr %>%
-#' @importFrom tidyr spread
+#' @importFrom tidyr spread_
 #' @export Bgee
 #' @exportClass Bgee
 
@@ -310,7 +310,7 @@ get_data = function(..., experiment.id = NULL){
             }
             # print(temp.files)
             mydata <- lapply(file.path(destdir, temp.files), unzip, exdir=destdir)
-            data_all <- lapply(unlist(mydata, rec = T), function(x) as.data.frame(suppressWarnings(fread(x))))
+            data_all <- lapply(unlist(mydata, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
             cat("Saving all data in .rds file...\n")
             saveRDS(data_all, file = paste0(destdir, "/", datatype, "_all_experiments_expression_data.rds"))
