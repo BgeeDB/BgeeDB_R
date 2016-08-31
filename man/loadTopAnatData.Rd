@@ -85,7 +85,7 @@ Change host to access development or archive versions of Bgee. Default is "\url{
 A list of 3 elements:
 \itemize{
   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
-  \item{A \code{organ.names} data frame, with the name corresonding to UBERON IDs.}
+  \item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures
   in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
 }
