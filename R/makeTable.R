@@ -89,10 +89,11 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
     odds <- termStat(topAnatObject, row.names(topTerms))
     foldEnrichment <- odds[2]/odds[3]
 
-    # Rounding odds, P-values and FDR to 2 decimal places
-    foldEnrichment <- format(foldEnrichment, digits=3)
-    topTerms <- format(topTerms, digits=3)
-    fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)
+    ## Rounding odds, P-values and FDR to 2 decimal places
+    ## Now commented because might be problematic for downstream reuse of the data
+    # foldEnrichment <- format(foldEnrichment, digits=3)
+    # topTerms <- format(topTerms, digits=3)
+    # fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)
 
     topTerms <- cbind(odds, foldEnrichment, topTerms, fdr[row.names(topTerms)])
     names(topTerms) <- c("annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")

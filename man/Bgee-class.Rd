@@ -7,9 +7,9 @@
 \title{Retrieving the Bgee database data}
 \value{
 \itemize{
- \item{A \code{get_annotation()} list, lists the annotation of experiments for chosen species.}
- \item{A \code{get_data()}, if empty returns a list of experiments, if chosen experiment ID, then returns the dataframe of the chosen experiment; for chosen species}
- \item{A \code{format_data()}, transforms the data into matrix of expression values, e.g. RPKMs or raw counts}}
+ \item{\code{get_annotation()} returns a list of the annotation of experiments for chosen species.}
+ \item{\code{get_data()}, if experiment ID is empty, returns a list of experiments. If specified experiment ID, then returns the dataframe of the chosen experiment}
+ \item{\code{format_data()}, if experiment ID is empty, returns a list of ExpressionSet objects. If specified experiment ID, then returns an ExpressionSet object}}
 }
 \description{
 A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
@@ -40,32 +40,33 @@ This Class retrieves annotation of all experiments in Bgee database (get_annotat
    \item{"Rattus_norvegicus"}
    \item{"Sus_scrofa"}
    \item{"Xenopus_tropicalis"}}
-
-Homo sapiens is default species.}
+Homo sapiens is the default species.}
 
 \item{\code{datatype}}{A character of data platform. Two types of datasets can be downloaded:
 \itemize{
      \item{"rna_seq"}
      \item{"affymetrix"}}
-By default, RNA-seq data is retrieved from database.}
+By default, RNA-seq data is retrieved.}
 
-\item{\code{experiment.id}}{A character.
-On default is NULL: takes all available data for that species.
-If GSE[0-9]+: takes specified experiment, eg. GSE30617.}
+\item{\code{experiment.id}}{An ArrayExpress or GEO accession, e.g., GSE30617
+On default is NULL: takes all available experiments for specified species and datatype.}
 
 \item{\code{data}}{A dataframe of downloaded Bgee data.}
 
-\item{\code{calltype}}{A character. There exist two types of expression calls in Bgee - present and absent.
+\item{\code{calltype}}{A character.
  \itemize{
    \item{"expressed"}
+   \item{"expressed high quality"}
    \item{"all"}}
-User can retrieve only expressed (present) calls, or mixed (present and absent) calls. The default is expressed (present) calltype.}
+Retrieve intensities only for expressed (present) genes, expressed high quality genes, or all genes. The default is expressed.}
 
 \item{\code{stats}}{A character. The expression values can be retrieved in RPKMs and raw counts:
  \itemize{
    \item{"rpkm"}
-   \item{"counts"}}
-The default is RPKMs.}
+   \item{"counts"}
+   \item{"intensities"}
+   }
+The default is RPKMs for RNA-seq and intensities for microarray.}
 }}
 \examples{
 {

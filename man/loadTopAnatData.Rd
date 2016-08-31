@@ -6,7 +6,7 @@
 \usage{
 loadTopAnatData(species, datatype = c("rna_seq", "affymetrix", "est",
   "in_situ"), calltype = "expressed", confidence = "all", stage = NULL,
-  host = "http://bgee.org", pathToData = getwd())
+  host = "http://r.bgee.org", pathToData = getwd())
 }
 \arguments{
 \item{species}{A numeric indicating the NCBI taxonomic ID of the species to be used. The species has to be among species in Bgee v13, which include:
@@ -77,7 +77,7 @@ The most useful stages (going no deeper than level 3 of the ontology) include:
 }}
 
 \item{host}{URL to Bgee webservice.
-Change host to access development or archive versions of Bgee. Default is "\url{http://bgee.org}" to access current Bgee release.}
+Change host to access development or archive versions of Bgee. Default is "\url{http://r.bgee.org}" to access current Bgee release.}
 
 \item{pathToData}{Path to the directory where the data files are stored / will be stored. Default is the working directory.}
 }
@@ -85,7 +85,7 @@ Change host to access development or archive versions of Bgee. Default is "\url{
 A list of 3 elements:
 \itemize{
   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
-  \item{A \code{organ.names} data frame, with the name corresonding to UBERON IDs.}
+  \item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures
   in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
 }
