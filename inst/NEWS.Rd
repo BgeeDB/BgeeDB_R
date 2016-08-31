@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{News for Package \pkg{BgeeDB}}
 
+\section{Changes in version 1.0.3 (2016-08-31)}{
+  \itemize{
+    \item  Fixed makeTable. Update of format_data.
+  }
+}
+
+
 \section{Changes in version 0.99.6 (2016-04-28)}{
   \itemize{
     \item  Bug fix in format_data function.
