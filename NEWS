@@ -1,7 +1,6 @@
-CHANGES IN VERSION 0.0.1
+CHANGES IN VERSION 1.0.3
 =========================
 
-    o Added topAnat script.
-      This function produces a topAnatObject,
-      ready to use for gene set enrichment testing
-      using functions from the topGO package
+    o Update of makeTable function. Update of format_data in Bgee function. 31.8.2016.
+      The format_data function now outputs ExpressionSet objects.
+      Some small bugs are fixed regarding the extracting the data.	
