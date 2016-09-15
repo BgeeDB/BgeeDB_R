@@ -244,9 +244,9 @@ initialize=function(...) {
         stop("Problem: please specify a valid path to store data files.")
       } else {
         if ( !grepl("/$", pathToData) ){
-          pathToData <- paste0(pathToData, "/", species)
+          pathToData <<- paste0(pathToData, "/", species)
         } else {
-          pathToData <- paste0(pathToData, species)
+          pathToData <<- paste0(pathToData, species)
         }
       }
     } else {

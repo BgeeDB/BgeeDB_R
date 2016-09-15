@@ -4,13 +4,14 @@
 #'
 #' @return A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 #'
-#'@examples{
+#' @examples{
 #'  listBgeeSpecies()
 #' }
 #'
 #' @author Julien Roux
+#' @export
 
-listBgeeSpecies <- function(release){
+listBgeeSpecies <- function(release=NULL){
   allReleases <- .getRelease()
   if (length(release)==0) {
     release <- gsub("\\.", "_", allReleases$release[1])
@@ -55,3 +56,4 @@ listBgeeSpecies <- function(release){
   }
   return(allSpecies)
 }
+## TO DO: sort species based on speciesId? Genus/species name?

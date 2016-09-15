@@ -2,18 +2,15 @@
 % Please edit documentation in R/listBgeeSpecies.R
 \name{listBgeeSpecies}
 \alias{listBgeeSpecies}
-\title{List species with Affymetrix or RNA-seq data in the Bgee database}
+\title{List species in the Bgee database and the available data types for each of them}
 \usage{
-listBgeeSpecies(...)
+listBgeeSpecies(release = NULL)
 }
 \arguments{
-\item{...}{an empty parameter}
+\item{release}{A character specifying a targeted release number. In the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". If not specified, the latest release is used.}
 }
 \value{
-A list of species with available Affymetrix or RNA-seq data in the Bgee
-}
-\description{
-Returns a list of available genomes for different platforms in Bgee.
+A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 }
 \examples{
 {
@@ -22,6 +19,6 @@ Returns a list of available genomes for different platforms in Bgee.
 
 }
 \author{
-Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
+Julien Roux
 }
 

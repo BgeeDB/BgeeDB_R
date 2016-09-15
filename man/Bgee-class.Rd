@@ -15,50 +15,34 @@
 A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
 }
 \details{
-The expression calls come from Bgee (http://r.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
-This Class retrieves annotation of all experiments in Bgee database (get_annotation), downloading the data (get_data), and formating the data into expression matrix (format_data). See examples and vignette.
+The expression data come from Bgee (http://.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
+This Class retrieves annotation of experiments in Bgee database (get_annotation), downloads the data (get_data), and formats the data into expressionSet object (format_data). See examples and vignette.
 }
 \section{Fields}{
 
 \describe{
-\item{\code{species}}{A character of species name as listed from Bgee. The species are:
-\itemize{
-   \item{"Anolis_carolinensis"}
-   \item{"Bos_taurus"}
-   \item{"Caenorhabditis_elegans"}
-   \item{"Danio_rerio"}
-   \item{"Drosophila_melanogaster"}
-   \item{"Gallus_gallus"}
-   \item{"Gorilla_gorilla"}
-   \item{"Homo_sapiens"}
-   \item{"Macaca_mulatta"}
-   \item{"Monodelphis_domestica"}
-   \item{"Mus_musculus"}
-   \item{"Ornithorhynchus_anatinus"}
-   \item{"Pan_paniscus"}
-   \item{"Pan_troglodytes"}
-   \item{"Rattus_norvegicus"}
-   \item{"Sus_scrofa"}
-   \item{"Xenopus_tropicalis"}}
-Homo sapiens is the default species.}
+\item{\code{species}}{A character indicating the species to be used, in the form "Genus_species". Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.}
 
-\item{\code{datatype}}{A character of data platform. Two types of datasets can be downloaded:
+\item{\code{datatype}}{A character of data platform. Quantitative expression levels can be downloaded for two data types:
 \itemize{
      \item{"rna_seq"}
-     \item{"affymetrix"}}
-By default, RNA-seq data is retrieved.}
+     \item{"affymetrix"}}}
 
 \item{\code{experiment.id}}{An ArrayExpress or GEO accession, e.g., GSE30617
 On default is NULL: takes all available experiments for specified species and datatype.}
+
+\item{\code{pathToData}}{Path to the directory where the data files are stored / will be stored. Default is a folder names from used species in working directory.}
+
+\item{\code{release}}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.}
 
 \item{\code{data}}{A dataframe of downloaded Bgee data.}
 
 \item{\code{calltype}}{A character.
  \itemize{
-   \item{"expressed"}
-   \item{"expressed high quality"}
+   \item{"present"}
+   \item{"present high quality"}
    \item{"all"}}
-Retrieve intensities only for expressed (present) genes, expressed high quality genes, or all genes. The default is expressed.}
+Retrieve intensities only for present (expressed) genes, present high quality genes, or all genes. The default is present.}
 
 \item{\code{stats}}{A character. The expression values can be retrieved in RPKMs and raw counts:
  \itemize{
@@ -75,7 +59,7 @@ The default is RPKMs for RNA-seq and intensities for microarray.}
  data_bgee_mouse <- bgee$get_data()
  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
  gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
- calltype = "expressed", stats = "rpkm")
+ calltype = "present", stats = "rpkm")
  }
 
 

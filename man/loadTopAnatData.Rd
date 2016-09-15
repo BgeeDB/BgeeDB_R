@@ -5,31 +5,11 @@
 \title{Retrieve data from Bgee to perform GO-like enrichment of anatomical terms, mapped to genes by expression patterns.}
 \usage{
 loadTopAnatData(species, datatype = c("rna_seq", "affymetrix", "est",
-  "in_situ"), calltype = "expressed", confidence = "all", stage = NULL,
+  "in_situ"), calltype = "presence", confidence = "all", stage = NULL,
   host = "http://r.bgee.org", pathToData = getwd())
 }
 \arguments{
-\item{species}{A numeric indicating the NCBI taxonomic ID of the species to be used. The species has to be among species in Bgee v13, which include:
-\itemize{
-  \item{6239 (Caenorhabditis elegans)}
-  \item{7227 (Drosophila melanogaster)}
-  \item{7955 (Danio rerio)}
-  \item{8364 (Xenopus tropicalis)}
-  \item{9031 (Gallus gallus)}
-  \item{9258 (Ornithorhynchus anatinus)}
-  \item{9544 (Macaca mulatta)}
-  \item{9593 (Gorilla gorilla)}
-  \item{9597 (Pan paniscus)}
-  \item{9598 (Pan troglodytes)}
-  \item{9606 (Homo sapiens)}
-  \item{9823 (Sus scrofa)}
-  \item{9913 (Bos taurus)}
-  \item{10090 (Mus musculus)}
-  \item{10116 (Rattus norvegicus)}
-  \item{13616 (Monodelphis domestica)}
-  \item{28377 (Anolis carolinensis)}
-}
-See the listBgeeSpecies() function to get an up-to-date list of species.}
+\item{species}{A numeric indicating the NCBI taxonomic ID of the species to be used. Only species with expression data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.}
 
 \item{datatype}{A vector of characters indicating data type(s) to be used. To be chosen among:
 \itemize{
@@ -42,7 +22,7 @@ By default all data type are included: \code{c("rna_seq","affymetrix","est","in_
 Including a data type that is not present in Bgee for a given species has no effect.}
 
 \item{calltype}{A character of indicating the type of expression calls to be used for enrichment.
-Only calls for significant presence of expression are implemented ("expressed").
+Only calls for significant detection of expression are implemented ("presence").
 Over-expression calls, based on differential expression analysis, will be implemented in the future.}
 
 \item{confidence}{A character indicating if only high quality expression calls should be retrieved.
