@@ -40,7 +40,7 @@
 #' Including a data type that is not present in Bgee for a given species has no effect.
 #'
 #' @param calltype A character of indicating the type of expression calls to be used for enrichment.
-#' Only calls for significant presence of expression are implemented ("expressed").
+#' Only calls for significant detection of expression are implemented ("presence").
 #' Over-expression calls, based on differential expression analysis, will be implemented in the future.
 #'
 #' @param stage A character indicating the targeted developmental stages for the analysis.
@@ -96,7 +96,7 @@
 #' @import utils
 #' @export
 
-loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="expressed",
+loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="presence",
                             confidence="all", stage=NULL, host="http://r.bgee.org", pathToData=getwd()){
   allSpecies <- c(6239, 7227, 7955, 8364, 9031, 9258, 9544, 9593, 9597, 9598, 9606, 9823, 9913, 10090, 10116, 13616, 28377)
   ## Species is the only compulsory parameter
@@ -115,8 +115,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if ( length(datatype) != sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) ){
     cat("Warning: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for typos.\n")
   }
-  if ( calltype != "expressed" ){
-    stop("Problem: no other call types than present / absent can be retrieved for now.")
+  if ( calltype != "presence" ){
+    stop("Problem: no other call types than present expression calls can be retrieved for now.")
   }
   if ( (confidence != "all") && (confidence != "high_quality") ){
     stop("Problem: the data confidence parameter specified is not among the allowed values (\"all\" or \"high_quality\").")

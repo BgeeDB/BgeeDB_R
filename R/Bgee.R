@@ -72,11 +72,11 @@
 
 .calling <- function(x, calltype, column){
     ## check datatype
-    if(calltype == "expressed"){
-        cat("keeping only expressed genes...\n")
+    if(calltype == "present"){
+        cat("keeping only present genes...\n")
         x[(x$"Detection flag" == "absent"), column] <- NA
-    } else if (calltype == "expressed high quality"){
-        cat("keeping only expressed high quality genes...\n")
+    } else if (calltype == "present high quality"){
+        cat("keeping only present high quality genes...\n")
         x[which(x$"Detection flag" == "absent" | x$"Detection quality" == "poor quality"), column] <- NA
     }
     return(x)
@@ -124,10 +124,10 @@
 #'
 #' @field calltype A character.
 #'  \itemize{
-#'    \item{"expressed"}
-#'    \item{"expressed high quality"}
+#'    \item{"present"}
+#'    \item{"present high quality"}
 #'    \item{"all"}}
-#' Retrieve intensities only for expressed (present) genes, expressed high quality genes, or all genes. The default is expressed.
+#' Retrieve intensities only for present (expressed) genes, present high quality genes, or all genes. The default is present.
 #'
 #' @field stats A character. The expression values can be retrieved in RPKMs and raw counts:
 #'  \itemize{
@@ -151,7 +151,7 @@
 #'  data_bgee_mouse <- bgee$get_data()
 #'  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 #'  gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
-#'  calltype = "expressed", stats = "rpkm")
+#'  calltype = "present", stats = "rpkm")
 #'  }
 #'
 #'
@@ -373,8 +373,8 @@ format_data = function(data, calltype = "all", stats = NULL){
     } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts'))){
         stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
     }
-    if(!(calltype %in% c('expressed','expressed high quality','all'))){
-      stop("Choose between displaying intensities for expressed genes, expressed high quality genes or all genes, e.g., 'expressed', 'expressed high quality', 'all' ")
+    if(!(calltype %in% c('present','present high quality','all'))){
+      stop("Choose between displaying intensities for present genes, present high quality genes or all genes, e.g., 'present', 'present high quality', 'all' ")
     }
 
     if(length(data) == 1) data[[1]] else data

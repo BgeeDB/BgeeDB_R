@@ -1,8 +1,8 @@
 Package: BgeeDB
 Type: Package
-Title: Annotation and gene expression data from Bgee database
-Version: 1.0.3
-Date: 2016-08-30
+Title: Annotation and gene expression data retrieval from Bgee database
+Version: 1.0.4
+Date: 2016-09-15
 Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
 Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, Frederic Bastian <bgee@sib.swiss>
 Description: A package for the annotation and gene expression

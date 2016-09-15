@@ -117,7 +117,7 @@ The data from different samples will be listed in rows, one after the other. It 
 
 ```{r}
 # only present calls and rpkm values
-gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "expressed", stats = "rpkm")
+gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
 names(gene.expression.mouse.rpkm)
 head(gene.expression.mouse.rpkm$"Ammon's horn")
 ```
