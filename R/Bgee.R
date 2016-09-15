@@ -149,16 +149,16 @@
 Bgee <- setRefClass("Bgee",
 
 fields = list(
-species="character",
-datatype = "character",
-experiment.id = "character",
-pathToData = "character",
-release = "character",
-data = "list",
-calltype = "character",
-stats = "character",
-myurl = "character", ## TO DO: needed here?
-fnames = "character"), ## TO DO: needed here?
+  species="character",
+  datatype = "character",
+  experiment.id = "character",
+  pathToData = "character",
+  release = "character",
+  data = "list",
+  calltype = "character",
+  stats = "character",
+  myurl = "character"
+),
 
 methods = list(
 
@@ -206,10 +206,10 @@ initialize=function(...) {
     # TO DO: some code below might alos be used in loadTopAnat.R function
     allReleases <- .getRelease()
     if (length(release)==0) {
-      release <- gsub("\\.", "_", allReleases$release[1])
+      release <<- gsub("\\.", "_", allReleases$release[1])
     } else if (length(release)==1){
       # In case the release number is written with a dot
-      release <- gsub("\\.", "_", release)
+      release <<- gsub("\\.", "_", release)
       # test if required release exists
       if (sum(allReleases$release == gsub("_", ".", release))!=1){
         stop("ERROR: The specified release number is invalid.")
@@ -219,7 +219,7 @@ initialize=function(...) {
     }
 
     # Creating the FTP URL to get data and annotation
-    myurl <- paste0(allReleases$FTP.URL[allReleases$release == gsub("_", ".", release)], "download/processed_expr_values/", datatype, "/", species, "/")
+    myurl <<- paste0(allReleases$FTP.URL[allReleases$release == gsub("_", ".", release)], "download/processed_expr_values/", datatype, "/", species, "/")
     ## list files on the FTP at this URL
     listFiles <- function(url) {
       tmpcon <- textConnection(getURL(url), "r")
