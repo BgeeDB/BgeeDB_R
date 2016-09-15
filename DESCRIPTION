@@ -8,7 +8,7 @@ Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, Frederic Bastian 
 Description: A package for the annotation and gene expression
     data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms,
     mapped to genes by expression patterns.
-Depends: R (>= 3.3.0), topGO, tidyr
+Depends: R (>= 3.0.0), topGO, tidyr
 Imports: data.table, RCurl, methods, stats, utils, dplyr, graph,
         Biobase
 License: GPL-2

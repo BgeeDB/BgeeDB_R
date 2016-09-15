@@ -87,38 +87,22 @@
 #' @title Retrieving the Bgee database data
 #' @description A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
 #'
-#' @details The expression calls come from Bgee (http://r.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
-#' This Class retrieves annotation of all experiments in Bgee database (get_annotation), downloading the data (get_data), and formating the data into expression matrix (format_data). See examples and vignette.
+#' @details The expression data come from Bgee (http://.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
+#' This Class retrieves annotation of experiments in Bgee database (get_annotation), downloads the data (get_data), and formats the data into expressionSet object (format_data). See examples and vignette.
 #'
-#' @field species A character of species name as listed from Bgee. The species are:
-#' \itemize{
-#'    \item{"Anolis_carolinensis"}
-#'    \item{"Bos_taurus"}
-#'    \item{"Caenorhabditis_elegans"}
-#'    \item{"Danio_rerio"}
-#'    \item{"Drosophila_melanogaster"}
-#'    \item{"Gallus_gallus"}
-#'    \item{"Gorilla_gorilla"}
-#'    \item{"Homo_sapiens"}
-#'    \item{"Macaca_mulatta"}
-#'    \item{"Monodelphis_domestica"}
-#'    \item{"Mus_musculus"}
-#'    \item{"Ornithorhynchus_anatinus"}
-#'    \item{"Pan_paniscus"}
-#'    \item{"Pan_troglodytes"}
-#'    \item{"Rattus_norvegicus"}
-#'    \item{"Sus_scrofa"}
-#'    \item{"Xenopus_tropicalis"}}
-#' Homo sapiens is the default species.
+#' @field species A character indicating the species to be used, in the form "Genus_species". Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.
 #'
-#' @field datatype A character of data platform. Two types of datasets can be downloaded:
+#' @field datatype A character of data platform. Quantitative expression levels can be downloaded for two data types:
 #' \itemize{
 #'      \item{"rna_seq"}
 #'      \item{"affymetrix"}}
-#' By default, RNA-seq data is retrieved.
 #'
-#' @field experiment.id  An ArrayExpress or GEO accession, e.g., GSE30617
+#' @field experiment.id An ArrayExpress or GEO accession, e.g., GSE30617
 #' On default is NULL: takes all available experiments for specified species and datatype.
+#'
+#' @field pathToData Path to the directory where the data files are stored / will be stored. Default is a folder names from used species in working directory.
+#'
+#' @field release Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.
 #'
 #' @field data A dataframe of downloaded Bgee data.
 #'
@@ -168,18 +152,20 @@ fields = list(
 species="character",
 datatype = "character",
 experiment.id = "character",
+pathToData = "character",
+release = "character",
 data = "list",
 calltype = "character",
 stats = "character",
-myurl = "character",
-destdir = "character",
-fnames = "character"),
+myurl = "character", ## TO DO: needed here?
+fnames = "character"), ## TO DO: needed here?
 
 methods = list(
 
 initialize=function(...) {
     callSuper(...)
 
+    ## TO DO: remove code below and replace wiht parsing of listBgeeSpecies() function
     ## Species is a compulsory parameter
     allSpecies <- c("Homo_sapiens", "Mus_musculus", "Danio_rerio", "Drosophila_melanogaster",
     "Caenorhabditis_elegans", "Pan_troglodytes", "Pan_paniscus",
@@ -187,7 +173,6 @@ initialize=function(...) {
     "Sus_scrofa", "Monodelphis_domestica", "Ornithorhynchus_anatinus",
     "Gallus_gallus", "Anolis_carolinensis", "Xenopus_tropicalis",
     "Pongo_pygmaeus", "Tetraodon_nigroviridis")
-    # bothSpeciesAssays <- c("Homo_sapiens", "Caenorhabditis_elegans", "Mus_musculus")
     onlyAffymetrixSpecies <- c("Danio_rerio", "Drosophila_melanogaster")
     onlyRNAseqSpecies <- c("Pan_paniscus", "Pan_troglodytes", "Gorilla_gorilla", "Macaca_mulatta", "Rattus_norvegicus", "Bos_taurus",
     "Sus_scrofa", "Monodelphis_domestica", "Anolis_carolinensis", "Xenopus_tropicalis", "Tetraodon_nigroviridis",
@@ -198,10 +183,10 @@ initialize=function(...) {
     } else if ( length(species) > 1 ){
         stop("ERROR: only one species is allowed.")
     } else if ( sum(species %in% allSpecies) == 0 ){
-        stop("ERROR: the specified speciesId is not among the list of species in Bgee. Maybe you did not specificy species name,
+        stop("ERROR: the specified species name is not among the list of species with quantitative expression data in Bgee. Maybe you did not specificy species name,
         but common name, or did not put an underscore between genus an species?
-        Examples: 'Homo_sapiens', 'Mus_musculus', 'Drosophila_melanogaster', 'Caenorhabditis_elegans'.
-        See listBgeeSpecies() for all species available.\n")
+        Examples: 'Homo_sapiens' or 'Mus_musculus'.
+        See listBgeeSpecies() for all species with RNA-seq or Affymetric microarray data in Bgee.\n")
     }
 
     ## check datatype
@@ -213,25 +198,65 @@ initialize=function(...) {
 
     # check species type
     if( datatype == "rna_seq" && species %in% onlyAffymetrixSpecies){
-        stop("ERROR: For this species there is no RNAseq data. Please change the datatype to 'affymetrix'.")
+        stop("ERROR: For this species there is no RNA-seq data. Please change the datatype to 'affymetrix'.")
     } else if(datatype == "affymetrix" && species %in% onlyRNAseqSpecies){
         stop("ERROR: For this species there is no Affymetrix data. Please change the datatype to 'rna_seq'.")
     }
 
-    # Creating the folder - common to get_data and get_annotation
-    gdsurl <- 'ftp://ftp.bgee.org/current/download/processed_expr_values/%s/%s/'
-    ## Built FTP URL for this datatype and species
-    myurl <<- sprintf(gdsurl, datatype, species)
-    ## list files in this folder
-    fnames <<- try(.listDirectories(myurl), silent=FALSE)
-
-    ## create a folder with species name to store downloaded files
-    destdir <<- file.path(getwd(), species)
-    if (!file.exists(destdir)){
-        dir.create(destdir)
+    # TO DO: some code below might alos be used in loadTopAnat.R function
+    allReleases <- .getRelease()
+    if (length(release)==0) {
+      release <- gsub("\\.", "_", allReleases$release[1])
+    } else if (length(release)==1){
+      # In case the release number is written with a dot
+      release <- gsub("\\.", "_", release)
+      # test if required release exists
+      if (sum(allReleases$release == gsub("_", ".", release))!=1){
+        stop("ERROR: The specified release number is invalid.")
+      }
+    } else {
+      stop("ERROR: The specified release number is invalid.")
     }
 
+    # Creating the FTP URL to get data and annotation
+    myurl <- paste0(allReleases$FTP.URL[allReleases$release == gsub("_", ".", release)], "download/processed_expr_values/", datatype, "/", species, "/")
+    ## list files on the FTP at this URL
+    listFiles <- function(url) {
+      tmpcon <- textConnection(getURL(url), "r")
+      allFiles <- read.table(tmpcon)
+      close(tmpcon)
+      ## Keep only last column
+      allFiles <- as.character(allFiles[, ncol(allFiles)])
+      return(allFiles)
+    }
+    fnames <- try(listFiles(myurl), silent=FALSE)
+    if (class(fnames) == "try-error") {
+      stop("ERROR: Connection to FTP was not successful.")
+    } else if (length(fnames)==0 | is.na(fnames)){
+      stop("ERROR: Connection to FTP was successful, but target directory seems empty.")
+    }
 
+    ## check path of folder to store cached files
+    if(length(pathToData)==0) {
+      pathToData <<- file.path(getwd(), species)
+    } else if (length(pathToData)==1){
+      if ( !file.exists(pathToData) ){
+        stop("Problem: please specify a valid path to store data files.")
+      } else {
+        if ( !grepl("/$", pathToData) ){
+          pathToData <- paste0(pathToData, "/", species)
+        } else {
+          pathToData <- paste0(pathToData, species)
+        }
+      }
+    } else {
+      stop("ERROR: Invalid path to folder to store downlaoded files.")
+    }
+    ## create sub-folder with species name to store downloaded files
+    if (!file.exists(pathToData)){
+      dir.create(pathToData)
+    }
+    ## TO DO: in fact couldn't the release and version numbers be just in the folder name? Concatenated with species?
 },
 
 
@@ -239,11 +264,11 @@ get_annotation = function(...){
 
     ## Annotation file names
     if (datatype == "affymetrix"){
-        annotation.experiments <- paste0(destdir, "/", species, "_Affymetrix_experiments.tsv")
-        annotation.samples     <- paste0(destdir, "/", species, "_Affymetrix_chips.tsv")
+        annotation.experiments <- paste0(pathToData, "/", species, "_Affymetrix_experiments.tsv")
+        annotation.samples     <- paste0(pathToData, "/", species, "_Affymetrix_chips.tsv")
     } else if (datatype == "rna_seq"){
-        annotation.experiments <- paste0(destdir, "/", species, "_RNA-Seq_experiments.tsv")
-        annotation.samples     <- paste0(destdir, "/", species, "_RNA-Seq_libraries.tsv")
+        annotation.experiments <- paste0(pathToData, "/", species, "_RNA-Seq_experiments.tsv")
+        annotation.samples     <- paste0(pathToData, "/", species, "_RNA-Seq_libraries.tsv")
     }
 
     ## Check if file is already in cache. If so, skip download step
@@ -261,12 +286,12 @@ get_annotation = function(...){
             stop("WARNING. The annotation file was not found on the FTP repository.\n")
         }
         download.file(file.path(myurl, annotation.file),
-        destfile=file.path(destdir, annotation.file),
+        destfile=file.path(pathToData, annotation.file),
         mode='wb')
-        unzip(paste0(destdir, "/", annotation.file), exdir=destdir)
+        unzip(paste0(pathToData, "/", annotation.file), exdir=pathToData)
         cat("Saved annotation files in", species, "folder.\n")
         ## Clean directory
-        file.remove(file.path(destdir, annotation.file))
+        file.remove(file.path(pathToData, annotation.file))
     }
 
     ## Read the 2 annotation files
@@ -288,32 +313,32 @@ get_data = function(..., experiment.id = NULL){
         }
 
         ## check if RDS file already in cache. If so, skip download step
-        if (file.exists(paste0(destdir, "/", datatype, "_all_experiments_expression_data.rds"))){
+        if (file.exists(paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))){
             cat("WARNING: expression data file (.rds file) was found in the download directory and will be used as is.
             Please delete and rerun the function if you want the data to be updated.\n")
-            data_all <- readRDS(file = paste0(destdir, "/", datatype, "_all_experiments_expression_data.rds"))
+            data_all <- readRDS(file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
         } else {
             cat("Downloading expression data...\n")
             if (sum( all_expression_values %in% fnames) == 0){
                 stop("WARNING. The expression data file was not found on the FTP repository.")
             }
             download.file(file.path(myurl, all_expression_values),
-            destfile=file.path(destdir, all_expression_values),
+            destfile=file.path(pathToData, all_expression_values),
             mode='wb')
             cat("Saved expression data file in", species, "folder.\n")
             cat("Unzipping file...\n")
-            unzip(file.path(destdir, all_expression_values), exdir=destdir)
+            unzip(file.path(pathToData, all_expression_values), exdir=pathToData)
             if(datatype == "affymetrix"){
-                temp.files <- list.files(path = destdir, pattern=".*_probesets_.*.zip$")
+                temp.files <- list.files(path = pathToData, pattern=".*_probesets_.*.zip$")
             } else {
-                temp.files <- list.files(path = destdir, pattern=".*_RPKM_.*.zip$")
+                temp.files <- list.files(path = pathToData, pattern=".*_RPKM_.*.zip$")
             }
             # print(temp.files)
-            mydata <- lapply(file.path(destdir, temp.files), unzip, exdir=destdir)
+            mydata <- lapply(file.path(pathToData, temp.files), unzip, exdir=pathToData)
             data_all <- lapply(unlist(mydata, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
             cat("Saving all data in .rds file...\n")
-            saveRDS(data_all, file = paste0(destdir, "/", datatype, "_all_experiments_expression_data.rds"))
+            saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
         }
     } else if( length(experiment.id) == 1){
         if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$", experiment.id, perl = TRUE)){
@@ -328,27 +353,27 @@ get_data = function(..., experiment.id = NULL){
                 temp.file <- paste0(species, "_RNA-Seq_read_counts_RPKM_", experiment.id,".tsv.zip")
             }
             ## check if RDS file already in cache. If so, skip download step
-            if (file.exists(paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
+            if (file.exists(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
                 cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id, ".
                 These will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
-                data_all <- readRDS(paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))
+                data_all <- readRDS(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")
                 if (sum( temp.file %in% fnames) == 0){
                     stop("WARNING. The expression data file for this experiment was not found on the FTP repository.")
                 }
                 download.file(file.path(myurl, temp.file),
-                destfile=file.path(destdir, temp.file), mode='wb')
+                destfile=file.path(pathToData, temp.file), mode='wb')
                 cat("Saved expression data file in", species, "folder.\n")
                 cat("Unzipping file...\n")
                 # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
-                mydata <- unzip(file.path(destdir, temp.file), exdir=destdir)
+                mydata <- unzip(file.path(pathToData, temp.file), exdir=pathToData)
                 data_all <- lapply(mydata, function(x) as.data.frame(fread(x)))
                 if (length(data_all) == 1){
                   data_all <- as.data.frame(data_all[[1]])
                 }
                 cat("Saving all data in .rds file...\n")
-                saveRDS(data_all, file = paste0(destdir, "/", datatype, "_", experiment.id, "_expression_data.rds"))
+                saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             }
         }
     } else {
@@ -356,11 +381,11 @@ get_data = function(..., experiment.id = NULL){
     }
     ## cleaning up downloaded files
     if(datatype == "affymetrix"){
-        try(file.remove(file.path(destdir, list.files(path=destdir,  pattern=".*_probesets.*.zip"))))
-        try(file.remove(file.path(destdir, list.files(path=destdir,  pattern=".*_probesets.*.tsv"))))
+        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_probesets.*.zip"))))
+        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_probesets.*.tsv"))))
     } else {
-        try(file.remove(file.path(destdir, list.files(path=destdir,  pattern=".*_RPKM.*.zip"))))
-        try(file.remove(file.path(destdir, list.files(path=destdir,  pattern=".*_RPKM.*.tsv"))))
+        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_RPKM.*.zip"))))
+        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_RPKM.*.tsv"))))
     }
     return(data_all)
     cat("Done.")

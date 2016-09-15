@@ -7,27 +7,7 @@
 #'
 #' Anatomical structures are identified using IDs from the Uberon ontology (browsable at \url{http://www.ontobee.org/ontology/UBERON}). The mapping from genes to anatomical structures includes only the evidence of expression in these specific structures, and not the expression in their substructures (i.e., expression data are not propagated). The retrieval of propagated expression data will likely be implemented in the future, but meanwhile, it can be obtained using specialized packages such as topGO, see the \code{topAnat.R} function.
 #'
-#' @param species A numeric indicating the NCBI taxonomic ID of the species to be used. The species has to be among species in Bgee v13, which include:
-#' \itemize{
-#'   \item{6239 (Caenorhabditis elegans)}
-#'   \item{7227 (Drosophila melanogaster)}
-#'   \item{7955 (Danio rerio)}
-#'   \item{8364 (Xenopus tropicalis)}
-#'   \item{9031 (Gallus gallus)}
-#'   \item{9258 (Ornithorhynchus anatinus)}
-#'   \item{9544 (Macaca mulatta)}
-#'   \item{9593 (Gorilla gorilla)}
-#'   \item{9597 (Pan paniscus)}
-#'   \item{9598 (Pan troglodytes)}
-#'   \item{9606 (Homo sapiens)}
-#'   \item{9823 (Sus scrofa)}
-#'   \item{9913 (Bos taurus)}
-#'   \item{10090 (Mus musculus)}
-#'   \item{10116 (Rattus norvegicus)}
-#'   \item{13616 (Monodelphis domestica)}
-#'   \item{28377 (Anolis carolinensis)}
-#' }
-#' See the listBgeeSpecies() function to get an up-to-date list of species.
+#' @param species A numeric indicating the NCBI taxonomic ID of the species to be used. Only species with expression data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.
 #'
 #' @param datatype A vector of characters indicating data type(s) to be used. To be chosen among:
 #' \itemize{
@@ -98,22 +78,23 @@
 
 loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="presence",
                             confidence="all", stage=NULL, host="http://r.bgee.org", pathToData=getwd()){
-  allSpecies <- c(6239, 7227, 7955, 8364, 9031, 9258, 9544, 9593, 9597, 9598, 9606, 9823, 9913, 10090, 10116, 13616, 28377)
   ## Species is the only compulsory parameter
   if( length(species) == 0 ) {
     stop("Problem: you need to specify a species.")
   } else if ( length(species) > 1 ){
     stop("Problem: only one species is allowed.")
-  } else if ( sum(species %in% allSpecies) == 0 ){
-    stop("Problem: the specified speciesId is not among the list of species in Bgee.")
   }
+  ## TO DO: call listBgeeSpecies() here and save output in file
+  ## - check that species is available in Bgee
+  ## - convert species Id to species name (argument could be both?)
+  ## - add species name to pathTodata to uniformize with Andrea's part
 
   ## Test if parameters are in the range of allowed parameters
   if ( !sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
     stop("Problem: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\".")
   }
   if ( length(datatype) != sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) ){
-    cat("Warning: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for typos.\n")
+    cat("Warning: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for mistakes or typos.\n")
   }
   if ( calltype != "presence" ){
     stop("Problem: no other call types than present expression calls can be retrieved for now.")
@@ -121,6 +102,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if ( (confidence != "all") && (confidence != "high_quality") ){
     stop("Problem: the data confidence parameter specified is not among the allowed values (\"all\" or \"high_quality\").")
   }
+
+  ## TO DO: remove host argument and add release argument. See Bgee.R implementation
   if ( !grepl("^http://", host) && !grepl("^https://", host) ){
     host <- paste0("http://", host)
   }
@@ -128,7 +111,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     host <- paste0(host, "/")
   }
   if ( !file.exists(pathToData) ){
-    stop("Problem: please specify a valid path to data files.")
+    stop("Problem: please specify a valid path to store data files.")
   }
   if ( !grepl("/$", pathToData) ){
     pathToData <- paste0(pathToData, "/")
@@ -146,7 +129,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     cat("\nWarning: an organ relationships file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
-    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", species,"&attr_list=SOURCE_ID&attr_list=TARGET_ID")
+    myurl <- paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", species,"&attr_list=SOURCE_ID&attr_list=TARGET_ID")
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n  "))
