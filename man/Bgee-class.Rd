@@ -21,7 +21,7 @@ This Class retrieves annotation of experiments in Bgee database (get_annotation)
 \section{Fields}{
 
 \describe{
-\item{\code{species}}{A character indicating the species to be used, in the form "Genus_species". Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.}
+\item{\code{species}}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicatic spcies NCBI taxonomic idea. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.}
 
 \item{\code{datatype}}{A character of data platform. Quantitative expression levels can be downloaded for two data types:
 \itemize{

@@ -15,17 +15,18 @@
 
 # Function displaying the user a data frame describing all releases available for Bgee
 listRelease <- function(release=NULL){
+  cat("Downloading release information from Bgee...\n")
   allReleases <- .getRelease()
   if (length(release)==1){
     if (sum(allReleases$release == gsub("_", ".", release))==1){
+      cat(paste0("Only displaying information from targeted release ", gsub("_", ".", release), "\n"))
       allReleases <- allReleases[allReleases$release == gsub("_", ".", release), ]
     } else {
-      stop("ERROR: The specified release number is invalid.")
+      stop("ERROR: The specified release number is invalid or is not available for BgeeDB.")
     }
   }
   return(allReleases)
 }
-## TO DO: add some messages to the user
 
 # Function returning a data frame describing all releases available for Bgee
 .getRelease <- function(){

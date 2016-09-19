@@ -2,6 +2,10 @@
 #'
 #' @param release A character specifying a targeted release number. In the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". If not specified, the latest release is used.
 #'
+#' @param allReleases A data frame wiht information on all releases. Avoid redownloading this information.
+#'
+#' @param ordering A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.
+#'
 #' @return A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 #'
 #' @examples{
@@ -11,8 +15,11 @@
 #' @author Julien Roux
 #' @export
 
-listBgeeSpecies <- function(release=NULL){
-  allReleases <- .getRelease()
+listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
+  if (length(allReleases)==0) {
+    cat("Querying Bgee to get release information...\n")
+    allReleases <- .getRelease()
+  }
   if (length(release)==0) {
     release <- gsub("\\.", "_", allReleases$release[1])
   } else if (length(release)==1){
@@ -20,16 +27,16 @@ listBgeeSpecies <- function(release=NULL){
     release <- gsub("\\.", "_", release)
     # test if required release exists
     if (sum(allReleases$release == gsub("_", ".", release))!=1){
-      stop("ERROR: The specified release number is invalid")
+      stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
     }
   } else {
     stop("ERROR: The specified release number is invalid.")
   }
 
-  # Creating the webservice URL to get all species information
+  cat(paste0("Building URL to query species in Bgee release ", release, "...\n"))
   host <- allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)]
   myurl <- paste0(host, "?page=dao&action=org.bgee.model.dao.api.species.SpeciesDAO.getAllSpecies&display_type=tsv&attr_list=id&attr_list=genus&attr_list=species_name&attr_list=common_name")
-  # TO DO: probably some parameters to add to this URL to show data types
+  # TO DO: add parameters to this URL to show data types. Headers are assumed to be "rna_seq", "affymetrix", "in_situ", and "est", and values TRUE or FALSE
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
@@ -37,7 +44,7 @@ listBgeeSpecies <- function(release=NULL){
   options(timeout = 600)
 
   ## Query webservice
-  cat(paste0("Query URL successfully built (", myurl,")\nSubmitting URL to Bgee webservice\n  "))
+  cat(paste0("Submitting URL to Bgee webservice... (", myurl,")\n"))
   download.file(myurl, destfile = file.path(getwd(), "allSpecies.tsv"))
 
   ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -54,6 +61,13 @@ listBgeeSpecies <- function(release=NULL){
     file.remove(file.path(getwd(), "allSpecies.tsv"))
     stop(paste0("ERROR: The queried file is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
   }
-  return(allSpecies)
+
+  if (length(ordering) == 0){
+    return(allSpecies)
+  } else if(length(ordering) == 1 & is.numeric(ordering) & ordering <= length(allSpecies[1,])){
+    return(allSpecies[order(allSpecies[,ordering]),])
+  } else {
+    cat(paste0("Invalid ordering parameter, returning the data frame unsorted.\n"))
+    return(allSpecies)
+  }
 }
-## TO DO: sort species based on speciesId? Genus/species name?
