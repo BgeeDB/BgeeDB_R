@@ -432,6 +432,12 @@ format_data = function(data, calltype = "all", stats = NULL){
   }
   if(is.data.frame(expr$assayData)){
     # one data matrix
+
+    ## sort objects to have samples in the same order
+    expr$assayData <- expr$assayData[, order(names(expr$assayData))]
+    expr$pheno <- expr$pheno[order(sampleNames(expr$pheno))]
+
+    ## create ExpressionSet object
     eset <- new('ExpressionSet',
                 exprs=as.matrix(expr$assayData),
                 phenoData=expr$pheno,
@@ -439,6 +445,11 @@ format_data = function(data, calltype = "all", stats = NULL){
   } else if(is.list(expr$assayData)){
     # multiple data matrices
     eset <- mapply(function(x,y,z){
+      ## sort objects to have samples in the same order
+      x <- x[, order(names(x))]
+      y <- y[order(sampleNames(y))]
+
+      ## create ExpressionSet object
       new('ExpressionSet',
           exprs=as.matrix(x),
           phenoData=y,
