@@ -15,7 +15,7 @@
 #'
 #' @return topAnatObject, a topGO-compatible object ready for gene set enrichment testing.
 #'
-#' @author Julien Roux \email{julien.roux@unil.ch}.
+#' @author Julien Roux
 #'
 #' @examples{
 #'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
@@ -53,7 +53,7 @@
 #'                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
 #'                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
 #'                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-#'                    "ENSMUSG00000027496")
+#'                     "ENSMUSG00000027496")
 #'   myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=1)
 #' }
 #'
@@ -111,7 +111,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 }
 
 #################################################################
-## Sets of functions written wiht help of Adrian Alexa (author of the topGO package, personnal communication) to make topGO work with another ontology than the Gene Ontology
+## Sets of functions written with help of Adrian Alexa (author of the topGO package, personnal communication) to make topGO work with another ontology than the Gene Ontology
 
 .annFUN.gene2Nodes <- function(feasibleGenes = NULL, gene2Nodes) {
   ## Restrict the mappings to the feasibleGenes set
@@ -242,7 +242,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     packageName <- getNativeSymbolInfo("R_do_new_object")$package[['name']]
     .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)
   }
-  
+
   ## some checking
   if(is.null(names(allGenes)))
     stop("allGenes must be a named vector")

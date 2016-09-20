@@ -2,7 +2,7 @@
 #'
 #' @param release A character specifying a targeted release number. In the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". If not specified, the latest release is used.
 #'
-#' @param allReleases A data frame wiht information on all releases. Avoid redownloading this information.
+#' @param allReleases A data frame with information on all releases. Avoid redownloading this information if .getRelease() already called.
 #'
 #' @param ordering A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.
 #'

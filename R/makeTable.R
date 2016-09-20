@@ -15,7 +15,7 @@
 #'
 #' @return A data frame with significantly enriched anatomical structures, sorted by p-value.
 #'
-#' @author Julien Roux \email{julien.roux@unil.ch}.
+#' @author Julien Roux
 #'
 #' @examples{
 #'  ## Launch topGO test on data loaded from Bgee
@@ -54,10 +54,10 @@
 #'                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
 #'                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
 #'                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-#'                    "ENSMUSG00000027496")
+#'                     "ENSMUSG00000027496")
 #'   myTopAnatObject <- topAnat(myTopAnatData, geneList)
 #'   resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
-#'  ## Format results
+#'   ## Format results
 #'   tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 #' }
 #' @import stats

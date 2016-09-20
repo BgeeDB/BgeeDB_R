@@ -90,7 +90,7 @@
 #' @details The expression data come from Bgee (http://.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
 #' This Class retrieves annotation of experiments in Bgee database (get_annotation), downloads the data (get_data), and formats the data into expressionSet object (format_data). See examples and vignette.
 #'
-#' @field species A character indicating the species to be used, in the form "Genus_species", or a numeric indicatic spcies NCBI taxonomic idea. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.
+#' @field species A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.
 #'
 #' @field datatype A character of data platform. Quantitative expression levels can be downloaded for two data types:
 #' \itemize{
@@ -100,11 +100,9 @@
 #' @field experiment.id An ArrayExpress or GEO accession, e.g., GSE30617
 #' On default is NULL: takes all available experiments for specified species and datatype.
 #'
-#' @field pathToData Path to the directory where the data files are stored / will be stored. Default is a folder names from used species in working directory.
+#' @field pathToData Path to the directory where the data files are stored. By default the working directory is used.
 #'
 #' @field release Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.
-#'
-#' @field data A dataframe of downloaded Bgee data.
 #'
 #' @field calltype A character.
 #'  \itemize{
@@ -113,11 +111,11 @@
 #'    \item{"all"}}
 #' Retrieve intensities only for present (expressed) genes, present high quality genes, or all genes. The default is present.
 #'
-#' @field stats A character. The expression values can be retrieved in RPKMs and raw counts:
+#' @field stats A character indicating what expression values should be used in the formatted data expressionSet object.
 #'  \itemize{
-#'    \item{"rpkm"}
-#'    \item{"counts"}
-#'    \item{"intensities"}
+#'    \item{"rpkm" for RNA-seq}
+#'    \item{"counts" for RNA-seq}
+#'    \item{"intensities" for Affymetrix microarrays}
 #'    }
 #'The default is RPKMs for RNA-seq and intensities for microarray.
 #'
@@ -127,7 +125,7 @@
 #'  \item{\code{get_data()}, if experiment ID is empty, returns a list of experiments. If specified experiment ID, then returns the dataframe of the chosen experiment}
 #'  \item{\code{format_data()}, if experiment ID is empty, returns a list of ExpressionSet objects. If specified experiment ID, then returns an ExpressionSet object}}
 #'
-#' @author Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
+#' @author Andrea Komljenovic and Julien Roux.
 #'
 #' @examples{
 #'  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
@@ -173,7 +171,6 @@ initialize=function(...) {
     stop("ERROR: Choose correct datatype argument: 'affymetrix' or 'rna_seq'.")
   }
 
-  # TO DO: code below might also be used in loadTopAnat.R function
   cat("Querying Bgee to get release information...\n")
   allReleases <- .getRelease()
   if (length(release)==0) {
@@ -205,7 +202,7 @@ initialize=function(...) {
       speciesId <<- as.numeric(species)
       speciesName <<- paste(allSpecies[allSpecies$ID == species, 2:3], collapse="_")
     }
-  } else if (is.character(species)){
+  } else {
     speciesSplitted <- unlist(strsplit(species, split="_"))
     if (sum(allSpecies$GENUS == speciesSplitted[1] & allSpecies$SPECIES_NAME == speciesSplitted[2]) != 1){
       stop(paste0("ERROR: The specified species name is invalid, or not available in Bgee release ", release, "."))
@@ -246,7 +243,7 @@ initialize=function(...) {
     pathToData <<- paste0(getwd(), "/", speciesName, "_Bgee_", release)
   } else if (length(pathToData)==1){
     if ( !file.exists(pathToData) ){
-      stop("Problem: please specify a valid path to store data files.")
+      stop("ERROR: please specify a valid and existing path to store data files.")
     } else {
       pathToData <<- paste0(pathToData, "/", speciesName, "_Bgee_", release)
     }
