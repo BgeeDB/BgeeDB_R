@@ -171,7 +171,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     myurl <- paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID")
 
     ## Query webservice
-    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n  "))
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     download.file(myurl, destfile = paste0(pathToData, "/", organRelationshipsFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -198,7 +198,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", speciesId, "&attr_list=ID&attr_list=NAME")
 
     ## Query webservice
-    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n  "))
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     download.file(myurl, destfile = paste0(pathToData, "/", organNamesFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -253,7 +253,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     }
 
     ## Query webservice
-    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n  "))
+    cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     download.file(myurl, destfile = paste0(pathToData, "/", gene2anatomyFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
