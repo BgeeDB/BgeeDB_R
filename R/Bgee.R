@@ -213,12 +213,11 @@ initialize=function(...) {
   }
 
   ## check data type availability for chosen species
-  #if( datatype == "rna_seq" & allSpecies$rna_seq[allSpecies$ID == speciesId] == FALSE){
-  #  stop("ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
-  #} else if(datatype == "affymetrix" & allSpecies$affymetrix[allSpecies$ID == speciesId] == FALSE){
-  #  stop("ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
-  #}
-  ## TO DO: uncomment code above when Fred has implemented webservice retrieval of data avaibility
+  if( datatype == "rna_seq" & allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE){
+    stop("ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
+  } else if(datatype == "affymetrix" & allSpecies$AFFYMETRIX[allSpecies$ID == speciesId] == FALSE){
+    stop("ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
+  }
 
   # Creating the FTP URL to get data and annotation
   myurl <<- paste0(allReleases$FTP.URL[allReleases$release == gsub("_", ".", release)], "download/processed_expr_values/", datatype, "/", speciesName, "/")

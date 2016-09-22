@@ -25,7 +25,8 @@ listRelease <- function(release=NULL){
       stop("ERROR: The specified release number is invalid or is not available for BgeeDB.")
     }
   }
-  return(allReleases)
+  ## Only return the columns of interest to the user
+  return(allReleases[, 1:4])
 }
 
 # Function returning a data frame describing all releases available for Bgee

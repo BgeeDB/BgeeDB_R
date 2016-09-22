@@ -35,8 +35,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
 
   cat(paste0("Building URL to query species in Bgee release ", release, "...\n"))
   host <- allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)]
-  myurl <- paste0(host, "?page=dao&action=org.bgee.model.dao.api.species.SpeciesDAO.getAllSpecies&display_type=tsv&attr_list=id&attr_list=genus&attr_list=species_name&attr_list=common_name")
-  # TO DO: add parameters to this URL to show data types. Headers are assumed to be "rna_seq", "affymetrix", "in_situ", and "est", and values TRUE or FALSE
+  myurl <- paste0(host, "?page=species&display_type=tsv")
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
