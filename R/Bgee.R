@@ -115,9 +115,9 @@
 #'  \itemize{
 #'    \item{"rpkm" for RNA-seq}
 #'    \item{"counts" for RNA-seq}
+#'    \item{"tpm" for RNA-seq (for Bgee release 14 and above only)}
 #'    \item{"intensities" for Affymetrix microarrays}
 #'    }
-#'The default is RPKMs for RNA-seq and intensities for microarray.
 #'
 #' @return
 #' \itemize{
@@ -155,8 +155,9 @@ fields = list(
   release = "character",
   calltype = "character",
   stats = "character",
-  myurl = "character",
-  fnames = "character"
+  annotationUrl = "character",
+  experimentUrl = "character",
+  allexperimentsUrl = "character"
 ),
 
 methods = list(
@@ -213,29 +214,32 @@ initialize=function(...) {
   }
 
   ## check data type availability for chosen species
-  if( datatype == "rna_seq" & allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE){
+  if(datatype == "rna_seq" & allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE){
     stop("ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
   } else if(datatype == "affymetrix" & allSpecies$AFFYMETRIX[allSpecies$ID == speciesId] == FALSE){
     stop("ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
   }
 
-  # Creating the FTP URL to get data and annotation
-  myurl <<- paste0(allReleases$FTP.URL[allReleases$release == gsub("_", ".", release)], "download/processed_expr_values/", datatype, "/", speciesName, "/")
-  ## list files on the FTP at this URL
-  listFiles <- function(url) {
-    tmpcon <- textConnection(getURL(url), "r")
-    allFiles <- read.table(tmpcon)
-    close(tmpcon)
-    ## Keep only last column
-    allFiles <- as.character(allFiles[, ncol(allFiles)])
-    return(allFiles)
+  ## create URLs
+  if(datatype == "rna_seq"){
+    ## annotation file
+    annotationUrl <<- as.character(allReleases$RNA.Seq.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
+    ## Data from specific experiment
+    experimentUrl <<- as.character(allReleases$RNA.Seq.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+    ## Data from all experiments
+    allexperimentsUrl <<- as.character(allReleases$RNA.Seq.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+  } else if (datatype == "affymetrix"){
+    ## annotation file
+    annotationUrl <<- as.character(allReleases$Affymetrix.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
+    ## Data from specific experiment
+    experimentUrl <<- as.character(allReleases$Affymetrix.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+    ## Data from all experiments
+    allexperimentsUrl <<- as.character(allReleases$Affymetrix.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
   }
-  fnames <<- try(listFiles(myurl), silent=FALSE)
-  if (class(fnames) == "try-error") {
-    stop("ERROR: Connection to FTP was not successful.")
-  } else if (length(fnames)==0){
-    stop("ERROR: Connection to FTP was successful, but target directory seems empty.")
-  }
+  annotationUrl <<- gsub("SPECIESNAMEPATTERN", speciesName, annotationUrl)
+  allexperimentsUrl <<- gsub("SPECIESNAMEPATTERN", speciesName, allexperimentsUrl)
+  experimentUrl <<- gsub("SPECIESNAMEPATTERN", speciesName, experimentUrl)
+  ## Note: one more substitution is needed here for the experiment id. This is done later in the get_data() function.
 
   ## check path of folder to store cached files
   if(length(pathToData)==0) {
@@ -258,58 +262,58 @@ initialize=function(...) {
 
 get_annotation = function(...){
 
-    ## Annotation file names
-    if (datatype == "affymetrix"){
-        annotation.experiments <- paste0(pathToData, "/", speciesName, "_Affymetrix_experiments.tsv")
-        annotation.samples     <- paste0(pathToData, "/", speciesName, "_Affymetrix_chips.tsv")
-    } else if (datatype == "rna_seq"){
-        annotation.experiments <- paste0(pathToData, "/", speciesName, "_RNA-Seq_experiments.tsv")
-        annotation.samples     <- paste0(pathToData, "/", speciesName, "_RNA-Seq_libraries.tsv")
-    }
+  annotation.file <- basename(annotationUrl)
 
-    ## Check if file is already in cache. If so, skip download step
-    if (file.exists(annotation.experiments) && file.exists(annotation.samples)){
-        cat("WARNING: annotation files for this species were found in the download directory and will be used as is. Please delete the files and rerun the function, if you want the data to be updated.\n")
-    } else {
-        cat("Downloading annotation files...\n")
-        if (datatype == "affymetrix"){
-            annotation.file <- paste0(speciesName, "_Affymetrix_experiments_chips.zip")
-        } else if (datatype == "rna_seq"){
-            annotation.file <- paste0(speciesName, "_RNA-Seq_experiments_libraries.zip")
-        }
-        if (sum(annotation.file %in% fnames) == 0){
-            stop("WARNING. The annotation file was not found on the FTP repository.\n")
-        }
-        download.file(file.path(myurl, annotation.file),
-                      destfile=file.path(pathToData, annotation.file),
-                      mode='wb')
-        unzip(paste0(pathToData, "/", annotation.file), exdir=pathToData)
-        cat("Saved annotation files in", pathToData, "folder.\n")
-        ## Clean directory
-        file.remove(file.path(pathToData, annotation.file))
-    }
+  ## To get the names of experiment and sample files, we start frome the annotation.file
+  if (datatype == "affymetrix"){
+    annotation.experiments <- gsub("_chips", "", annotation.file)
+  } else if (datatype == "rna_seq"){
+    annotation.experiments <- gsub("_libraries", "", annotation.file)
+  }
+  annotation.experiments <- gsub("zip", "tsv", annotation.experiments)
+  annotation.samples     <- gsub("_experiments", "", annotation.file)
+  annotation.samples     <- gsub("zip", "tsv", annotation.samples)
 
-    ## Read the 2 annotation files
-    myanno <- list(sample_annotation=as.data.frame(fread(annotation.samples)), experiment_annotation=as.data.frame(fread(annotation.experiments)))
-    ## remove spaces in headers
-    for (i in 1:length(myanno)){
-      names(myanno[[i]]) <- make.names(names(myanno[[i]]))
+  ## Check if file is already in cache. If so, skip download step
+  if (file.exists(file.path(pathToData, annotation.experiments)) && file.exists(file.path(pathToData, annotation.samples))){
+    cat("WARNING: annotation files for this species were found in the download directory and will be used as is. Please delete the files and rerun the function, if you want the data to be updated.\n")
+  } else {
+    cat("Downloading annotation files...\n")
+
+    success <- download.file(annotationUrl,
+                             destfile=file.path(pathToData, annotation.file),
+                             mode='wb')
+    if (success != 0){
+      stop("ERROR: Download from FTP was not successful.")
     }
-    return(myanno)
+    unzip(file.path(pathToData, annotation.file), exdir=pathToData)
+    cat("Saved annotation files in", pathToData, "folder.\n")
+    ## Clean directory and remove .zip file
+    file.remove(file.path(pathToData, annotation.file))
+    ## Test if extracted files are OK
+    if (!(file.exists(file.path(pathToData, annotation.experiments)) & file.exists(file.path(pathToData, annotation.samples)))){
+      stop("ERROR: extraction of annotation files from downloaded zip file went wrong.")
+    }
+  }
+
+  ## Read the 2 annotation files
+  myanno <- list(sample_annotation=as.data.frame(fread(file.path(pathToData, annotation.samples))),
+                 experiment_annotation=as.data.frame(fread(file.path(pathToData, annotation.experiments)))
+                 )
+  ## remove spaces in headers
+  for (i in 1:length(myanno)){
+    names(myanno[[i]]) <- make.names(names(myanno[[i]]))
+  }
+  return(myanno)
 },
 
 
 get_data = function(..., experiment.id = NULL){
 
     if (length(experiment.id) == 0){
-        cat("The experiment is not defined. Hence taking all", datatype, "experiments available for", speciesName, ".\n")
+        cat(paste0("The experiment is not defined. Hence taking all ", datatype, " experiments available for ", speciesName, ".\n"))
 
-        ## expression data file name
-        if (datatype == "affymetrix"){
-          all_expression_values <- paste0(speciesName, "_Affymetrix_probesets.zip")
-        } else if (datatype == "rna_seq"){
-          all_expression_values <- paste0(speciesName, "_RNA-Seq_read_counts_RPKM.zip")
-        }
+        all_expression_values <- basename(allexperimentsUrl)
 
         ## check if RDS file already in cache. If so, skip download step
         if (file.exists(paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))){
@@ -317,22 +321,19 @@ get_data = function(..., experiment.id = NULL){
             data_all <- readRDS(file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
         } else {
             cat("Downloading expression data...\n")
-            if (sum( all_expression_values %in% fnames) == 0){
-                stop("WARNING. The expression data file was not found on the FTP repository.")
+
+            success <- download.file(allexperimentsUrl,
+                                     destfile=file.path(pathToData, all_expression_values),
+                                     mode='wb')
+            if (success != 0){
+              stop("ERROR: Download from FTP was not successful.")
             }
-            download.file(file.path(myurl, all_expression_values),
-                          destfile=file.path(pathToData, all_expression_values),
-                          mode='wb')
             cat("Saved expression data file in", pathToData, "folder.\n")
             cat("Unzipping file...\n")
-            unzip(file.path(pathToData, all_expression_values), exdir=pathToData)
-            if(datatype == "affymetrix"){
-                temp.files <- list.files(path = pathToData, pattern=".*_probesets_.*.zip$")
-            } else {
-                temp.files <- list.files(path = pathToData, pattern=".*_RPKM_.*.zip$")
-            }
-            # print(temp.files)
-            mydata <- lapply(file.path(pathToData, temp.files), unzip, exdir=pathToData)
+            temp.files <- unzip(file.path(pathToData, all_expression_values), exdir=pathToData)
+            #print(temp.files)
+            mydata <- lapply(temp.files, unzip, exdir=pathToData)
+            #print(mydata)
             data_all <- lapply(unlist(mydata, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
             ## remove spaces in headers
@@ -342,36 +343,40 @@ get_data = function(..., experiment.id = NULL){
 
             cat("Saving all data in .rds file...\n")
             saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
+
+            ## cleaning up downloaded files
+            try(file.remove(temp.files))
+            try(file.remove(unlist(mydata, rec = TRUE)))
+            try(file.remove(file.path(pathToData, all_expression_values)))
         }
     } else if( length(experiment.id) == 1){
-      experiment.id <<- experiment.id
+        experiment.id <<- experiment.id
         if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$", experiment.id, perl = TRUE)){
             stop("The experiment.id field needs to be a GEO or ArrayExpress accession, e.g., 'GSE30617' or 'E-MEXP-2011'")
         } else {
             cat("Downloading expression data for the experiment", experiment.id, "\n")
 
-            ## expression data file name
-            if (datatype == "affymetrix"){
-                temp.file <- paste0(speciesName, "_Affymetrix_probesets_", experiment.id,".zip")
-            } else if (datatype == "rna_seq"){
-                temp.file <- paste0(speciesName, "_RNA-Seq_read_counts_RPKM_", experiment.id,".tsv.zip")
-            }
+            ## Since experiment Id is defined now, we can substitute it in the URL
+            experimentUrl <<- gsub("EXPIDPATTERN", experiment.id, experimentUrl)
+            temp.file <- file.path(pathToData, basename(experimentUrl))
+
             ## check if RDS file already in cache. If so, skip download step
             if (file.exists(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
                 cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id, "and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
                 data_all <- readRDS(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")
-                if (sum( temp.file %in% fnames) == 0){
-                    stop("WARNING. The expression data file for this experiment was not found on the FTP repository. Please use get_annotation() function to be sure it is avilable from Bgee.")
+
+                success <- download.file(experimentUrl,
+                                         destfile=temp.file,
+                                         mode='wb')
+                if (success != 0){
+                  stop("ERROR: Download from FTP was not successful.")
                 }
-                download.file(file.path(myurl, temp.file),
-                              destfile=file.path(pathToData, temp.file),
-                              mode='wb')
                 cat("Saved expression data file in", pathToData, "folder.\n")
-                cat("Unzipping file...\n")
+                cat(paste0("Unzipping ", temp.file," file...\n"))
                 # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
-                mydata <- unzip(file.path(pathToData, temp.file), exdir=pathToData)
+                mydata <- unzip(temp.file, exdir=pathToData)
                 data_all <- lapply(mydata, function(x) as.data.frame(fread(x)))
 
                 ## remove spaces in headers
@@ -384,34 +389,33 @@ get_data = function(..., experiment.id = NULL){
                 }
                 cat("Saving all data in .rds file...\n")
                 saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
+
+                ## cleaning up downloaded files
+                try(file.remove(temp.file))
+                try(file.remove(mydata))
             }
         }
     } else {
         stop("Please provide only one experiment ID. If you want to get all data for this species and datatype, leave experiment.id empty")
     }
-    ## cleaning up downloaded files
-    if(datatype == "affymetrix"){
-        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_probesets.*.zip"))))
-        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_probesets.*.tsv"))))
-    } else {
-        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_RPKM.*.zip"))))
-        try(file.remove(file.path(pathToData, list.files(path=pathToData,  pattern=".*_RPKM.*.tsv"))))
-    }
+
+
     return(data_all)
     cat("Done.")
 },
 
 
 format_data = function(data, calltype = "all", stats = NULL){
-  if (length(stats) == 0){
-    stop("Please specify the stats parameters. Should be set to \"intensities\" for Affymetrix data and to \"rpkm\" or \"counts\" for RNA-seq data.")
-  } else {
-    if (datatype == "affymetrix" & stats != "intensities"){
-        stop("For Affymetrix microarray data, stats parameter should be set to \"intensities\"")
-    } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts'))){
-        stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
-    }
+  if (datatype == "affymetrix" & stats != "intensities"){
+    cat("WARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\", this will be used in the next steps.\n")
+    stats <<- "intensities"
+  } else if (datatype == "rna_seq" & length(stats) == 0){
+    stop("Please specify the stats parameters. Should be set to \"rpkm\" or \"counts\"")
+  } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
+    ## TO DO: add TPM to documentation
+    stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
   }
+
   if(!(calltype %in% c('present','present high quality','all'))){
     stop("Choose between displaying intensities for present genes, present high quality genes or all genes, e.g., 'present', 'present high quality', 'all' ")
   }
@@ -420,6 +424,10 @@ format_data = function(data, calltype = "all", stats = NULL){
 
   if(stats  == "rpkm"){
     columns <- c("Library.ID", "Gene.ID", "RPKM")
+    expr <- .extract.data(data, columns, calltype)
+  } else if(stats  == "tpm"){
+    ## TO DO: for Bgee 13, output error message for TPM
+    columns <- c("Library.ID", "Gene.ID", "TPM")
     expr <- .extract.data(data, columns, calltype)
   } else if (stats == "counts"){
     columns <- c("Library.ID", "Gene.ID", "Read.count")
