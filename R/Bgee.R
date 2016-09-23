@@ -1,88 +1,3 @@
-# Takes in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
-.extract.data <- function(data, columns, calltype){
-    # if multiple data frames (multiple experiments or chips)
-    if(class(data) == "list"){
-        calls <- lapply(data, function(x) .calling(x, calltype, columns[3]))
-        expr <- lapply(calls,
-                       function(x) {
-                         # subset the data to keep relevant columns
-                         xt <- x[, columns[1:3]]
-                         # from sample and feature columns, create a matrix with features as rows and samples as columns
-                         xtt <- xt %>% spread_(columns[1], columns[3])
-                         rownames(xtt) <- xtt[,columns[2]]
-                         # Remove feature column to keep only data
-                         xtt[,-1, drop = FALSE]
-                       }
-                     )
-        cat("Extracting features...\n")
-        features <- mapply(.extract.data.feature, calls, expr, rep(list(columns), times=length(calls)))
-        cat("Done...\n")
-        cat("Extracting pheno...\n")
-        phenos <- mapply(.extract.data.pheno, calls, rep(list(columns[1]), times=length(calls)))
-        cat("Done...\n")
-    } else {
-        # if only a single dataframe
-        calls <- .calling(data, calltype, columns[3])
-        # subset the data to keep relevant columns
-        xt <- calls[, columns[1:3]]
-        xtt <- xt %>% spread_(columns[1], columns[3])
-        rownames(xtt) <- xtt[,columns[2]]
-        # Remove feature column to keep only data
-        expr <- xtt[,-1, drop = FALSE]
-
-        cat("Extracting features...\n")
-        features <- .extract.data.feature( calls, expr, columns)
-        cat("Done...\n")
-        cat("Extracting pheno...\n")
-        phenos <- .extract.data.pheno( calls, columns[1])
-        cat("Done...\n")
-    }
-    return(list(assayData = expr, pheno = phenos, features = features, calls = calls))
-}
-
-# Extract feature data (probesets or genes)
-.extract.data.feature <- function(calls, expr, columns){
-    # RNA-seq
-    if(length(columns) == 3){
-        fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[2], drop = FALSE]
-    }
-    # Affymetrix, 4 columns
-    else if(length(columns) == 4){
-        fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[c(2,4)], drop = FALSE]
-    }
-    rownames(fdata) <- fdata[, columns[2]]
-    fdata <- as(fdata, "AnnotatedDataFrame")
-    return(fdata)
-}
-
-# Extract annotation of samples
-.extract.data.pheno <- function(calls, column){
-    phdata <- calls[, c(column, "Anatomical.entity.ID", "Anatomical.entity.name", "Stage.ID", "Stage.name")]
-    phdata <- phdata[!duplicated(phdata[,column]), ]
-    rownames(phdata) <- phdata[, column]
-    phdata <- as.data.frame(phdata)
-    metadata <- data.frame(labelDescription=colnames(phdata),
-                           row.names=colnames(phdata))
-    phenodata <- new("AnnotatedDataFrame",
-                     data=phdata,
-                     varMetadata=metadata
-                     )
-    return(phenodata)
-}
-
-.calling <- function(x, calltype, column){
-    ## check datatype
-    if(calltype == "present"){
-        cat("keeping only present genes...\n")
-        x[(x$Detection.flag == "absent"), column] <- NA
-    } else if (calltype == "present high quality"){
-        cat("keeping only present high quality genes...\n")
-        x[which(x$Detection.flag == "absent" | x$Detection.quality == "poor quality"), column] <- NA
-    }
-    return(x)
-}
-
-
 ########################
 #' @title Retrieving the Bgee database data
 #' @description A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
@@ -150,11 +65,8 @@ fields = list(
   speciesName = "character",
   speciesId = "numeric",
   datatype = "character",
-  experiment.id = "character",
   pathToData = "character",
   release = "character",
-  calltype = "character",
-  stats = "character",
   annotationUrl = "character",
   experimentUrl = "character",
   allexperimentsUrl = "character"
@@ -264,7 +176,7 @@ get_annotation = function(...){
 
   annotation.file <- basename(annotationUrl)
 
-  ## To get the names of experiment and sample files, we start frome the annotation.file
+  ## To get the names of experiment and sample files, we start from the annotation.file
   if (datatype == "affymetrix"){
     annotation.experiments <- gsub("_chips", "", annotation.file)
   } else if (datatype == "rna_seq"){
@@ -279,7 +191,6 @@ get_annotation = function(...){
     cat("WARNING: annotation files for this species were found in the download directory and will be used as is. Please delete the files and rerun the function, if you want the data to be updated.\n")
   } else {
     cat("Downloading annotation files...\n")
-
     success <- download.file(annotationUrl,
                              destfile=file.path(pathToData, annotation.file),
                              mode='wb')
@@ -321,7 +232,6 @@ get_data = function(..., experiment.id = NULL){
             data_all <- readRDS(file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
         } else {
             cat("Downloading expression data...\n")
-
             success <- download.file(allexperimentsUrl,
                                      destfile=file.path(pathToData, all_expression_values),
                                      mode='wb')
@@ -331,9 +241,7 @@ get_data = function(..., experiment.id = NULL){
             cat("Saved expression data file in", pathToData, "folder.\n")
             cat("Unzipping file...\n")
             temp.files <- unzip(file.path(pathToData, all_expression_values), exdir=pathToData)
-            #print(temp.files)
             mydata <- lapply(temp.files, unzip, exdir=pathToData)
-            #print(mydata)
             data_all <- lapply(unlist(mydata, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
             ## remove spaces in headers
@@ -345,12 +253,11 @@ get_data = function(..., experiment.id = NULL){
             saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
 
             ## cleaning up downloaded files
-            try(file.remove(temp.files))
-            try(file.remove(unlist(mydata, rec = TRUE)))
-            try(file.remove(file.path(pathToData, all_expression_values)))
+            file.remove(temp.files)
+            file.remove(unlist(mydata, rec = TRUE))
+            file.remove(file.path(pathToData, all_expression_values))
         }
     } else if( length(experiment.id) == 1){
-        experiment.id <<- experiment.id
         if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$", experiment.id, perl = TRUE)){
             stop("The experiment.id field needs to be a GEO or ArrayExpress accession, e.g., 'GSE30617' or 'E-MEXP-2011'")
         } else {
@@ -366,12 +273,11 @@ get_data = function(..., experiment.id = NULL){
                 data_all <- readRDS(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")
-
                 success <- download.file(experimentUrl,
                                          destfile=temp.file,
                                          mode='wb')
                 if (success != 0){
-                  stop("ERROR: Download from FTP was not successful.")
+                  stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the get_annotation() function.")
                 }
                 cat("Saved expression data file in", pathToData, "folder.\n")
                 cat(paste0("Unzipping ", temp.file," file...\n"))
@@ -391,14 +297,13 @@ get_data = function(..., experiment.id = NULL){
                 saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
 
                 ## cleaning up downloaded files
-                try(file.remove(temp.file))
-                try(file.remove(mydata))
+                file.remove(temp.file)
+                file.remove(mydata)
             }
         }
     } else {
         stop("Please provide only one experiment ID. If you want to get all data for this species and datatype, leave experiment.id empty")
     }
-
 
     return(data_all)
     cat("Done.")
@@ -406,14 +311,20 @@ get_data = function(..., experiment.id = NULL){
 
 
 format_data = function(data, calltype = "all", stats = NULL){
-  if (datatype == "affymetrix" & stats != "intensities"){
-    cat("WARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\", this will be used in the next steps.\n")
-    stats <<- "intensities"
-  } else if (datatype == "rna_seq" & length(stats) == 0){
-    stop("Please specify the stats parameters. Should be set to \"rpkm\" or \"counts\"")
-  } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
-    ## TO DO: add TPM to documentation
+  if (length(stats) == 0){
+    if (datatype == "affymetrix"){
+      cat("WARNING: stats parameter set to \"intensities\" for the next steps.\n")
+      stats <- "intensities"
+    } else if (datatype == "rna_seq"){
+      stop("Please specify the stats parameters. Should be set to \"rpkm\" or \"counts\"")
+    }
+  } else if (datatype == "affymetrix" & stats != "intensities"){
+    cat("WARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\", this will be used for the next steps.\n")
+    stats <- "intensities"
+  } else if (datatype == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
     stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
+  } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
+    stop("Choose whether data formatting should create a matrix of RPKMs, TPMs or read counts, with stats option set as \"rpkm\", \"tpm\" or \"counts\"")
   }
 
   if(!(calltype %in% c('present','present high quality','all'))){
@@ -426,7 +337,6 @@ format_data = function(data, calltype = "all", stats = NULL){
     columns <- c("Library.ID", "Gene.ID", "RPKM")
     expr <- .extract.data(data, columns, calltype)
   } else if(stats  == "tpm"){
-    ## TO DO: for Bgee 13, output error message for TPM
     columns <- c("Library.ID", "Gene.ID", "TPM")
     expr <- .extract.data(data, columns, calltype)
   } else if (stats == "counts"){
@@ -467,3 +377,88 @@ format_data = function(data, calltype = "all", stats = NULL){
   return(eset)
 }
 ))
+
+# Takes in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
+.extract.data <- function(data, columns, calltype){
+  # if multiple data frames (multiple experiments or chips)
+  if(class(data) == "list"){
+    calls <- lapply(data, function(x) .calling(x, calltype, columns[3]))
+    expr <- lapply(calls,
+                   function(x) {
+                     # subset the data to keep relevant columns
+                     xt <- x[, columns[1:3]]
+                     # from sample and feature columns, create a matrix with features as rows and samples as columns
+                     xtt <- xt %>% spread_(columns[1], columns[3])
+                     rownames(xtt) <- xtt[, columns[2]]
+                     # Remove feature column to keep only data
+                     xtt[,-1, drop = FALSE]
+                   }
+    )
+    cat("Extracting features...\n")
+    features <- mapply(.extract.data.feature, calls, expr, rep(list(columns), times=length(calls)))
+    cat("Done...\n")
+    cat("Extracting pheno...\n")
+    phenos <- mapply(.extract.data.pheno, calls, rep(list(columns[1]), times=length(calls)))
+    cat("Done...\n")
+  } else {
+    # if only a single dataframe
+    calls <- .calling(data, calltype, columns[3])
+    # subset the data to keep relevant columns
+    xt <- calls[, columns[1:3]]
+    xtt <- xt %>% spread_(columns[1], columns[3])
+    rownames(xtt) <- xtt[, columns[2]]
+    # Remove feature column to keep only data
+    expr <- xtt[,-1, drop = FALSE]
+
+    cat("Extracting features...\n")
+    features <- .extract.data.feature( calls, expr, columns)
+    cat("Done...\n")
+    cat("Extracting pheno...\n")
+    phenos <- .extract.data.pheno( calls, columns[1])
+    cat("Done...\n")
+  }
+  return(list(assayData = expr, pheno = phenos, features = features, calls = calls))
+}
+
+# Extract feature data (probesets or genes)
+.extract.data.feature <- function(calls, expr, columns){
+  # RNA-seq
+  if(length(columns) == 3){
+    fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[2], drop = FALSE]
+  }
+  # Affymetrix, 4 columns
+  else if(length(columns) == 4){
+    fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[c(2,4)], drop = FALSE]
+  }
+  rownames(fdata) <- fdata[, columns[2]]
+  fdata <- as(fdata, "AnnotatedDataFrame")
+  return(fdata)
+}
+
+# Extract annotation of samples
+.extract.data.pheno <- function(calls, column){
+  phdata <- calls[, c(column, "Anatomical.entity.ID", "Anatomical.entity.name", "Stage.ID", "Stage.name")]
+  phdata <- phdata[!duplicated(phdata[, column]), ]
+  rownames(phdata) <- phdata[, column]
+  phdata <- as.data.frame(phdata)
+  metadata <- data.frame(labelDescription=colnames(phdata),
+                         row.names=colnames(phdata))
+  phenodata <- new("AnnotatedDataFrame",
+                   data=phdata,
+                   varMetadata=metadata
+  )
+  return(phenodata)
+}
+
+.calling <- function(x, calltype, column){
+  ## check datatype
+  if(calltype == "present"){
+    cat("keeping only present genes...\n")
+    x[(x$Detection.flag == "absent"), column] <- NA
+  } else if (calltype == "present high quality"){
+    cat("keeping only present high quality genes...\n")
+    x[which(x$Detection.flag == "absent" | x$Detection.quality == "poor quality"), column] <- NA
+  }
+  return(x)
+}
+

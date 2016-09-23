@@ -277,7 +277,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if (file.exists(file.path(pathToData, organRelationshipsFileName))){
     if (file.info(file.path(pathToData, organRelationshipsFileName))$size != 0) {
       tab <- read.table(file.path(pathToData, organRelationshipsFileName), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
-      organRelationships <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+      organRelationships <- tapply(as.character(tab$TARGET_ID), as.character(tab$SOURCE_ID), unique)
     } else {
       stop(paste0("File ", organRelationshipsFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
     }
@@ -299,8 +299,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if (file.exists(file.path(pathToData, gene2anatomyFileName))){
     if (file.info(file.path(pathToData, gene2anatomyFileName))$size != 0) {
       tab <- read.table(file.path(pathToData, gene2anatomyFileName), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
-      if(length(tab[,1]) != 0){
-        gene2anatomy <- tapply(as.character(tab[,2]), as.character(tab[,1]), unique)
+      if(length(tab$GENE_ID) != 0){
+        gene2anatomy <- tapply(as.character(tab$ANAT_ENTITY_ID), as.character(tab$GENE_ID), unique)
       } else {
         stop("There was no mapping of genes to anatomical structures found. Probably the parameters are too stringent, or this data type is absent in this species. See listBgeeSpecies() for data types availability.")
       }
@@ -314,7 +314,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   cat("\nAdding BGEE:0 as unique root of all terms of the ontology.........\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
   ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
-  missingParents <- organNames[!organNames[,1] %in% names(organRelationships), 1]
+  missingParents <- organNames$ID[!organNames$ID %in% names(organRelationships)]
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
   ## Add new keys

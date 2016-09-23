@@ -21,6 +21,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
     allReleases <- .getRelease()
   }
   if (length(release)==0) {
+    ## Take latest release
     release <- gsub("\\.", "_", allReleases$release[1])
   } else if (length(release)==1){
     # In case the release number is written with a dot
@@ -58,7 +59,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
   } else {
     ## delete the temporary file
     file.remove(file.path(getwd(), "allSpecies.tsv"))
-    stop(paste0("ERROR: The queried file is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    stop(paste0("ERROR: The queried file is truncated, there may be a temporary problem with the Bgee webservice."))
   }
 
   if (length(ordering) == 0){

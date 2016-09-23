@@ -6,10 +6,10 @@
 \usage{
 loadTopAnatData(species, datatype = c("rna_seq", "affymetrix", "est",
   "in_situ"), calltype = "presence", confidence = "all", stage = NULL,
-  host = "http://r.bgee.org", pathToData = getwd())
+  release = NULL, pathToData = getwd())
 }
 \arguments{
-\item{species}{A numeric indicating the NCBI taxonomic ID of the species to be used. Only species with expression data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.}
+\item{species}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.}
 
 \item{datatype}{A vector of characters indicating data type(s) to be used. To be chosen among:
 \itemize{
@@ -25,7 +25,7 @@ Including a data type that is not present in Bgee for a given species has no eff
 Only calls for significant detection of expression are implemented ("presence").
 Over-expression calls, based on differential expression analysis, will be implemented in the future.}
 
-\item{confidence}{A character indicating if only high quality expression calls should be retrieved.
+\item{confidence}{A character indicating if only high quality present calls should be retrieved.
 Options are "all" or "high_quality". Default is "all".}
 
 \item{stage}{A character indicating the targeted developmental stages for the analysis.
@@ -56,10 +56,9 @@ The most useful stages (going no deeper than level 3 of the ontology) include:
   }
 }}
 
-\item{host}{URL to Bgee webservice.
-Change host to access development or archive versions of Bgee. Default is "\url{http://r.bgee.org}" to access current Bgee release.}
+\item{release}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.}
 
-\item{pathToData}{Path to the directory where the data files are stored / will be stored. Default is the working directory.}
+\item{pathToData}{Path to the directory where the data files are stored. By default the working directory is used.}
 }
 \value{
 A list of 3 elements:
@@ -80,11 +79,11 @@ Anatomical structures are identified using IDs from the Uberon ontology (browsab
 }
 \examples{
 {
-  myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
 }
 
 }
 \author{
-Julien Roux \email{julien.roux at unil.ch}.
+Julien Roux
 }
 

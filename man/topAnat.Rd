@@ -61,12 +61,12 @@ To perform the enrichment test for expression in anatomical structures for each 
                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-                   "ENSMUSG00000027496")
+                    "ENSMUSG00000027496")
   myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=1)
 }
 
 }
 \author{
-Julien Roux \email{julien.roux@unil.ch}.
+Julien Roux
 }
 

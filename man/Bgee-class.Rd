@@ -21,7 +21,7 @@ This Class retrieves annotation of experiments in Bgee database (get_annotation)
 \section{Fields}{
 
 \describe{
-\item{\code{species}}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicatic spcies NCBI taxonomic idea. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.}
+\item{\code{species}}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.}
 
 \item{\code{datatype}}{A character of data platform. Quantitative expression levels can be downloaded for two data types:
 \itemize{
@@ -31,11 +31,9 @@ This Class retrieves annotation of experiments in Bgee database (get_annotation)
 \item{\code{experiment.id}}{An ArrayExpress or GEO accession, e.g., GSE30617
 On default is NULL: takes all available experiments for specified species and datatype.}
 
-\item{\code{pathToData}}{Path to the directory where the data files are stored / will be stored. Default is a folder names from used species in working directory.}
+\item{\code{pathToData}}{Path to the directory where the data files are stored. By default the working directory is used.}
 
 \item{\code{release}}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.}
-
-\item{\code{data}}{A dataframe of downloaded Bgee data.}
 
 \item{\code{calltype}}{A character.
  \itemize{
@@ -44,13 +42,13 @@ On default is NULL: takes all available experiments for specified species and da
    \item{"all"}}
 Retrieve intensities only for present (expressed) genes, present high quality genes, or all genes. The default is present.}
 
-\item{\code{stats}}{A character. The expression values can be retrieved in RPKMs and raw counts:
- \itemize{
-   \item{"rpkm"}
-   \item{"counts"}
-   \item{"intensities"}
-   }
-The default is RPKMs for RNA-seq and intensities for microarray.}
+\item{\code{stats}}{A character indicating what expression values should be used in the formatted data expressionSet object.
+\itemize{
+  \item{"rpkm" for RNA-seq}
+  \item{"counts" for RNA-seq}
+  \item{"tpm" for RNA-seq (for Bgee release 14 and above only)}
+  \item{"intensities" for Affymetrix microarrays}
+  }}
 }}
 \examples{
 {
@@ -65,6 +63,6 @@ The default is RPKMs for RNA-seq and intensities for microarray.}
 
 }
 \author{
-Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
+Andrea Komljenovic and Julien Roux.
 }
 

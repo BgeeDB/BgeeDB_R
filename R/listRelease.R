@@ -26,7 +26,7 @@ listRelease <- function(release=NULL){
     }
   }
   ## Only return the columns of interest to the user
-  return(allReleases[, 1:4])
+  return(allReleases[, c("release","release.date", "FTP.URL", "TopAnat.URL")])
 }
 
 # Function returning a data frame describing all releases available for Bgee
