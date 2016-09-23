@@ -86,7 +86,7 @@ The data from different samples will be listed in rows, one after the other. It 
 
 ```{r}
 # only present calls and rpkm values for GSE30617
-gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "expressed", stats = "rpkm")
+gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
 names(gene.expression.mouse.rpkm)
 ```
 
@@ -100,9 +100,9 @@ The ```loadTopAnatData()``` function loads a mapping from genes to anatomical st
 
 ```{r}
 # Loading calls of expression based on RNA-seq data only
-myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq")
+myTopAnatData <- loadTopAnatData(species="Mus_musculus", datatype="rna_seq")
 # Loading calls observed in embryonic stages only
-myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERON:0000068")
+myTopAnatData <- loadTopAnatData(species="Mus_musculus", datatype="rna_seq", stage="UBERON:0000068")
 
 # Look at the data
 lapply(myTopAnatData, head)

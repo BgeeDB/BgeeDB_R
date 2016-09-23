@@ -28,7 +28,7 @@ This Class retrieves annotation of experiments in Bgee database (get_annotation)
      \item{"rna_seq"}
      \item{"affymetrix"}}}
 
-\item{\code{experiment.id}}{An ArrayExpress or GEO accession, e.g., GSE30617
+\item{\code{experiment.id}}{An ArrayExpress or GEO accession, e.g., GSE30617. Used in get_data() function.
 On default is NULL: takes all available experiments for specified species and datatype.}
 
 \item{\code{pathToData}}{Path to the directory where the data files are stored. By default the working directory is used.}
@@ -46,7 +46,7 @@ Retrieve intensities only for present (expressed) genes, present high quality ge
 \itemize{
   \item{"rpkm" for RNA-seq}
   \item{"counts" for RNA-seq}
-  \item{"tpm" for RNA-seq (for Bgee release 14 and above only)}
+  \item{"tpm" for RNA-seq (Bgee release 14 and above only)}
   \item{"intensities" for Affymetrix microarrays}
   }}
 }}
