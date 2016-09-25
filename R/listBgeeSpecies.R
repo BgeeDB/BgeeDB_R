@@ -9,6 +9,9 @@
 #' @return A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 #'
 #' @examples{
+#'  listBgeeSpecies(release = "13.2")
+#'  # in order to order according to the IDs
+#'  listBgeeSpecies(release = "13.2", ordering = 1)
 #'  listBgeeSpecies()
 #' }
 #'
@@ -49,17 +52,20 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
 
   ## Read 5 last lines of file: should be empty indicating success of data transmission
   ## We cannot use a system call to UNIX command since some user might be on Windows
-  tmp <- tail(read.table(file.path(getwd(), "allSpecies.tsv"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
+  tmp <- tail(read.table(file.path(getwd(), "allSpecies.tsv"), header=TRUE, sep="\t",
+                         comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
   if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
     ## The file transfer was successful!
     cat(paste0("Query to Bgee webservice successful!\n"))
-    allSpecies <- read.table(file.path(getwd(), "allSpecies.tsv"), header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
+    allSpecies <- read.table(file.path(getwd(), "allSpecies.tsv"),
+                             header=TRUE, sep="\t", blank.lines.skip=TRUE, as.is=TRUE)
     ## Remove temporary file
     file.remove(file.path(getwd(), "allSpecies.tsv"))
   } else {
     ## delete the temporary file
     file.remove(file.path(getwd(), "allSpecies.tsv"))
-    stop(paste0("ERROR: The queried file is truncated, there may be a temporary problem with the Bgee webservice."))
+    stop(paste0("ERROR: The queried file is truncated,
+                there may be a temporary problem with the Bgee webservice."))
   }
 
   if (length(ordering) == 0){
