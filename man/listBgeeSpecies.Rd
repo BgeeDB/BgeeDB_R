@@ -18,6 +18,9 @@ A data frame with species Id, genus name, species name, common name and data typ
 }
 \examples{
 {
+ listBgeeSpecies(release = "13.2")
+ # in order to order according to the IDs
+ listBgeeSpecies(release = "13.2", ordering = 1)
  listBgeeSpecies()
 }
 
