@@ -19,7 +19,8 @@ listRelease <- function(release=NULL){
   allReleases <- .getRelease()
   if (length(release)==1){
     if (sum(allReleases$release == gsub("_", ".", release))==1){
-      cat(paste0("Only displaying information from targeted release ", gsub("_", ".", release), "\n"))
+      cat(paste0("Only displaying information from targeted release ",
+                 gsub("_", ".", release), "\n"))
       allReleases <- allReleases[allReleases$release == gsub("_", ".", release), ]
     } else {
       stop("ERROR: The specified release number is invalid or is not available for BgeeDB.")
@@ -33,14 +34,14 @@ listRelease <- function(release=NULL){
 .getRelease <- function(){
   ## query FTP to get file describing all releases
   releaseurl <- 'ftp://ftp.bgee.org/release.tsv'
-  try(download.file(releaseurl,
+  try(download.file(releaseurl, quiet = TRUE,
                     destfile=file.path(getwd(), 'release.tsv')
   ),
   silent=FALSE)
   if (!file.exists("release.tsv")){
     stop("ERROR: File describing releases could not be downloaded from FTP.")
   }
-  allReleases <- read.table("release.tsv", h=T, sep="\t")
+  allReleases <- read.table("release.tsv", h=TRUE, sep="\t")
   file.remove(file.path(getwd(), 'release.tsv'))
   return(allReleases)
 }
