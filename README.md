@@ -62,25 +62,26 @@ library(BgeeDB)
 ### Running example for Mus musculus
 
 #### List available species in current version of Bgee
+The ```listBgeeSpecies()``` function has several parameters. For example, it is possible to list species from different release versions of Bgee database with parameter ```release```, and order species according to offered columns with parameter ```ordering```.
 
 ``` {r}
-listBgeeSpecies()
+listBgeeSpecies(release = "13.2", order = 2)
 ```
 
 #### Choose the species and create a new Bgee species object
 
-From the list above, please choose one species (e.g., "Homo\_sapiens", "Mus\_musculus",...) and platform ("rna\_seq" or "affymetrix").
+From the list above, please choose one species (e.g., "Homo\_sapiens", "Mus\_musculus",...) and platform ("rna\_seq" or "affymetrix"). The user can define the path where the data should be downloaded with parameter ```pathToData```, and the release version ```release```.
 
 ``` {r}
-bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq", release = "13.2")
 ```
 
 #### Retrieve annotation for Mus musculus RNA-seq data
 
-The ```bgee$get_annotation()``` will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus. The ```bgee$get_annotation()``` loads the annotation in R, but also creates the Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well.
+The ```bgee$get_annotation()``` will output the list of experiments and libraries currently available in Bgee for RNA-seq of Mus musculus for the current version of Bgee database. The ```bgee$get_annotation()``` loads the annotation in R, but also creates the versioned Mus musculus folder in your current path, where it saves the downloaded annotation locally, so you can use the annotation for later as well.
 
 ``` {r}
-# the path where your folder with annotation will be saved. The folder is named after your chosen species.
+# the path where your folder with annotation will be saved. The folder is named after your chosen species + version.
 getwd()
 annotation_bgee_mouse <- bgee$get_annotation()
 # head the experiments and libraries
@@ -95,7 +96,7 @@ The ```bgee$get_data()``` will download read counts and RPKMs for Mus musculus f
 # the path where your data will be saved. 
 getwd()
 
-# download all RPKMs and counts for Mus musculus
+# download all RNAseq data for Mus musculus
 data_bgee_mouse <- bgee$get_data()
 
 # the number of experiments downloaded from Bgee
@@ -106,6 +107,9 @@ lapply(data_bgee_mouse, head)
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
 
+*Note*: TPMs are going to be available in Bgee >=14.0. 
+
+
 Alternatively, you can choose to download only one experiment from Bgee, as in the example below. The data is then saved as a .tsv file in your current folder.
 
 ``` {r}
@@ -113,13 +117,12 @@ Alternatively, you can choose to download only one experiment from Bgee, as in t
 data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
 ```
 
-The data from different samples will be listed in rows, one after the other. It is sometimes easier to work with data organized as a matrix, where different columns represent different samples. To transform the data into a matrix with genes in rows and samples in columns, you can use the ```bgee$format_data()``` function. This function also allows to filter out genes that are not called present in a given sample (giving them NA values).
+The function ```bgee$format_data()``` creates an ExpressionSet object including the expression data matrix, the annotation to Ensembl genes and the samples anatomical structure and stage annotation into (assayData, featureData and phenoData slots). This function also allows to filter out genes that are not called present in a given sample (giving them NA values). 
 
 ```{r}
 # only present calls and rpkm values
 gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
-names(gene.expression.mouse.rpkm)
-head(gene.expression.mouse.rpkm$"Ammon's horn")
+gene.expression.mouse.rpkm 
 ```
 
 #### Download the data to perform GO-like enrichment test for anatomical terms
@@ -128,9 +131,9 @@ The ```loadTopAnatData()``` function loads a mapping from genes to anatomical st
 
 ```{r}
 # Loading calls of expression based on RNA-seq data only
-myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq")
+myTopAnatData <- loadTopAnatData(species="Mus_musculus", datatype="rna_seq")
 # Loading calls observed in embryonic stages only
-myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERON:0000068")
+myTopAnatData <- loadTopAnatData(species="Mus_musculus", datatype="rna_seq", stage="UBERON:0000068")
 
 # Look at the data
 lapply(myTopAnatData, head)
@@ -185,9 +188,9 @@ We built the ```makeTable``` function to filter and format the test results. Res
 
 ```{r}
 # Display results sigificant at a 1% FDR threshold
-tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, 0.01)
+tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.01)
 # Display all results
-tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, 1)
+tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 1)
 ```
 
 *Warning*: it is debated whether FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
