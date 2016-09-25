@@ -43,7 +43,7 @@
 #' @author Andrea Komljenovic and Julien Roux.
 #'
 #' @examples{
-#'  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+#'  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq", release = "13.2")
 #'  annotation_bgee_mouse <- bgee$get_annotation()
 #'  data_bgee_mouse <- bgee$get_data()
 #'  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
@@ -127,9 +127,11 @@ initialize=function(...) {
 
   ## check data type availability for chosen species
   if(datatype == "rna_seq" & allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE){
-    stop("ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
+    stop("ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ",
+         release,". See listBgeeSpecies() for details on data types availability for each species.")
   } else if(datatype == "affymetrix" & allSpecies$AFFYMETRIX[allSpecies$ID == speciesId] == FALSE){
-    stop("ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ", release,". See listBgeeSpecies() for details on data types availability for each species.")
+    stop("ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ",
+         release,". See listBgeeSpecies() for details on data types availability for each species.")
   }
 
   ## create URLs
@@ -188,7 +190,8 @@ get_annotation = function(...){
 
   ## Check if file is already in cache. If so, skip download step
   if (file.exists(file.path(pathToData, annotation.experiments)) && file.exists(file.path(pathToData, annotation.samples))){
-    cat("WARNING: annotation files for this species were found in the download directory and will be used as is. Please delete the files and rerun the function, if you want the data to be updated.\n")
+    cat("WARNING: annotation files for this species were found in the download directory and will be used as is.
+        Please delete the files and rerun the function, if you want the data to be updated.\n")
   } else {
     cat("Downloading annotation files...\n")
     success <- download.file(annotationUrl,
@@ -228,7 +231,8 @@ get_data = function(..., experiment.id = NULL){
 
         ## check if RDS file already in cache. If so, skip download step
         if (file.exists(paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))){
-            cat("WARNING: expression data file (.rds file) was found in the download directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+            cat("WARNING: expression data file (.rds file) was found in the download directory and will be used as is.
+                Please delete and rerun the function if you want the data to be updated.\n")
             data_all <- readRDS(file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
         } else {
             cat("Downloading expression data...\n")
@@ -269,7 +273,8 @@ get_data = function(..., experiment.id = NULL){
 
             ## check if RDS file already in cache. If so, skip download step
             if (file.exists(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
-                cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id, "and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+                cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id,
+                    "and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
                 data_all <- readRDS(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")
