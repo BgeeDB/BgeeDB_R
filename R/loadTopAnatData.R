@@ -288,7 +288,6 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if (file.exists(file.path(pathToData, organNamesFileName))){
     if (file.info(file.path(pathToData, organNamesFileName))$size != 0) {
       organNames <- read.table(file.path(pathToData, organNamesFileName), header=TRUE, sep="\t", comment.char="", blank.lines.skip=TRUE, as.is=TRUE, quote = "")
-      names(organNames) <- c("organId", "organName")
     } else {
       stop(paste0("File ", organNamesFileName, " is empty, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
     }
@@ -314,7 +313,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   cat("\nAdding BGEE:0 as unique root of all terms of the ontology.........\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
   ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
-  missingParents <- organNames$organId[!organNames$organId %in% names(organRelationships)]
+  missingParents <- organNames$ID[!organNames$ID %in% names(organRelationships)]
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
   ## Add new keys
