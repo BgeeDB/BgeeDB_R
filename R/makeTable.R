@@ -13,6 +13,8 @@
 #' @param cutoff An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
 #' Default is 1, meaning that all terms are included.
 #'
+#' @param ordering A numeric indicating which column should be used to sort the data frame. If the column number is preceded by a \"-\" sign, results are displayed in decreasing ordering. Default is "7", returning data frame sorted by p-values in increasing order.
+#'
 #' @return A data frame with significantly enriched anatomical structures, sorted by p-value.
 #'
 #' @author Julien Roux
@@ -63,21 +65,40 @@
 #' @import stats
 #' @export
 
-makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
+makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7){
   ## Perform some checks on the input data
   if(is.na(score(results)) || length(score(results)) == 0){
-    stop("Problem: the results object is empty.")
+    stop("ERROR: the results object is empty.")
   }
   if (!is.numeric(cutoff)){
     cutoff <- as.numeric(cutoff)
   }
   if(is.null(topAnatObject)){
-    stop("Problem: the topAnatObject is empty.")
+    stop("ERROR: the topAnatObject is empty.")
   }
   if( length(topAnatData$organ.names[,1]) == 0 ) {
-    stop("Problem: the organ.names data frame of your topAnatData object is empty.")
+    stop("ERROR: the organ.names data frame of your topAnatData object is empty.")
   }
 
+  dec <- FALSE
+  is.wholenumber <- function(x, tol = .Machine$double.eps^0.5){
+    abs(x - round(x)) < tol
+  }
+  if(length(ordering) == 0){
+    ordering <- 7
+  }
+  if(length(ordering) == 1 & is.numeric(ordering) & ordering <= 8){
+    if (ordering < 0){
+      dec <- TRUE
+      ordering <- -ordering
+    }
+    if (!is.wholenumber(ordering)){
+      stop("ERROR: problem with ordering argument. It should be an integer (column number).")
+    }
+  }
+  else {
+    stop("ERROR: problem with ordering argument. It should be an integer (column number), preceded by a \"-\" sign if decreasing ordering is needed. It should not be bigger than the number of columns in results data frame.")
+  }
   ## retrieve p-values for the enrichment
   scores <- score(results)
   fdr <- p.adjust(p=scores, method = "fdr")
@@ -85,7 +106,7 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
   topTerms <- as.data.frame(topTerms)
 
   if( nrow(topTerms) != 0 ){
-    cat(paste0("\nBuilding the results table for the ", nrow(topTerms), " significant terms at FDR threshold of ", cutoff, "... "))
+    cat(paste0("\nBuilding the results table for the ", nrow(topTerms), " significant terms at FDR threshold of ", cutoff, "...\n"))
     odds <- termStat(topAnatObject, row.names(topTerms))
     foldEnrichment <- odds[2]/odds[3]
 
@@ -96,14 +117,16 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
     # fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)
 
     topTerms <- cbind(odds, foldEnrichment, topTerms, fdr[row.names(topTerms)])
-    names(topTerms) <- c("annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")
     topTable <- merge(topAnatData$organ.names, topTerms, by.x=1, by.y=0)
-    topTable <- topTable[order(as.numeric(topTable$pValue)), ]
+    names(topTable) <- c("organId", "organName", "annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")
+
+    cat(paste0("Ordering results by ", names(topTable)[ordering], " column in ", ifelse(dec, "decreasing", "increasing")," order...\n"))
+    topTable <- topTable[order(topTable[, ordering], decreasing=dec), ]
 
     cat("Done\n\n")
     return(topTable)
   } else {
-    cat("\nWarning: there was no significant term at a FDR threshold of", cutoff, "\n\n")
+    cat("\nWARNING: there was no significant term at FDR threshold of", cutoff, "\n\n")
     return(NA)
   }
 }
