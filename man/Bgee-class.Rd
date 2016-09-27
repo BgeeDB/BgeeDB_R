@@ -57,7 +57,7 @@ Retrieve intensities only for present (expressed) genes, present high quality ge
  data_bgee_mouse <- bgee$get_data()
  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
  gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
- calltype = "present", stats = "rpkm")
+   calltype = "present", stats = "rpkm")
  }
 
 

@@ -16,12 +16,16 @@ listBgeeSpecies(release = NULL, ordering = NULL, allReleases = NULL)
 \value{
 A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 }
+\description{
+Returns information on available species in Bgee
+}
 \examples{
 {
- listBgeeSpecies(release = "13.2")
- # in order to order according to the IDs
- listBgeeSpecies(release = "13.2", ordering = 1)
  listBgeeSpecies()
+ # species present in a specific Bgee release
+ listBgeeSpecies(release = "13.2")
+ # in order to order species according to theit taxonomical IDs
+ listBgeeSpecies(ordering = 1)
 }
 
 }

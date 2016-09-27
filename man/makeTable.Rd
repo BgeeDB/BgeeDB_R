@@ -4,7 +4,7 @@
 \alias{makeTable}
 \title{Formats results of the enrichment test on anatomical structures.}
 \usage{
-makeTable(topAnatData, topAnatObject, results, cutoff = 1)
+makeTable(topAnatData, topAnatObject, results, cutoff = 1, ordering = 7)
 }
 \arguments{
 \item{topAnatData}{A list produced by the function loadTopAnatData().}
@@ -15,6 +15,8 @@ makeTable(topAnatData, topAnatObject, results, cutoff = 1)
 
 \item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
 Default is 1, meaning that all terms are included.}
+
+\item{ordering}{A numeric indicating which column should be used to sort the data frame. If the column number is preceded by a \"-\" sign, results are displayed in decreasing ordering. Default is "7", returning data frame sorted by p-values in increasing order.}
 }
 \value{
 A data frame with significantly enriched anatomical structures, sorted by p-value.
@@ -26,7 +28,7 @@ fold enrichment and FDR. Data are sorted by p-value and only terms below the spe
 \examples{
 {
  ## Launch topGO test on data loaded from Bgee
-  myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",
