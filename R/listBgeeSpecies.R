@@ -1,5 +1,7 @@
 #' @title List species in the Bgee database and the available data types for each of them
 #'
+#' @description Returns information on available species in Bgee
+#'
 #' @param release A character specifying a targeted release number. In the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". If not specified, the latest release is used.
 #'
 #' @param allReleases A data frame with information on all releases. Avoid redownloading this information if .getRelease() already called.
