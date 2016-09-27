@@ -65,13 +65,13 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## Test if topAnatData not empty
   cat("\nChecking topAnatData object.........\n")
   if( length(topAnatData$gene2anatomy) == 0 ) {
-    stop("Problem: the gene2anatomy list of your topAnatData object is empty.")
+    stop("ERROR: the gene2anatomy list of your topAnatData object is empty.")
   }
   if( length(topAnatData$organ.relationships) == 0 ) {
-    stop("Problem: the organ.relationships list of your topAnatData object is empty.")
+    stop("ERROR: the organ.relationships list of your topAnatData object is empty.")
   }
   if( length(topAnatData$organ.names[,1]) == 0 ) {
-    stop("Problem: the organ.names data frame of your topAnatData object is empty.")
+    stop("ERROR: the organ.names data frame of your topAnatData object is empty.")
   }
 
   ## Test if gene list is fine
@@ -80,21 +80,21 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     geneList <- as.factor(geneList)
   }
   if (length(geneList) == 0){
-    stop("Problem: the gene list provided is empty.")
+    stop("ERROR: the gene list provided is empty.")
   }
   if (length(levels(geneList)) != 2){
-    stop("Problem: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
+    stop("ERROR: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
   }
   if (length(geneList) < 100) {
-    cat("Warning: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
+    cat("WARNING: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
   }
   ## If geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes
   if (sum(names(geneList) %in% names(topAnatData$gene2anatomy)) != length(geneList)){
-    cat("Warning: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
+    cat("WARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
   }
 
   if (nodeSize == 0){
-    stop("Problem: the node size parameter has to be at least 1.")
+    stop("ERROR: the node size parameter has to be at least 1.")
   }
 
   ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
