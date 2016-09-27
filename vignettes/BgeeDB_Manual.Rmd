@@ -44,7 +44,7 @@ listBgeeSpecies()
 
 It is possible to list species from a specific release of Bgee with the ```release``` argument (see ```listRelease()``` function), and order the species according to a specific columns with the ```ordering``` argument. For example:
 
-``` {r}
+``` {r, eval=FALSE}
 listBgeeSpecies(release = "13.2", order = 2)
 ```
 
