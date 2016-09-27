@@ -8,6 +8,7 @@
     \item Fixed data frames headers including spaces to more convenient headers wiht spaces replaced by dots.
     \item Harmonized the use of the species parameter between the Bgee object creation and the loadTopAnatData() function.
     \item In format_data() function, when affymetrix data is used, the "stats" parameter is automatically set to "intensities".
+    \item Added argument allowing to sort result table in makeTable() function
   }
 }
 
