@@ -271,7 +271,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   }
 
   ## Process the data and build the final list to return
-  cat("\nParsing the results...............................................\n")
+  cat("\nParsing the results.............................................\n")
 
   ## Relationships between organs
   if (file.exists(file.path(pathToData, organRelationshipsFileName))){
@@ -310,7 +310,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     stop(paste0("File ", gene2anatomyFileName, " not found. There may be a temporary problem with the Bgee webservice, or there was an error in the parameters. It is also possible that the parameters are too stringent and returned no data, please try to relax them."))
   }
 
-  cat("\nAdding BGEE:0 as unique root of all terms of the ontology.........\n")
+  cat("\nAdding BGEE:0 as unique root of all terms of the ontology.......\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
   ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
   missingParents <- organNames$ID[!organNames$ID %in% names(organRelationships)]
