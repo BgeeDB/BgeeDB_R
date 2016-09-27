@@ -41,7 +41,7 @@ listRelease <- function(release=NULL){
   if (!file.exists("release.tsv")){
     stop("ERROR: File describing releases could not be downloaded from FTP.")
   }
-  allReleases <- read.table("release.tsv", h=TRUE, sep="\t")
+  allReleases <- read.table("release.tsv", header=TRUE, sep="\t")
   file.remove(file.path(getwd(), 'release.tsv'))
   return(allReleases)
 }
