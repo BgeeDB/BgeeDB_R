@@ -115,8 +115,9 @@ lapply(myTopAnatData, head)
 First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). 
 
 ```{r}
-source("https://bioconductor.org/biocLite.R")
-biocLite("biomaRt")
+# If you don't have the biomaRt package installed yet, install it with
+# source("https://bioconductor.org/biocLite.R")
+# biocLite("biomaRt")
 library(biomaRt)
 ensembl <- useMart("ensembl")
 ensembl <- useDataset("mmusculus_gene_ensembl", mart=ensembl)
