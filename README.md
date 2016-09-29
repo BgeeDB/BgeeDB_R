@@ -37,7 +37,7 @@ The ```listBgeeSpecies()``` function allows to retrieve available species in the
 listBgeeSpecies()
 ```
 
-It is possible to list species from a specific release of Bgee with the ```release``` argument (see ```listRelease()``` function), and order the species according to a specific columns with the ```ordering``` argument. For example:
+It is possible to list species from a specific release of Bgee with the ```release``` argument (see ```listBgeeRelease()``` function), and order the species according to a specific columns with the ```ordering``` argument. For example:
 
 ``` {r}
 listBgeeSpecies(release = "13.2", order = 2)
@@ -45,17 +45,17 @@ listBgeeSpecies(release = "13.2", order = 2)
 
 #### Choose the species and datatype to create a new Bgee object
 
-In the following example we will choose mouse ("Mus\_musculus"), but any other species with RNA-seq or Affymetrix microarray data from the above list could be chosen. Species can also be specified using their NCBI taxonomic IDs. Specify that RNA-seq data are wanted with the ```datatype``` argument set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix".
+In the following example we will choose mouse ("Mus\_musculus"), but any other species with RNA-seq or Affymetrix microarray data from the above list could be chosen. Species can also be specified using their NCBI taxonomic IDs. Specify that RNA-seq data are wanted with the ```datatype``` argument set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". 
 
 ``` {r}
 bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
 ```
 
-*Note*: It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listRelease()``` function.
+*Note*: It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listBgeeRelease()``` function. The functions of the package will store the downloaded files in a versioned folder in your working directory to allow faster later access to the data. The root folder where this versioned cache folder is created can be changed with the ```pathToData``` argument.
 
 #### Retrieve the annotation of mouse RNA-seq datasets
 
-The ```get_annotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for mouse. The function also creates a versioned folder in your working directory to store the downloaded files and allow faster later access to the data. The folder where files are stored can be changed with the ```pathToData``` argument.
+The ```get_annotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for mouse. 
 
 ``` {r}
 annotation_bgee_mouse <- bgee$get_annotation()
@@ -109,21 +109,22 @@ For some documentation on the TopAnat analysis, please refer to our publications
 The ```loadTopAnatData()``` function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures. Below, we will choose zebrafish as targeted species:
 
 ```{r}
-# Loading calls of expression based on RNA-seq data only
+# Loading calls of expression
 myTopAnatData <- loadTopAnatData(species="Danio_rerio")
 ```
 
 By default all data types available for the targeted species are used. This can be changed using the ```datatype``` argument. The data quality can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the ```stage``` argument. 
 
 ```{r, eval=FALSE}
-# Loading expression calls from affymetrix data made on embryonic samples only (not run in this vignette)
+# Loading expression calls from affymetrix data made on embryonic samples only 
+# Not to be run on this vignette
 myTopAnatData <- loadTopAnatData(species="Danio_rerio", datatype="affymetrix", stage="UBERON:0000068")
 
 # Look at the data
 lapply(myTopAnatData, head)
 ```
 
-Similarly to the examples above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument. If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service. It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listRelease()``` function.
+Similarly to the examples above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument. If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service. It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listBgeeRelease()``` function.
 
 #### Prepare a topGO object allowing to perform TopAnat analysis
 
@@ -149,7 +150,7 @@ head(geneList)
 summary(geneList == 1)
 
 # Prepare the topGO object
-myTopAnatObject <-  topAnat(myTopAnatData, geneList, nodeSize=5)
+myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 ```
 
 *Warning*: This can be long, especially if the gene list is large, since the anatomical ontology is large and expression calls will be propagated through the whole ontology (e.g., expression in the forebrain will also be counted as expression in parent structures such as the brain, nervous system, etc). Consider running a script in batch mode if you have multiple analyses to do.
@@ -164,7 +165,7 @@ results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 
 You can also choose one of the topGO decorrelation methods, for example the "weight" method, allowing to get less redundant results
 ```{r, eval=FALSE}
-## Not run
+# Not to be run on this vignette
 results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 ```
 
@@ -172,13 +173,15 @@ results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 
 #### Format the table of results after an enrichment test for anatomical terms
 
-The ```makeTable``` function allows to filter and format the test results, and calculate FDR values. By default results are sorted by p-value, but this can be changed with the ```ordering``` parameter by specifying which column should be used to order the results (preceded by a "-" sign to indicate that ordering should be made in decreasing order). For example, it is often convenient among significant structures, to sort them by their decreasing enrichment fold.
+The ```makeTable``` function allows to filter and format the test results, and calculate FDR values. 
 
 ```{r}
-# Display results sigificant at a 5% FDR threshold, sorted by fold enrichment
-tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.05, ordering = -6)
+# Display results sigificant at a 5% FDR threshold
+tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.05)
 # Display all results, sorted by p-value
 tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 1)
 ```
+
+By default results are sorted by p-value, but this can be changed with the ```ordering``` parameter by specifying which column should be used to order the results (preceded by a "-" sign to indicate that ordering should be made in decreasing order). For example, it is often convenient to sort  significant structures by decreasing enrichment fold.
 
 *Warning*: it is debated whether FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.

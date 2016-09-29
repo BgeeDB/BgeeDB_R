@@ -85,7 +85,7 @@ initialize=function(...) {
   }
 
   cat("Querying Bgee to get release information...\n")
-  allReleases <- .getRelease()
+  allReleases <- .getBgeeRelease()
   if (length(release)==0) {
     release <<- gsub("\\.", "_", allReleases$release[1])
   } else if (length(release)==1){
@@ -190,8 +190,8 @@ get_annotation = function(...){
 
   ## Check if file is already in cache. If so, skip download step
   if (file.exists(file.path(pathToData, annotation.experiments)) && file.exists(file.path(pathToData, annotation.samples))){
-    cat(paste0("WARNING: annotation files for this species were found in the download directory and will be used as is. ",
-        "Please delete the files and rerun the function, if you want the data to be updated.\n"))
+    cat(paste0("NOTE: annotation files for this species were found in the download directory ", pathToData,
+        ". Data will not be redownloaded.\n"))
   } else {
     cat("Downloading annotation files...\n")
     success <- download.file(annotationUrl,
@@ -231,8 +231,8 @@ get_data = function(..., experiment.id = NULL){
 
         ## check if RDS file already in cache. If so, skip download step
         if (file.exists(paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))){
-            cat(paste0("WARNING: expression data file (.rds file) was found in the download directory and will be used as is. ",
-                "Please delete and rerun the function if you want the data to be updated.\n"))
+            cat(paste0("NOTE: expression data file in .rds format was found in the download directory ", pathToData,
+                ". Data will not be redownloaded.\n"))
             data_all <- readRDS(file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
         } else {
             cat("Downloading expression data...\n")
@@ -273,8 +273,8 @@ get_data = function(..., experiment.id = NULL){
 
             ## check if RDS file already in cache. If so, skip download step
             if (file.exists(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
-                cat("WARNING: expression data file (.rds file) was found in the download directory for", experiment.id,
-                    "and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+                cat(paste0("NOTE: expression data file in .rds format was found in the download directory ", pathToData,
+                    " for", experiment.id, ". Data will not be redownloaded.\n"))
                 data_all <- readRDS(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")

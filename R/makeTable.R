@@ -123,6 +123,9 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7)
     cat(paste0("Ordering results by ", names(topTable)[ordering], " column in ", ifelse(dec, "decreasing", "increasing")," order...\n"))
     topTable <- topTable[order(topTable[, ordering], decreasing=dec), ]
 
+    ## remove arbitrary numbers that are used as row names
+    row.names(topTable) <- topTable$organId
+
     cat("Done\n\n")
     return(topTable)
   } else {

@@ -79,7 +79,7 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
                             confidence="all", stage=NULL, release=NULL, pathToData=getwd()){
 
   cat("Querying Bgee to get release information...\n")
-  allReleases <- .getRelease()
+  allReleases <- .getBgeeRelease()
   if (length(release)==0) {
     release <- gsub("\\.", "_", allReleases$release[1])
   } else if (length(release)==1){
@@ -165,7 +165,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", speciesId, ".tsv")
   ## Check if file is already in cache
   if (file.exists(file.path(pathToData, organRelationshipsFileName))){
-    cat("\nWARNING: an organ relationships file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+    cat(paste0("\nNOTE: an organ relationships file was found in the download directory ", pathToData,
+        ". Data will not be redownloaded.\n"))
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
     myurl <- paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID")
@@ -192,7 +193,9 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   organNamesFileName <- paste0("topAnat_AnatEntitiesNames_", speciesId, ".tsv");
   ## Check if file is already in cache
   if (file.exists(file.path(pathToData, organNamesFileName))){
-    cat("\nWARNING: an organ names file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+    cat(paste0("\nNOTE: an organ names file was found in the download directory ", pathToData,
+               ". Data will not be redownloaded.\n"))
+
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", speciesId, "&attr_list=ID&attr_list=NAME")
@@ -233,7 +236,9 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
 
   ## Check if file is already in cache
   if (file.exists(file.path(pathToData, gene2anatomyFileName))){
-    cat("\nWARNING: a gene to organs mapping file was found in the working directory and will be used as is. Please delete and rerun the function if you want the data to be updated.\n")
+    cat(paste0("\nNOTE: a gene to organs mapping file was found in the download directory ", pathToData,
+               ". Data will not be redownloaded.\n"))
+
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
