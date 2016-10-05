@@ -2,7 +2,7 @@ context("expect_output")
 
 
 test_that("Loading of topAnatData files is working", {
-  myTopAnatData <- loadTopAnatData(species=10090, datatype="rna_seq", stage="UBERON:0000068")
+  myTopAnatData <- loadTopAnatData(species="Mus_musculus", dataType="rna_seq", stage="UBERON:0000068")
 
   expect_that( myTopAnatData, is_a("list") )
   expect_that( length(myTopAnatData), equals(3) )

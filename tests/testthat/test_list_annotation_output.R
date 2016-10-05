@@ -2,7 +2,7 @@ context("expect_output")
 
 
 test_that("Annotation files", {
-  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
   annotation_bgee_mouse <- bgee$get_annotation()
 
 

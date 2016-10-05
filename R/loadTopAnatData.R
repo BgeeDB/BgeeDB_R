@@ -9,7 +9,7 @@
 #'
 #' @param species A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.
 #'
-#' @param datatype A vector of characters indicating data type(s) to be used. To be chosen among:
+#' @param dataType A vector of characters indicating data type(s) to be used. To be chosen among:
 #' \itemize{
 #'   \item{"rna_seq"}
 #'   \item{"affymetrix"}
@@ -69,13 +69,13 @@
 #' @author Julien Roux
 #'
 #' @examples{
-#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", dataType = "rna_seq")
 #' }
 #'
 #' @import utils
 #' @export
 
-loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in_situ"), calltype="presence",
+loadTopAnatData <- function(species, dataType=c("rna_seq","affymetrix","est","in_situ"), calltype="presence",
                             confidence="all", stage=NULL, release=NULL, pathToData=getwd()){
 
   cat("Querying Bgee to get release information...\n")
@@ -126,10 +126,10 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   }
 
   ## Test if parameters are in the range of allowed parameters
-  if ( !sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
+  if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
     stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\".")
   }
-  if ( length(datatype) != sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) ){
+  if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) ){
     cat("WARNING: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for mistakes or typos.\n")
   }
   if ( calltype != "presence" ){
@@ -224,9 +224,9 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
   if ( !is.null(stage) ){
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", gsub(":", "_", stage))
   }
-  ## If all datatypes specified, not need to add anything to file name. Otherwise, specify datatypes in file name
-  if ( sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
-    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(datatype), collapse="_")))
+  ## If all data types specified, no need to add anything to file name. Otherwise, specify data types in file name
+  if ( sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(dataType), collapse="_")))
   }
   ## If high quality data needed, specify in file name. Otherwise not specified
   if ( confidence == "high_quality" ){
@@ -244,8 +244,8 @@ loadTopAnatData <- function(species, datatype=c("rna_seq","affymetrix","est","in
     myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
 
     ## Add data type: only if not all data types needed
-    if ( sum(datatype %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
-      for (type in toupper(sort(datatype))){
+    if ( sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
+      for (type in toupper(sort(dataType))){
         myurl <- paste0(myurl, "&data_type=", type)
       }
     }

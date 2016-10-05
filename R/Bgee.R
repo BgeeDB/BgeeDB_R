@@ -7,13 +7,13 @@
 #'
 #' @field species A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.
 #'
-#' @field datatype A character of data platform. Quantitative expression levels can be downloaded for two data types:
+#' @field dataType A character of data platform. Quantitative expression levels can be downloaded for two data types:
 #' \itemize{
 #'      \item{"rna_seq"}
 #'      \item{"affymetrix"}}
 #'
 #' @field experiment.id An ArrayExpress or GEO accession, e.g., GSE30617. Used in get_data() function.
-#' On default is NULL: takes all available experiments for specified species and datatype.
+#' On default is NULL: takes all available experiments for specified species and data type.
 #'
 #' @field pathToData Path to the directory where the data files are stored. By default the working directory is used.
 #'
@@ -43,7 +43,7 @@
 #' @author Andrea Komljenovic and Julien Roux.
 #'
 #' @examples{
-#'  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+#'  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 #'  annotation_bgee_mouse <- bgee$get_annotation()
 #'  data_bgee_mouse <- bgee$get_data()
 #'  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
@@ -64,7 +64,7 @@ fields = list(
   species = "character",
   speciesName = "character",
   speciesId = "numeric",
-  datatype = "character",
+  dataType = "character",
   pathToData = "character",
   release = "character",
   annotationUrl = "character",
@@ -77,11 +77,11 @@ methods = list(
 initialize=function(...) {
   callSuper(...)
 
-  ## check datatype
-  if(length(datatype)==0) {
+  ## check data type
+  if(length(dataType)==0) {
     stop("ERROR: You didn't specify a data type. Choose 'affymetrix' or 'rna_seq'.")
-  } else if ((length(datatype) > 1) || (length(datatype) == 1 && datatype %in% c("rna_seq", "affymetrix") == "FALSE")){
-    stop("ERROR: Choose correct datatype argument: 'affymetrix' or 'rna_seq'.")
+  } else if ((length(dataType) > 1) || (length(dataType) == 1 && dataType %in% c("rna_seq", "affymetrix") == "FALSE")){
+    stop("ERROR: Choose correct dataType argument: 'affymetrix' or 'rna_seq'.")
   }
 
   cat("Querying Bgee to get release information...\n")
@@ -126,23 +126,23 @@ initialize=function(...) {
   }
 
   ## check data type availability for chosen species
-  if(datatype == "rna_seq" & allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE){
+  if(dataType == "rna_seq" & allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE){
     stop("ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ",
          release,". See listBgeeSpecies() for details on data types availability for each species.")
-  } else if(datatype == "affymetrix" & allSpecies$AFFYMETRIX[allSpecies$ID == speciesId] == FALSE){
+  } else if(dataType == "affymetrix" & allSpecies$AFFYMETRIX[allSpecies$ID == speciesId] == FALSE){
     stop("ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ",
          release,". See listBgeeSpecies() for details on data types availability for each species.")
   }
 
   ## create URLs
-  if(datatype == "rna_seq"){
+  if(dataType == "rna_seq"){
     ## annotation file
     annotationUrl <<- as.character(allReleases$RNA.Seq.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
     ## Data from specific experiment
     experimentUrl <<- as.character(allReleases$RNA.Seq.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
     ## Data from all experiments
     allexperimentsUrl <<- as.character(allReleases$RNA.Seq.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
-  } else if (datatype == "affymetrix"){
+  } else if (dataType == "affymetrix"){
     ## annotation file
     annotationUrl <<- as.character(allReleases$Affymetrix.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
     ## Data from specific experiment
@@ -179,9 +179,9 @@ get_annotation = function(...){
   annotation.file <- basename(annotationUrl)
 
   ## To get the names of experiment and sample files, we start from the annotation.file
-  if (datatype == "affymetrix"){
+  if (dataType == "affymetrix"){
     annotation.experiments <- gsub("_chips", "", annotation.file)
-  } else if (datatype == "rna_seq"){
+  } else if (dataType == "rna_seq"){
     annotation.experiments <- gsub("_libraries", "", annotation.file)
   }
   annotation.experiments <- gsub("zip", "tsv", annotation.experiments)
@@ -225,15 +225,15 @@ get_annotation = function(...){
 get_data = function(..., experiment.id = NULL){
 
     if (length(experiment.id) == 0){
-        cat(paste0("The experiment is not defined. Hence taking all ", datatype, " experiments available for ", speciesName, ".\n"))
+        cat(paste0("The experiment is not defined. Hence taking all ", dataType, " experiments available for ", speciesName, ".\n"))
 
         all_expression_values <- basename(allexperimentsUrl)
 
         ## check if RDS file already in cache. If so, skip download step
-        if (file.exists(paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))){
+        if (file.exists(paste0(pathToData, "/", dataType, "_all_experiments_expression_data.rds"))){
             cat(paste0("NOTE: expression data file in .rds format was found in the download directory ", pathToData,
                 ". Data will not be redownloaded.\n"))
-            data_all <- readRDS(file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
+            data_all <- readRDS(file = paste0(pathToData, "/", dataType, "_all_experiments_expression_data.rds"))
         } else {
             cat("Downloading expression data...\n")
             success <- download.file(allexperimentsUrl,
@@ -254,7 +254,7 @@ get_data = function(..., experiment.id = NULL){
             }
 
             cat("Saving all data in .rds file...\n")
-            saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_all_experiments_expression_data.rds"))
+            saveRDS(data_all, file = paste0(pathToData, "/", dataType, "_all_experiments_expression_data.rds"))
 
             ## cleaning up downloaded files
             file.remove(temp.files)
@@ -272,10 +272,10 @@ get_data = function(..., experiment.id = NULL){
             temp.file <- file.path(pathToData, basename(experimentUrl))
 
             ## check if RDS file already in cache. If so, skip download step
-            if (file.exists(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))){
+            if (file.exists(paste0(pathToData, "/", dataType, "_", experiment.id, "_expression_data.rds"))){
                 cat(paste0("NOTE: expression data file in .rds format was found in the download directory ", pathToData,
                     " for", experiment.id, ". Data will not be redownloaded.\n"))
-                data_all <- readRDS(paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
+                data_all <- readRDS(paste0(pathToData, "/", dataType, "_", experiment.id, "_expression_data.rds"))
             } else {
                 cat("Downloading expression data...\n")
                 success <- download.file(experimentUrl,
@@ -299,7 +299,7 @@ get_data = function(..., experiment.id = NULL){
                   data_all <- as.data.frame(data_all[[1]])
                 }
                 cat("Saving all data in .rds file...\n")
-                saveRDS(data_all, file = paste0(pathToData, "/", datatype, "_", experiment.id, "_expression_data.rds"))
+                saveRDS(data_all, file = paste0(pathToData, "/", dataType, "_", experiment.id, "_expression_data.rds"))
 
                 ## cleaning up downloaded files
                 file.remove(temp.file)
@@ -307,7 +307,7 @@ get_data = function(..., experiment.id = NULL){
             }
         }
     } else {
-        stop("Please provide only one experiment ID. If you want to get all data for this species and datatype, leave experiment.id empty")
+        stop("Please provide only one experiment ID. If you want to get all data for this species and data type, leave experiment.id empty")
     }
 
     return(data_all)
@@ -317,18 +317,18 @@ get_data = function(..., experiment.id = NULL){
 
 format_data = function(data, calltype = "all", stats = NULL){
   if (length(stats) == 0){
-    if (datatype == "affymetrix"){
+    if (dataType == "affymetrix"){
       cat("WARNING: stats parameter set to \"intensities\" for the next steps.\n")
       stats <- "intensities"
-    } else if (datatype == "rna_seq"){
+    } else if (dataType == "rna_seq"){
       stop("Please specify the stats parameters. Should be set to \"rpkm\" or \"counts\"")
     }
-  } else if (datatype == "affymetrix" & stats != "intensities"){
+  } else if (dataType == "affymetrix" & stats != "intensities"){
     cat("WARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\", this will be used for the next steps.\n")
     stats <- "intensities"
-  } else if (datatype == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
+  } else if (dataType == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
     stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
-  } else if (datatype == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
+  } else if (dataType == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
     stop("Choose whether data formatting should create a matrix of RPKMs, TPMs or read counts, with stats option set as \"rpkm\", \"tpm\" or \"counts\"")
   }
 
@@ -456,7 +456,7 @@ format_data = function(data, calltype = "all", stats = NULL){
 }
 
 .calling <- function(x, calltype, column){
-  ## check datatype
+  ## check data type
   if(calltype == "present"){
     cat("keeping only present genes...\n")
     x[(x$Detection.flag == "absent"), column] <- NA

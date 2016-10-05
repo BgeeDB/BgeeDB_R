@@ -2,7 +2,7 @@ context("expect_output")
 
 
 test_that("Gene expression files", {
-  bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
   data_bgee_mouse <- bgee$get_data()
 
 

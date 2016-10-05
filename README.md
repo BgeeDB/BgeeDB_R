@@ -43,12 +43,12 @@ It is possible to list species from a specific release of Bgee with the ```relea
 listBgeeSpecies(release = "13.2", order = 2)
 ```
 
-#### Choose the species and datatype to create a new Bgee object
+#### Choose the species and data type to create a new Bgee object
 
-In the following example we will choose mouse ("Mus\_musculus"), but any other species with RNA-seq or Affymetrix microarray data from the above list could be chosen. Species can also be specified using their NCBI taxonomic IDs. Specify that RNA-seq data are wanted with the ```datatype``` argument set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". 
+In the following example we will choose mouse ("Mus\_musculus"), but any other species with RNA-seq or Affymetrix microarray data from the above list could be chosen. Species can also be specified using their NCBI taxonomic IDs. Specify that RNA-seq data are wanted with the ```dataType``` argument set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". 
 
 ``` {r}
-bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 ```
 
 *Note*: It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listBgeeRelease()``` function. The functions of the package will store the downloaded files in a versioned folder in your working directory to allow faster later access to the data. The root folder where this versioned cache folder is created can be changed with the ```pathToData``` argument.
@@ -113,12 +113,12 @@ The ```loadTopAnatData()``` function loads a mapping from genes to anatomical st
 myTopAnatData <- loadTopAnatData(species="Danio_rerio")
 ```
 
-By default all data types available for the targeted species are used. This can be changed using the ```datatype``` argument. The data quality can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the ```stage``` argument. 
+By default all data types available for the targeted species are used. This can be changed using the ```dataType``` argument. The data quality can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the ```stage``` argument. 
 
 ```{r, eval=FALSE}
 # Loading expression calls from affymetrix data made on embryonic samples only 
 # Not to be run on this vignette
-myTopAnatData <- loadTopAnatData(species="Danio_rerio", datatype="affymetrix", stage="UBERON:0000068")
+myTopAnatData <- loadTopAnatData(species="Danio_rerio", dataType="affymetrix", stage="UBERON:0000068")
 
 # Look at the data
 lapply(myTopAnatData, head)
