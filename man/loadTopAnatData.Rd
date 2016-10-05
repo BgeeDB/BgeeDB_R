@@ -4,14 +4,14 @@
 \alias{loadTopAnatData}
 \title{Retrieve data from Bgee to perform GO-like enrichment of anatomical terms, mapped to genes by expression patterns.}
 \usage{
-loadTopAnatData(species, datatype = c("rna_seq", "affymetrix", "est",
+loadTopAnatData(species, dataType = c("rna_seq", "affymetrix", "est",
   "in_situ"), calltype = "presence", confidence = "all", stage = NULL,
   release = NULL, pathToData = getwd())
 }
 \arguments{
 \item{species}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.}
 
-\item{datatype}{A vector of characters indicating data type(s) to be used. To be chosen among:
+\item{dataType}{A vector of characters indicating data type(s) to be used. To be chosen among:
 \itemize{
   \item{"rna_seq"}
   \item{"affymetrix"}
@@ -79,7 +79,7 @@ Anatomical structures are identified using IDs from the Uberon ontology (browsab
 }
 \examples{
 {
-  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", datatype = "rna_seq")
+  myTopAnatData <- loadTopAnatData(species = "Mus_musculus", dataType = "rna_seq")
 }
 
 }

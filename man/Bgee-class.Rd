@@ -23,13 +23,13 @@ This Class retrieves annotation of experiments in Bgee database (get_annotation)
 \describe{
 \item{\code{species}}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with quantitative expression data in Bgee will work (RNA-seq and Affymetrix microarray data). See the listBgeeSpecies() function to get the list of species available in the Bgee release used for these two data types.}
 
-\item{\code{datatype}}{A character of data platform. Quantitative expression levels can be downloaded for two data types:
+\item{\code{dataType}}{A character of data platform. Quantitative expression levels can be downloaded for two data types:
 \itemize{
      \item{"rna_seq"}
      \item{"affymetrix"}}}
 
 \item{\code{experiment.id}}{An ArrayExpress or GEO accession, e.g., GSE30617. Used in get_data() function.
-On default is NULL: takes all available experiments for specified species and datatype.}
+On default is NULL: takes all available experiments for specified species and data type.}
 
 \item{\code{pathToData}}{Path to the directory where the data files are stored. By default the working directory is used.}
 
@@ -52,7 +52,7 @@ Retrieve intensities only for present (expressed) genes, present high quality ge
 }}
 \examples{
 {
- bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
+ bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
  annotation_bgee_mouse <- bgee$get_annotation()
  data_bgee_mouse <- bgee$get_data()
  data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")

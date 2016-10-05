@@ -11,7 +11,7 @@ listBgeeSpecies(release = NULL, ordering = NULL, allReleases = NULL)
 
 \item{ordering}{A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.}
 
-\item{allReleases}{A data frame with information on all releases. Avoid redownloading this information if .getRelease() already called.}
+\item{allReleases}{A data frame with information on all releases. Avoid redownloading this information if .getBgeeRelease() already called.}
 }
 \value{
 A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
