@@ -1,0 +1,179 @@
+
+
+## if experiment ID is empty, returns a list of ExpressionSet objects. If specified experiment ID, then returns an ExpressionSet object
+
+#' @field stats A character indicating what expression values should be used in the formatted data expressionSet object.
+#'  \itemize{
+#'    \item{"rpkm" for RNA-seq}
+#'    \item{"counts" for RNA-seq}
+#'    \item{"tpm" for RNA-seq (Bgee release 14 and above only)}
+#'    \item{"intensities" for Affymetrix microarrays}
+#'    }
+#'
+
+#' @field callType A character.
+#'  \itemize{
+#'    \item{"present"}
+#'    \item{"present high quality"}
+#'    \item{"all"}}
+#' Retrieve intensities only for present (expressed) genes, present high quality genes, or all genes. The default is present.
+
+#' @author Andrea Komljenovic and Julien Roux.
+
+#' @importFrom dplyr %>%
+#' @importFrom tidyr spread_
+
+## example: #'  gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
+#'    callType = "present", stats = "rpkm")
+
+
+format_data = function(data, callType = "all", stats = NULL){
+  if (length(stats) == 0){
+    if (dataType == "affymetrix"){
+      cat("WARNING: stats parameter set to \"intensities\" for the next steps.\n")
+      stats <- "intensities"
+    } else if (dataType == "rna_seq"){
+      stop("Please specify the stats parameters. Should be set to \"rpkm\" or \"counts\"")
+    }
+  } else if (dataType == "affymetrix" & stats != "intensities"){
+    cat("WARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\", this will be used for the next steps.\n")
+    stats <- "intensities"
+  } else if (dataType == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
+    stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
+  } else if (dataType == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
+    stop("Choose whether data formatting should create a matrix of RPKMs, TPMs or read counts, with stats option set as \"rpkm\", \"tpm\" or \"counts\"")
+  }
+
+  if(!(callType %in% c('present','present high quality','all'))){
+    stop("Choose between displaying intensities for present genes, present high quality genes or all genes, e.g., 'present', 'present high quality', 'all' ")
+  }
+
+  if(length(data) == 1) data[[1]] else data
+
+  if(stats  == "rpkm"){
+    columns <- c("Library.ID", "Gene.ID", "RPKM")
+    expr <- .extract.data(data, columns, callType)
+  } else if(stats  == "tpm"){
+    columns <- c("Library.ID", "Gene.ID", "TPM")
+    expr <- .extract.data(data, columns, callType)
+  } else if (stats == "counts"){
+    columns <- c("Library.ID", "Gene.ID", "Read.count")
+    expr <- .extract.data(data, columns, callType)
+  } else {
+    cat("Extracting intensities...\n")
+    columns <- c("Chip.ID", "Probeset.ID", "Log.of.normalized.signal.intensity", "Gene.ID")
+    expr <- .extract.data(data, columns, callType)
+  }
+  if(is.data.frame(expr$assayData)){
+    # one data matrix
+
+    ## sort objects to have samples in the same order
+    expr$assayData <- expr$assayData[, order(names(expr$assayData))]
+    expr$pheno <- expr$pheno[order(sampleNames(expr$pheno))]
+
+    ## create ExpressionSet object
+    eset <- new('ExpressionSet',
+                exprs=as.matrix(expr$assayData),
+                phenoData=expr$pheno,
+                featureData=expr$features)
+  } else if(is.list(expr$assayData)){
+    # multiple data matrices
+    eset <- mapply(function(x,y,z){
+      ## sort objects to have samples in the same order
+      x <- x[, order(names(x))]
+      y <- y[order(sampleNames(y))]
+
+      ## create ExpressionSet object
+      new('ExpressionSet',
+          exprs=as.matrix(x),
+          phenoData=y,
+          featureData=z)
+    },
+    expr$assayData, expr$pheno, expr$features)
+  }
+  return(eset)
+}
+
+# Takes in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
+.extract.data <- function(data, columns, callType){
+  # if multiple data frames (multiple experiments or chips)
+  if(class(data) == "list"){
+    calls <- lapply(data, function(x) .calling(x, callType, columns[3]))
+    expr <- lapply(calls,
+                   function(x) {
+                     # subset the data to keep relevant columns
+                     xt <- x[, columns[1:3]]
+                     # from sample and feature columns, create a matrix with features as rows and samples as columns
+                     xtt <- xt %>% spread_(columns[1], columns[3])
+                     rownames(xtt) <- xtt[, columns[2]]
+                     # Remove feature column to keep only data
+                     xtt[,-1, drop = FALSE]
+                   }
+    )
+    cat("Extracting features...\n")
+    features <- mapply(.extract.data.feature, calls, expr, rep(list(columns), times=length(calls)))
+    cat("Done...\n")
+    cat("Extracting pheno...\n")
+    phenos <- mapply(.extract.data.pheno, calls, rep(list(columns[1]), times=length(calls)))
+    cat("Done...\n")
+  } else {
+    # if only a single dataframe
+    calls <- .calling(data, callType, columns[3])
+    # subset the data to keep relevant columns
+    xt <- calls[, columns[1:3]]
+    xtt <- xt %>% spread_(columns[1], columns[3])
+    rownames(xtt) <- xtt[, columns[2]]
+    # Remove feature column to keep only data
+    expr <- xtt[,-1, drop = FALSE]
+
+    cat("Extracting features...\n")
+    features <- .extract.data.feature( calls, expr, columns)
+    cat("Done...\n")
+    cat("Extracting pheno...\n")
+    phenos <- .extract.data.pheno( calls, columns[1])
+    cat("Done...\n")
+  }
+  return(list(assayData = expr, pheno = phenos, features = features, calls = calls))
+}
+
+# Extract feature data (probesets or genes)
+.extract.data.feature <- function(calls, expr, columns){
+  # RNA-seq
+  if(length(columns) == 3){
+    fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[2], drop = FALSE]
+  }
+  # Affymetrix, 4 columns
+  else if(length(columns) == 4){
+    fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[c(2,4)], drop = FALSE]
+  }
+  rownames(fdata) <- fdata[, columns[2]]
+  fdata <- as(fdata, "AnnotatedDataFrame")
+  return(fdata)
+}
+
+# Extract annotation of samples
+.extract.data.pheno <- function(calls, column){
+  phdata <- calls[, c(column, "Anatomical.entity.ID", "Anatomical.entity.name", "Stage.ID", "Stage.name")]
+  phdata <- phdata[!duplicated(phdata[, column]), ]
+  rownames(phdata) <- phdata[, column]
+  phdata <- as.data.frame(phdata)
+  metadata <- data.frame(labelDescription=colnames(phdata),
+                         row.names=colnames(phdata))
+  phenodata <- new("AnnotatedDataFrame",
+                   data=phdata,
+                   varMetadata=metadata
+  )
+  return(phenodata)
+}
+
+.calling <- function(x, callType, column){
+  ## check data type
+  if(callType == "present"){
+    cat("keeping only present genes...\n")
+    x[(x$Detection.flag == "absent"), column] <- NA
+  } else if (callType == "present high quality"){
+    cat("keeping only present high quality genes...\n")
+    x[which(x$Detection.flag == "absent" | x$Detection.quality == "poor quality"), column] <- NA
+  }
+  return(x)
+}
