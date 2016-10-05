@@ -19,6 +19,10 @@
 getAnnotation = function(myBgeeObject){
 
   ## TO DO: test myBgeeObject$pathToData, myBgeeObject$annotationUrl, myBgeeObject$dataType
+  ### check that fields of Bgee object are not empty
+  #if (length(myBgeeObject$species) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
+  #  stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
+  #}
 
   ## TO DO: test myBgeeObject$quantitativeData is TRUE
 

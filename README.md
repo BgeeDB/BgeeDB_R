@@ -92,11 +92,11 @@ The result of the ```get_data()``` function is, for each experiment, a data fram
 * A data frame listing the samples and their anatomical structure and developmental stage annotation (```phenoData``` slot)
 * For microarray data, the mapping from probesets to Ensembl genes (```featureData``` slot)
 
-This function also allows to retain only actively expressed genes or probesets, with the ```calltype``` argument set to "present" or "present high quality". Genes or probesets that are absent in a given sample are given ```NA``` values.
+This function also allows to retain only actively expressed genes or probesets, with the ```callType``` argument set to "present" or "present high quality". Genes or probesets that are absent in a given sample are given ```NA``` values.
 
 ```{r}
 # use only present calls and fill expression matric with RPKM values
-gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, calltype = "present", stats = "rpkm")
+gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, callType = "present", stats = "rpkm")
 gene.expression.mouse.rpkm 
 ```
 
