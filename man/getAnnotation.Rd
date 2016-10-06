@@ -10,7 +10,7 @@ getAnnotation(myBgeeObject)
 \item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species and data type.}
 }
 \value{
-A list of two elements, including a data frame of the annotation of experiments for chosen species (field "experiment_annotation") and a data frame of the annotation of chips/libraries from these experiments (field "sample_annotation").
+A list of two elements, including a data frame of the annotation of experiments for chosen species (field "experiment.annotation") and a data frame of the annotation of chips/libraries from these experiments (field "sample.annotation").
 }
 \description{
 This function loads the annotation of experiments and samples of quantitative expression datasets (rna_seq, affymetrix) that are available from Bgee.

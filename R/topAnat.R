@@ -17,8 +17,8 @@
 #' @author Julien Roux
 #'
 #' @examples{
-#'   ## TO DO: modify example below
-#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", dataType = "rna_seq")
+#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(bgee)
 #'   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
 #'   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
 #'                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",

@@ -19,9 +19,8 @@
 #' @author Julien Roux
 #'
 #' @examples{
-#'   ## TO DO: modify example below
-#'   ## Launch topGO test on data loaded from Bgee
-#'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", dataType = "rna_seq")
+#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(bgee)
 #'   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
 #'   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
 #'                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",
@@ -111,7 +110,7 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7)
     foldEnrichment <- odds[2]/odds[3]
 
     ## Rounding odds, P-values and FDR to 2 decimal places
-    ## Now commented because might be problematic for downstream reuse of the data
+    ## Now commented because might be problematic for downstream reuse of the data. Maybe reintroduce with optional argument?
     # foldEnrichment <- format(foldEnrichment, digits=3)
     # topTerms <- format(topTerms, digits=3)
     # fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)

@@ -44,7 +44,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
 
   cat(paste0("Building URL to query species in Bgee release ", release, "...\n"))
   host <- allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)]
-  myurl <- paste0(host, "?page=species&display_type=tsv")
+  myUrl <- paste0(host, "?page=species&display_type=tsv")
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
@@ -52,8 +52,8 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   options(timeout = 600)
 
   ## Query webservice
-  cat(paste0("Submitting URL to Bgee webservice... (", myurl,")\n"))
-  download.file(myurl, destfile = file.path(getwd(), "species.tsv"))
+  cat(paste0("Submitting URL to Bgee webservice... (", myUrl,")\n"))
+  download.file(myUrl, destfile = file.path(getwd(), "species.tsv"))
 
   ## Read 5 last lines of file: should be empty indicating success of data transmission
   ## We cannot use a system call to UNIX command since some user might be on Windows
