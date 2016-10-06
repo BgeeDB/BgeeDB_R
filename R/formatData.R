@@ -1,46 +1,65 @@
-
-
-## if experiment ID is empty, returns a list of ExpressionSet objects. If specified experiment ID, then returns an ExpressionSet object
-
-#' @field stats A character indicating what expression values should be used in the formatted data expressionSet object.
+#' @title Format RNA-seq or Affymetrix data downloaded from Bgee.
+#'
+#' @description This function formats the data downloaded with the getData() function into an object of the Bioconductor "expressionSet" Class.
+#'
+#' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
+#'
+#' @param data A list of data frames including data from multiple experiments, or a data frame including data from a single experiment.
+#'
+#' @param stats A character indicating what expression values should be used in the formatted data expressionSet object matrix.
 #'  \itemize{
 #'    \item{"rpkm" for RNA-seq}
 #'    \item{"counts" for RNA-seq}
-#'    \item{"tpm" for RNA-seq (Bgee release 14 and above only)}
+#'    \item{"tpm" for RNA-seq (Bgee release 14 and above)}
 #'    \item{"intensities" for Affymetrix microarrays}
-#'    }
+#'  }
 #'
-
-#' @field callType A character.
+#' @param callType A character indicating whether intensities should be displayed only for present (i.e., expressed) genes, present high quality genes, or all genes (default).
 #'  \itemize{
 #'    \item{"present"}
 #'    \item{"present high quality"}
-#'    \item{"all"}}
-#' Retrieve intensities only for present (expressed) genes, present high quality genes, or all genes. The default is present.
-
+#'    \item{"all"}
+#'  }
+#'
+#' @return If data was a list of data frames from multiple experiments, returns a list of ExpressionSet objects. If data was a data frame from a single experiment, returns an ExpressionSet object.
+#'
 #' @author Andrea Komljenovic and Julien Roux.
-
+#'
+#' @examples{
+#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+#'   dataMouseGSE30617 <- getData(bgee, experimentId = "GSE30617")
+#'   dataMouseGSE30617.rpkm <- formatData(bgee, dataMouseGSE30617, callType = "present", stats = "rpkm")
+#' }
+#'
 #' @importFrom dplyr %>%
 #' @importFrom tidyr spread_
+#' @export
 
-## example: #'  gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
-#'    callType = "present", stats = "rpkm")
+formatData = function(data, stats = NULL, callType = "all"){
 
+  ## check that fields of Bgee object are not empty
+  if (length(myBgeeObject$quantitativeData) == 0 | length(myBgeeObject$dataType) == 0){
+    stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
+  }
 
-format_data = function(data, callType = "all", stats = NULL){
+  ## Check that download of data is possible for targeted species and data type
+  if (myBgeeObject$quantitativeData != TRUE){
+    stop("ERROR: formatting quantitative data is not possible for the species and data type of the input Bgee class object.")
+  }
+
   if (length(stats) == 0){
-    if (dataType == "affymetrix"){
-      cat("WARNING: stats parameter set to \"intensities\" for the next steps.\n")
+    if (myBgeeObject$dataType == "affymetrix"){
+      cat("\nWARNING: stats parameter set to \"intensities\" for the next steps.\n")
       stats <- "intensities"
-    } else if (dataType == "rna_seq"){
-      stop("Please specify the stats parameters. Should be set to \"rpkm\" or \"counts\"")
+    } else if (myBgeeObject$dataType == "rna_seq"){
+      stop("Please specify the stats parameters. Should be set to \"rpkm\", \"counts\" or \"tpm\"")
     }
-  } else if (dataType == "affymetrix" & stats != "intensities"){
-    cat("WARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\", this will be used for the next steps.\n")
+  } else if (myBgeeObject$dataType == "affymetrix" & stats != "intensities"){
+    cat("\nWARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\". This will be used for the next steps.\n")
     stats <- "intensities"
-  } else if (dataType == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
+  } else if (myBgeeObject$dataType == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
     stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
-  } else if (dataType == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
+  } else if (myBgeeObject$dataType == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
     stop("Choose whether data formatting should create a matrix of RPKMs, TPMs or read counts, with stats option set as \"rpkm\", \"tpm\" or \"counts\"")
   }
 
@@ -64,8 +83,8 @@ format_data = function(data, callType = "all", stats = NULL){
     columns <- c("Chip.ID", "Probeset.ID", "Log.of.normalized.signal.intensity", "Gene.ID")
     expr <- .extract.data(data, columns, callType)
   }
+  ## one data matrix
   if(is.data.frame(expr$assayData)){
-    # one data matrix
 
     ## sort objects to have samples in the same order
     expr$assayData <- expr$assayData[, order(names(expr$assayData))]
@@ -77,7 +96,7 @@ format_data = function(data, callType = "all", stats = NULL){
                 phenoData=expr$pheno,
                 featureData=expr$features)
   } else if(is.list(expr$assayData)){
-    # multiple data matrices
+    ## multiple data matrices
     eset <- mapply(function(x,y,z){
       ## sort objects to have samples in the same order
       x <- x[, order(names(x))]
@@ -94,19 +113,19 @@ format_data = function(data, callType = "all", stats = NULL){
   return(eset)
 }
 
-# Takes in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
+## Take in unformatted data downloaded from Bgee and outputs a list of expression matrices, phenotype annotations, feature annotations, and calls.
 .extract.data <- function(data, columns, callType){
-  # if multiple data frames (multiple experiments or chips)
+  ## if multiple data frames (multiple experiments or chips)
   if(class(data) == "list"){
     calls <- lapply(data, function(x) .calling(x, callType, columns[3]))
     expr <- lapply(calls,
                    function(x) {
-                     # subset the data to keep relevant columns
+                     ## subset the data to keep relevant columns
                      xt <- x[, columns[1:3]]
-                     # from sample and feature columns, create a matrix with features as rows and samples as columns
+                     ## from sample and feature columns, create a matrix with features as rows and samples as columns
                      xtt <- xt %>% spread_(columns[1], columns[3])
                      rownames(xtt) <- xtt[, columns[2]]
-                     # Remove feature column to keep only data
+                     ## Remove feature column to keep only data
                      xtt[,-1, drop = FALSE]
                    }
     )
@@ -117,13 +136,13 @@ format_data = function(data, callType = "all", stats = NULL){
     phenos <- mapply(.extract.data.pheno, calls, rep(list(columns[1]), times=length(calls)))
     cat("Done...\n")
   } else {
-    # if only a single dataframe
+    ## if only a single dataframe
     calls <- .calling(data, callType, columns[3])
-    # subset the data to keep relevant columns
+    ## subset the data to keep relevant columns
     xt <- calls[, columns[1:3]]
     xtt <- xt %>% spread_(columns[1], columns[3])
     rownames(xtt) <- xtt[, columns[2]]
-    # Remove feature column to keep only data
+    ## Remove feature column to keep only data
     expr <- xtt[,-1, drop = FALSE]
 
     cat("Extracting features...\n")
@@ -138,11 +157,11 @@ format_data = function(data, callType = "all", stats = NULL){
 
 # Extract feature data (probesets or genes)
 .extract.data.feature <- function(calls, expr, columns){
-  # RNA-seq
+  ## RNA-seq
   if(length(columns) == 3){
     fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[2], drop = FALSE]
   }
-  # Affymetrix, 4 columns
+  ## Affymetrix, 4 columns
   else if(length(columns) == 4){
     fdata <- calls[match(rownames(expr), calls[, columns[2]]), columns[c(2,4)], drop = FALSE]
   }

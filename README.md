@@ -84,7 +84,7 @@ Alternatively, you can choose to download data from only one particular mouse ex
 
 ``` {r}
 # download data for GSE30617
-data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
+data_bgee_mouse_gse30617 <- bgee$get_data(experimentId = "GSE30617")
 ```
 
 The result of the ```get_data()``` function is, for each experiment, a data frame with the different samples listed in rows, one after the other. It is sometimes easier to work with data organized as a matrix, where different columns represent different samples. The ```format_data()``` function reformats the data into an ExpressionSet object including:

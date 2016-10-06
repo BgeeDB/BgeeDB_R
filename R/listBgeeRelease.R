@@ -31,7 +31,7 @@ listBgeeRelease <- function(release=NULL){
 }
 
 # Function returning a data frame describing all releases available for Bgee
-.getBgeeRelease <- function(){
+.getBgeeRelease <- function(removeFile=TRUE){
   ## query FTP to get file describing all releases
   releaseurl <- 'ftp://ftp.bgee.org/release.tsv'
   try(download.file(releaseurl, quiet = TRUE,
@@ -42,6 +42,8 @@ listBgeeRelease <- function(release=NULL){
     stop("ERROR: File describing releases could not be downloaded from FTP.")
   }
   allReleases <- read.table("release.tsv", header=TRUE, sep="\t")
-  file.remove(file.path(getwd(), 'release.tsv'))
+  if (removeFile == TRUE){
+    file.remove(file.path(getwd(), 'release.tsv'))
+  }
   return(allReleases)
 }

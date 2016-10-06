@@ -1,13 +1,14 @@
 \name{NEWS}
 \title{News for Package \pkg{BgeeDB}}
 
-\section{Changes in version 1.0.4 (2016-09-27)}{
+\section{Changes in version 1.2 (2016-10-10)}{
   \itemize{
     \item Implemented a way to deal with different Bgee releases and versioning of cached files.
     \item Implemented a way to deal with addition of TPMs as expression unit future Bgee releases.
-    \item Fixed data frames headers including spaces to more convenient headers wiht spaces replaced by dots.
-    \item Harmonized the use of the species parameter between the Bgee object creation and the loadTopAnatData() function.
-    \item In format_data() function, when affymetrix data is used, the "stats" parameter is automatically set to "intensities".
+    \item Fixed data frames headers including spaces to more convenient headers with spaces replaced by dots.
+    \item Harmonized the use of a Bgee class object by other functions throughout the packages.
+    \itam Created new getAnnotation(), getData() and formatData() independent functions to replace the Bgee class methods get_annotation(), get_data() and format_data().
+    \item In formatData() function, when affymetrix data is used, the "stats" parameter is automatically set to "intensities".
     \item Added argument allowing to sort result table in makeTable() function
   }
 }

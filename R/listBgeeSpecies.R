@@ -8,6 +8,8 @@
 #'
 #' @param ordering A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.
 #'
+#' @param removeFile Boolean indicating whether the downloaded file should be deleted. Default to TRUE.
+#'
 #' @return A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 #'
 #' @examples{
@@ -21,7 +23,7 @@
 #' @author Julien Roux
 #' @export
 
-listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
+listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, removeFile=TRUE){
   if (length(allReleases)==0) {
     cat("Querying Bgee to get release information...\n")
     allReleases <- .getBgeeRelease()
@@ -51,11 +53,11 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
 
   ## Query webservice
   cat(paste0("Submitting URL to Bgee webservice... (", myurl,")\n"))
-  download.file(myurl, destfile = file.path(getwd(), "allSpecies.tsv"))
+  download.file(myurl, destfile = file.path(getwd(), "species.tsv"))
 
   ## Read 5 last lines of file: should be empty indicating success of data transmission
   ## We cannot use a system call to UNIX command since some user might be on Windows
-  tmp <- tail(read.table(file.path(getwd(), "allSpecies.tsv"),
+  tmp <- tail(read.table(file.path(getwd(), "species.tsv"),
                          header=TRUE,
                          sep="\t",
                          comment.char="",
@@ -65,16 +67,18 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL){
   if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
     ## The file transfer was successful!
     cat(paste0("Query to Bgee webservice successful!\n"))
-    allSpecies <- read.table(file.path(getwd(), "allSpecies.tsv"),
+    allSpecies <- read.table(file.path(getwd(), "species.tsv"),
                              header=TRUE,
                              sep="\t",
                              blank.lines.skip=TRUE,
                              as.is=TRUE)
-    ## Remove temporary file
-    file.remove(file.path(getwd(), "allSpecies.tsv"))
+    if (removeFile == TRUE){
+      ## Remove temporary file
+      file.remove(file.path(getwd(), "species.tsv"))
+    }
   } else {
     ## delete the temporary file
-    file.remove(file.path(getwd(), "allSpecies.tsv"))
+    file.remove(file.path(getwd(), "species.tsv"))
     stop(paste0("ERROR: The queried file is truncated, ",
                 "there may be a temporary problem with the Bgee webservice."))
   }

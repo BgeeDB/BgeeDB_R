@@ -4,7 +4,8 @@
 \alias{listBgeeSpecies}
 \title{List species in the Bgee database and the available data types for each of them}
 \usage{
-listBgeeSpecies(release = NULL, ordering = NULL, allReleases = NULL)
+listBgeeSpecies(release = NULL, ordering = NULL, allReleases = NULL,
+  removeFile = TRUE)
 }
 \arguments{
 \item{release}{A character specifying a targeted release number. In the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". If not specified, the latest release is used.}
@@ -12,6 +13,8 @@ listBgeeSpecies(release = NULL, ordering = NULL, allReleases = NULL)
 \item{ordering}{A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.}
 
 \item{allReleases}{A data frame with information on all releases. Avoid redownloading this information if .getBgeeRelease() already called.}
+
+\item{removeFile}{Boolean indicating whether the downloaded file should be deleted. Default to TRUE.}
 }
 \value{
 A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release

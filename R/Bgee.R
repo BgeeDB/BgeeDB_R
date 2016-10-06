@@ -1,4 +1,3 @@
-########################
 #' @title Bgee Reference Class
 #'
 #' @description This is used to specify information at the beginning of a BgeeDB working session, for example, the targeted species and data type. An object of this class is then passed as argument to other functions of the package to provide these informations. See examples in vignette.
@@ -30,9 +29,10 @@
 #' }
 #'
 #' @import methods Biobase RCurl data.table
-#' ## TO DO: what is methods? data.table needed here? RCurl still needed?
 #' @export Bgee
 #' @exportClass Bgee
+
+## TO DO: above: what is methods? data.table needed here? RCurl still needed?
 
 Bgee <- setRefClass(
   "Bgee",
@@ -46,10 +46,10 @@ Bgee <- setRefClass(
     release = "character",
     annotationUrl = "character",
     experimentUrl = "character",
-    allexperimentsUrl = "character",
-    useApiKey = "boolean",
-    quantitativeData = "boolean"
-    ## TO DO: is "boolean" OK?
+    allExperimentsUrl = "character",
+    topAnatUrl = "character",
+    useApiKey = "logical",
+    quantitativeData = "logical"
   ),
 
   methods = list(
@@ -57,27 +57,41 @@ Bgee <- setRefClass(
       callSuper(...)
       ## TO DO: what is this doing? Is it needed?
 
+
       ## check data type
       if (length(dataType) == 0) {
-        stop("ERROR: You didn't specify a data type. Choose 'affymetrix' or 'rna_seq'.")
-      } else if ((length(dataType) > 1) ||
-                 (length(dataType) == 1 &&
-                  dataType %in% c("rna_seq", "affymetrix") == "FALSE")) {
-        stop("ERROR: Choose correct dataType argument: 'affymetrix' or 'rna_seq'.")
+        cat("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"rna_seq\",\"affymetrix\",\"est\",\"in_situ\") for the next steps.\n")
+      } else if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
+        stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\".")
       }
 
-      ## TO DO: Set to c("rna_seq","affymetrix","est","in_situ") by default
-      ## TO DO: Initial code from loadTopAnatData.R. Check if fully redundant or integrate
-      ## Test if parameters are in the range of allowed parameters
-      # if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
-      #   stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\".")
-      # }
-      # if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) ){
-      #   cat("WARNING: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for mistakes or typos.\n")
-      # }
+      if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) ){
+        cat("\nWARNING: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". Please check for typos.\n")
+      }
 
-      cat("Querying Bgee to get release information...\n")
-      allReleases <- .getBgeeRelease()
+
+      ## check path of folder to store cached files
+      if (length(pathToData) == 0) {
+        pathToData <<- getwd()
+      } else if (length(pathToData) == 1) {
+        if (!file.exists(pathToData)) {
+          stop("ERROR: please specify a valid and existing path to store data files.")
+        }
+      } else {
+        stop("ERROR: Invalid path for data files.")
+      }
+
+      ## Get release information
+      if (file.exists(file.path(pathToData, "release.tsv"))){
+        cat(paste0("\nNOTE: the file describing Bgee releases information was found in the download directory "
+                   , pathToData, ". Data will not be redownloaded.\n"))
+        allReleases <- read.table(file.path(pathToData, "release.tsv"), header=TRUE, sep="\t")
+      } else {
+        cat("Querying Bgee to get release information...\n")
+        allReleases <- .getBgeeRelease(removeFile=FALSE)
+        file.rename(from=file.path(getwd(), 'release.tsv'), to=file.path(pathToData, "release.tsv"))
+      }
+
       if (length(release) == 0) {
         release <<- gsub("\\.", "_", allReleases$release[1])
       } else if (length(release) == 1) {
@@ -91,53 +105,40 @@ Bgee <- setRefClass(
         stop("ERROR: The specified release number is invalid.")
       }
 
-      ## TO DO: Initial code from loadTopAnatData.R. Check if fully redundant or integrate
-      # cat("Querying Bgee to get release information...\n")
-      # allReleases <- .getBgeeRelease()
-      # if (length(release)==0) {
-      #   release <- gsub("\\.", "_", allReleases$release[1])
-      # } else if (length(release)==1){
-      #   # In case the release number is written with a dot
-      #   release <- gsub("\\.", "_", release)
-      #   # test if required release exists
-      #   if (sum(allReleases$release == gsub("_", ".", release))!=1){
-      #     stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
-      #   }
-      # } else {
-      #   stop("ERROR: The specified release number is invalid.")
-      # }
 
-      ## TO DO: store release.tsv at root of pathToData
-      ##        if it is there, do not call .getBgeeRelease
-      ##        (similar to listBgeeSpecies)
-
-      ############## TO DO: move tis somewhere else? Next to other url sepcifications ############
-      ## Specify host to be used
-      host <- allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)]
-      if ( !grepl("/$", host) ){
-        host <- paste0(host, "/")
+      ## Specify URL to be used for topAnat
+      topAnatUrl <<-  as.character(allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)])
+      if ( !grepl("/$", topAnatUrl) ){
+        topAnatUrl <<- paste0(topAnatUrl, "/")
       }
-      ## TO DO: should that be specified in Bgee object ?
-      ## replace by topAnat.url field or similar
-      ########################
 
-      ## First retrieve list of all species for queried release
-      allSpecies <-
-        listBgeeSpecies(release = release, allReleases = allReleases)
+
+      ## Get species information
+      if (file.exists(file.path(pathToData, "species.tsv"))){
+        cat(paste0("\nNOTE: the file describing Bgee species information was found in the download directory "
+                   , pathToData, ". Data will not be redownloaded.\n"))
+        allSpecies <- read.table(file.path(pathToData, "species.tsv"),
+                                 header=TRUE,
+                                 sep="\t",
+                                 blank.lines.skip=TRUE,
+                                 as.is=TRUE)
+      } else {
+        ## cat("Querying Bgee to get species information...\n")
+        allSpecies <- listBgeeSpecies(release = release, allReleases = allReleases, removeFile=FALSE)
+        file.rename(from=file.path(getwd(), 'species.tsv'), to=file.path(pathToData, "species.tsv"))
+      }
 
       ## check species argument
       if (length(species) == 0) {
-        stop("ERROR: You didn't specify any species.")
+        stop("ERROR: You did not specify any species.")
       } else if (length(species) > 1) {
         stop("ERROR: only one species is allowed.")
       } else if (grepl("^\\d+$", species)) {
-        ## of species was specified as a taxonomic ID
+        ## if species was specified as a taxonomic ID
         if (sum(allSpecies$ID == species) != 1) {
           stop(
-            paste0(
-              "ERROR: The specified species Id is invalid, or not available in Bgee release ",
-              release
-            )
+            paste0("ERROR: The specified species taxonomic Id is invalid, or not available in Bgee release ",
+              release)
           )
         } else {
           speciesId <<- as.numeric(species)
@@ -151,9 +152,7 @@ Bgee <- setRefClass(
           stop(
             paste0(
               "ERROR: The specified species name is invalid, or not available in Bgee release ",
-              release,
-              "."
-            )
+              release, ".")
           )
         } else {
           speciesName <<- species
@@ -163,125 +162,71 @@ Bgee <- setRefClass(
         }
       }
 
-      ## TO DO: Initial code from loadTopAnatData.R. Check if fully redundant or integrate
-      # ## Retrieve list of all species for queried release
-      # allSpecies <- listBgeeSpecies(release=release, allReleases=allReleases)
-      #
-      # ## Species is the only compulsory parameter
-      # if( length(species) == 0 ) {
-      #   stop("ERROR: you need to specify a species.")
-      # } else if ( length(species) > 1 ){
-      #   stop("ERROR: only one species is allowed.")
-      # } else if (grepl("^\\d+$", species)){
-      #   ## of species was specified as a taxonomic ID
-      #   if (sum(allSpecies$ID == species) != 1){
-      #     stop(paste0("ERROR: The specified species Id is invalid, or not available in Bgee release ", release))
-      #   } else {
-      #     speciesId <- as.numeric(species)
-      #     speciesName <- paste(allSpecies[allSpecies$ID == species, 2:3], collapse="_")
-      #   }
-      # } else if (is.character(species)){
-      #   speciesSplitted <- unlist(strsplit(species, split="_"))
-      #   if (sum(allSpecies$GENUS == speciesSplitted[1] & allSpecies$SPECIES_NAME == speciesSplitted[2]) != 1){
-      #     stop(paste0("ERROR: The specified species name is invalid, or not available in Bgee release ", release, "."))
-      #   } else {
-      #     speciesName <- species
-      #     speciesId <- as.numeric(allSpecies$ID[allSpecies$GENUS == speciesSplitted[1] & allSpecies$SPECIES_NAME == speciesSplitted[2]])
-      #   }
-      # }
-      #
 
+      ## Set quantitativeData field, FALSE by default
+      quantitativeData <<- FALSE
 
-
-
-
-      ## check data type availability for chosen species
-      if (dataType == "rna_seq" &
-          allSpecies$RNA_SEQ[allSpecies$ID == speciesId] == FALSE) {
-        stop(
-          "ERROR: The specified species name is not among the list of species with RNA-seq data in Bgee release ",
-          release,
-          ". See listBgeeSpecies() for details on data types availability for each species."
-        )
-      } else if (dataType == "affymetrix" &
-                 allSpecies$AFFYMETRIX[allSpecies$ID == speciesId] == FALSE) {
-        stop(
-          "ERROR: The specified species name is not among the list of species with Affymetrix microarray data in Bgee release ",
-          release,
-          ". See listBgeeSpecies() for details on data types availability for each species."
-        )
-      }
-
-      ## create URLs
-      if (dataType == "rna_seq") {
-        ## annotation file
-        annotationUrl <<-
-          as.character(allReleases$RNA.Seq.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
-        ## Data from specific experiment
-        experimentUrl <<-
-          as.character(allReleases$RNA.Seq.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
-        ## Data from all experiments
-        allexperimentsUrl <<-
-          as.character(allReleases$RNA.Seq.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
-      } else if (dataType == "affymetrix") {
-        ## annotation file
-        annotationUrl <<-
-          as.character(allReleases$Affymetrix.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
-        ## Data from specific experiment
-        experimentUrl <<-
-          as.character(allReleases$Affymetrix.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
-        ## Data from all experiments
-        allexperimentsUrl <<-
-          as.character(allReleases$Affymetrix.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
-      }
-      annotationUrl <<-
-        gsub("SPECIESNAMEPATTERN", speciesName, annotationUrl)
-      allexperimentsUrl <<-
-        gsub("SPECIESNAMEPATTERN", speciesName, allexperimentsUrl)
-      experimentUrl <<-
-        gsub("SPECIESNAMEPATTERN", speciesName, experimentUrl)
-      ## Note: one more substitution is needed here for the experiment id. This is done later in the get_data() function.
-
-      ## check path of folder to store cached files
-      if (length(pathToData) == 0) {
-        pathToData <<- paste0(getwd(), "/", speciesName, "_Bgee_", release)
-      } else if (length(pathToData) == 1) {
-        if (!file.exists(pathToData)) {
-          stop("ERROR: please specify a valid and existing path to store data files.")
-        } else {
-          pathToData <<-
-            paste0(pathToData, "/", speciesName, "_Bgee_", release)
+      ## What is done below if only valid for FTP data download, so there should be only 1 data type specified and it needs to be rna_seq or affymetrix
+      if (length(dataType) == 1){
+        ## If only RNA-seq data, check availability in species
+        if (dataType == "rna_seq") {
+          quantitativeData <<-
+            allSpecies$RNA_SEQ[allSpecies$ID == speciesId]
         }
-      } else {
-        stop("ERROR: Invalid path for data files.")
+        ## If only Affymetrix data, check availability in species
+        else if (dataType == "affymetrix") {
+          quantitativeData <<-
+            allSpecies$AFFYMETRIX[allSpecies$ID == speciesId]
+        }
+
+        if (quantitativeData == TRUE){
+          ## create URLs
+          if (dataType == "rna_seq") {
+            ## annotation file
+            annotationUrl <<-
+              as.character(allReleases$RNA.Seq.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
+            ## Data from specific experiment
+            experimentUrl <<-
+              as.character(allReleases$RNA.Seq.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+            ## Data from all experiments
+            allExperimentsUrl <<-
+              as.character(allReleases$RNA.Seq.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+          } else if (dataType == "affymetrix") {
+            ## annotation file
+            annotationUrl <<-
+              as.character(allReleases$Affymetrix.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
+            ## Data from specific experiment
+            experimentUrl <<-
+              as.character(allReleases$Affymetrix.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+            ## Data from all experiments
+            allExperimentsUrl <<-
+              as.character(allReleases$Affymetrix.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+          }
+          annotationUrl <<-
+            gsub("SPECIESNAMEPATTERN", speciesName, annotationUrl)
+          allExperimentsUrl <<-
+            gsub("SPECIESNAMEPATTERN", speciesName, allExperimentsUrl)
+          experimentUrl <<-
+            gsub("SPECIESNAMEPATTERN", speciesName, experimentUrl)
+          ## Note: one more substitution is needed here for the experiment id. This is done in the getData() function.
+        }
       }
-      ## create sub-folder with species name to store downloaded files
+
+
+      ## create sub-folder with species name to store downloaded cache files
+      pathToData <<- paste0(pathToData, "/", speciesName, "_Bgee_", release)
       if (!file.exists(pathToData)) {
         dir.create(pathToData)
       }
 
-      ## TO DO: Initial code from loadTopAnatData.R. Check if fully redundant or integrate
-      # ## check path of folder to store cached files
-      # if(length(pathToData)==0) {
-      #   pathToData <- paste0(getwd(), "/", speciesName, "_Bgee_", release)
-      # } else if (length(pathToData)==1){
-      #   if ( !file.exists(pathToData) ){
-      #     stop("ERROR: please specify a valid and existing path to store data files.")
-      #   } else {
-      #     pathToData <- paste0(pathToData, "/", speciesName, "_Bgee_", release)
-      #   }
-      # } else {
-      #   stop("ERROR: Invalid path for data files.")
-      # }
-      # ## create sub-folder with species name to store downloaded files
-      # if (!file.exists(pathToData)){
-      #   dir.create(pathToData)
-      # }
 
-      ## TO DO: Set quantitative Data field to TRUE or FALSE to say if species/dataType is OK for getAnnotation and getData.
-
-      ## TO DO: create API key here? add field to Bgee object?
-
+      ## useApiKey field
+      if (length(useApiKey) == 0) {
+        useApiKey <<- TRUE
+      } else if (length(useApiKey) != 1 | (length(useApiKey) == 1 & !is.logical(useApiKey))) {
+        cat("\nNOTE: You did not specify a valid value for the \"useApiKey\" field (should be TRUE or FALSE). The field will be set to TRUE for the next steps.\n")
+        useApiKey <<- TRUE
+      }
     },
     get_annotation = function(...){
       stop("ERROR: this function is deprecated. Use getAnnotation() function instead.")

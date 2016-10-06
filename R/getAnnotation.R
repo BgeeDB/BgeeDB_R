@@ -1,11 +1,10 @@
-########################
 #' @title Retrieve Bgee experiments annotation for targeted species and data type.
 #'
 #' @description This function loads the annotation of experiments and samples of quantitative expression datasets (rna_seq, affymetrix) that are available from Bgee.
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
 
-#' @return A list of two elements, including a data frame of the annotation of experiments for chosen species and a data frame of the annotation of chips/libraries from these experiments.
+#' @return A list of two elements, including a data frame of the annotation of experiments for chosen species (field "experiment_annotation") and a data frame of the annotation of chips/libraries from these experiments (field "sample_annotation").
 #'
 #' @author Andrea Komljenovic and Julien Roux.
 #'
@@ -18,14 +17,17 @@
 
 getAnnotation = function(myBgeeObject){
 
-  ## TO DO: test myBgeeObject$pathToData, myBgeeObject$annotationUrl, myBgeeObject$dataType
-  ### check that fields of Bgee object are not empty
-  #if (length(myBgeeObject$species) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
-  #  stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
-  #}
+  ## check that fields of Bgee object are not empty
+  if (length(myBgeeObject$quantitativeData) == 0 | length(myBgeeObject$annotationUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
+   stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
+  }
 
-  ## TO DO: test myBgeeObject$quantitativeData is TRUE
+  ## Check that download of data is possible for targeted species and data type
+  if (myBgeeObject$quantitativeData != TRUE){
+    stop("ERROR: downloading the annotation files is not possible for the species and data type of the input Bgee class object.")
+  }
 
+  ## Get name of annotation file from URL
   annotation.file <- basename(myBgeeObject$annotationUrl)
 
   ## To get the names of experiment and sample files, we start from the annotation.file
@@ -40,7 +42,7 @@ getAnnotation = function(myBgeeObject){
 
   ## Check if file is already in cache. If so, skip download step
   if (file.exists(file.path(myBgeeObject$pathToData, annotation.experiments)) && file.exists(file.path(myBgeeObject$pathToData, annotation.samples))){
-    cat(paste0("NOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
+    cat(paste0("\nNOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
                ". Data will not be redownloaded.\n"))
   } else {
     cat("Downloading annotation files...\n")

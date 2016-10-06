@@ -47,6 +47,8 @@
 #' @import utils
 #' @export
 
+## TO DO: check myBgeeObject$useApiKey. Should be set to something, either a hash or 'none';
+
 loadTopAnatData <- function(myBgeeObject, callType="presence",
                             confidence="all", stage=NULL){
   if ( callType != "presence" ){
@@ -56,7 +58,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
     stop("ERROR: the data confidence parameter specified is not among the allowed values (\"all\" or \"high_quality\").")
   }
   ## check that fields of Bgee object are not empty
-  if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
+  if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
   }
 
@@ -73,7 +75,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
         ". Data will not be redownloaded.\n"))
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
-    myurl <- paste0(host, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID")
+    myurl <- paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID")
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
@@ -102,7 +104,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
-    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME")
+    myurl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME")
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myurl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
@@ -145,9 +147,9 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
-    myurl <-  paste0(host, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
+    myurl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
 
-    ## Add data type: only if not all data types needed
+    ## Add data type to file name: only if not all data types asked
     if ( sum(myBgeeObject$dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
       for (type in toupper(sort(myBgeeObject$dataType))){
         myurl <- paste0(myurl, "&data_type=", type)

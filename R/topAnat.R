@@ -1,4 +1,3 @@
-########################
 #' @title Produces an object allowing to perform GO-like enrichment of anatomical terms using the topGO package
 #'
 #' @description This function produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package. This object uses the Uberon ontology instead of the GO ontology.
@@ -18,6 +17,7 @@
 #' @author Julien Roux
 #'
 #' @examples{
+#'   ## TO DO: modify example below
 #'   myTopAnatData <- loadTopAnatData(species = "Mus_musculus", dataType = "rna_seq")
 #'   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
 #'   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
@@ -86,11 +86,11 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     stop("ERROR: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
   }
   if (length(geneList) < 100) {
-    cat("WARNING: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
+    cat("\nWARNING: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
   }
   ## If geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes
   if (sum(names(geneList) %in% names(topAnatData$gene2anatomy)) != length(geneList)){
-    cat("WARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
+    cat("\nWARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
   }
 
   if (nodeSize == 0){
