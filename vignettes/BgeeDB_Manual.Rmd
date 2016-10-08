@@ -142,12 +142,12 @@ The strigency on the quality of expression calls can be changed with the ```conf
 
 ```{r, eval=FALSE}
 ## Loading only high-quality expression calls from affymetrix data made on embryonic samples only 
-## This is just given as an example, but is not run in this vignette because very few data are returned
+## This is just given as an example, but is not run in this vignette because only few data are returned
 ## bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
 ## myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="high_quality")
 ```
 
-*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple paralle topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
+*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument whne creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple paralle topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
 
 #### Prepare a topGOdata-like object allowing to perform TopAnat analysis
 
