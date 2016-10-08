@@ -29,7 +29,7 @@ By default all data type are included: \code{c("rna_seq","affymetrix","est","in_
 
 \item{\code{release}}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.}
 
-\item{\code{useApiKey}}{A field specifying if users should be tracked with an API key for our internal usage statistics and for the management of queries to server. Default to TRUE. The API key created is a secure hash that does not allow formal identification of the user. If this is not fitting your needs, "useApiKey" can be set to FALSE and the package will work anonymously. In this case, please be careful not to launch too many queries in parallel and try to reuse cached data files as much as possible (see "pathToData" argument).}
+\item{\code{sendStats}}{A field specifying whether monitoring of users is performed for our internal usage statistics. This is useful to improve the settings of our servers and to get reliable usage statistics (e.g., when asking for funding for Bgee). No identification of the users is attempted, nor possible. Default to TRUE. This option can be set to FALSE, notably if all data files are in cache and that users want to be able to work offline.}
 
 \item{\code{quantitativeData}}{A field specifying if a single type of quantitative expression data ("rna_seq" or "affymetrix") was specified and if it is available for targeted species, helping the package to know if it should proceed with the execution of getAnnotation() and getData() functions.}
 }}

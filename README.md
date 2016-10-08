@@ -55,21 +55,21 @@ bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 
 #### Retrieve the annotation of mouse RNA-seq datasets
 
-The ```get_annotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for mouse. 
+The ```getAnnotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for mouse. 
 
 ``` {r}
-annotation_bgee_mouse <- bgee$get_annotation()
+annotation_bgee_mouse <- getAnnotation(bgee)
 # list the first experiments and libraries
 lapply(annotation_bgee_mouse, head)
 ```
 
 #### Download the processed mouse RNA-seq data
 
-The ```get_data()``` will download RNA-seq data from all available mouse experiments in Bgee as a list. The downloaded files will be stored in the versioned folder created by the ```get_annotation()``` function above.
+The ```getData()``` will download RNA-seq data from all available mouse experiments in Bgee as a list. The downloaded files will be stored in the versioned folder created by the ```getAnnotation()``` function above.
 
 ``` {r}
 # download all RNA-seq experiments from mouse
-data_bgee_mouse <- bgee$get_data()
+data_bgee_mouse <- getData(bgee)
 # the number of experiments downloaded from Bgee
 length(data_bgee_mouse)
 # check the downloaded data
@@ -84,10 +84,10 @@ Alternatively, you can choose to download data from only one particular mouse ex
 
 ``` {r}
 # download data for GSE30617
-data_bgee_mouse_gse30617 <- bgee$get_data(experimentId = "GSE30617")
+data_bgee_mouse_gse30617 <- getData(bgee, experimentId = "GSE30617")
 ```
 
-The result of the ```get_data()``` function is, for each experiment, a data frame with the different samples listed in rows, one after the other. It is sometimes easier to work with data organized as a matrix, where different columns represent different samples. The ```format_data()``` function reformats the data into an ExpressionSet object including:
+The result of the ```getData()``` function is, for each experiment, a data frame with the different samples listed in rows, one after the other. It is sometimes easier to work with data organized as a matrix, where different columns represent different samples. The ```formatData()``` function reformats the data into an ExpressionSet object including:
 * An expression data matrix, with genes or probesets as rows, and samples as columns (```assayData``` slot). The ```stats``` argument allows to choose if the matrix should be filled with read counts, RPKMs (and soon TPMs) for RNA-seq data. For micoarray data the matrix is filled with log2 expression intensities.
 * A data frame listing the samples and their anatomical structure and developmental stage annotation (```phenoData``` slot)
 * For microarray data, the mapping from probesets to Ensembl genes (```featureData``` slot)
@@ -96,7 +96,7 @@ This function also allows to retain only actively expressed genes or probesets, 
 
 ```{r}
 # use only present calls and fill expression matric with RPKM values
-gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617, callType = "present", stats = "rpkm")
+gene.expression.mouse.rpkm <- formatData(bgee, data_bgee_mouse_gse30617, callType = "present", stats = "rpkm")
 gene.expression.mouse.rpkm 
 ```
 
@@ -109,22 +109,31 @@ For some documentation on the TopAnat analysis, please refer to our publications
 The ```loadTopAnatData()``` function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures. Below, we will choose zebrafish as targeted species:
 
 ```{r}
+# Creating new Bgee class object
+bgee <- Bgee$new(species = "Danio_rerio")
 # Loading calls of expression
-myTopAnatData <- loadTopAnatData(species="Danio_rerio")
+myTopAnatData <- loadTopAnatData(bgee)
 ```
+TO DO: mention thta new Bgee object needs to be built
 
 By default all data types available for the targeted species are used. This can be changed using the ```dataType``` argument. The data quality can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the ```stage``` argument. 
+
+TO DO: rewrite this
 
 ```{r, eval=FALSE}
 # Loading expression calls from affymetrix data made on embryonic samples only 
 # Not to be run on this vignette
-myTopAnatData <- loadTopAnatData(species="Danio_rerio", dataType="affymetrix", stage="UBERON:0000068")
+## bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
+## myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068")
+# TO DO: add a comment to say not to run it
 
 # Look at the data
-lapply(myTopAnatData, head)
+str(myTopAnatData)
 ```
 
 Similarly to the examples above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument. If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service. It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listBgeeRelease()``` function.
+
+TO DO: update this paragraph
 
 #### Prepare a topGO object allowing to perform TopAnat analysis
 
@@ -165,8 +174,9 @@ results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
 
 You can also choose one of the topGO decorrelation methods, for example the "weight" method, allowing to get less redundant results
 ```{r, eval=FALSE}
-# Not to be run on this vignette
-results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
+## Not to be run on this vignette
+## results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
+
 ```
 
 *Warning*: This can be long because of the size of the ontology. Consider running a script in batch mode if you have multiple analyses to do.

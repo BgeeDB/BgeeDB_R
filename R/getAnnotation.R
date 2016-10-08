@@ -54,7 +54,7 @@ getAnnotation = function(myBgeeObject){
     cat(paste0("\nNOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
                ". Data will not be redownloaded.\n"))
   } else {
-    cat("Downloading annotation files...\n")
+    cat("\nDownloading annotation files...\n")
     success <- download.file(myBgeeObject$annotationUrl,
                              destfile=file.path(myBgeeObject$pathToData, annotationFile),
                              mode='wb')
@@ -62,7 +62,7 @@ getAnnotation = function(myBgeeObject){
       stop("ERROR: Download from FTP was not successful.")
     }
     unzip(file.path(myBgeeObject$pathToData, annotationFile), exdir=myBgeeObject$pathToData)
-    cat("Saved annotation files in", myBgeeObject$pathToData, "folder.\n")
+    cat("\nSaved annotation files in", myBgeeObject$pathToData, "folder.\n")
     ## Clean directory and remove .zip file
     file.remove(file.path(myBgeeObject$pathToData, annotationFile))
     ## Test if extracted files are OK

@@ -25,7 +25,7 @@
 
 listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, removeFile=TRUE){
   if (length(allReleases)==0) {
-    cat("Querying Bgee to get release information...\n")
+    cat("\nQuerying Bgee to get release information...\n")
     allReleases <- .getBgeeRelease()
   }
   if (length(release)==0) {
@@ -42,7 +42,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
     stop("ERROR: The specified release number is invalid.")
   }
 
-  cat(paste0("Building URL to query species in Bgee release ", release, "...\n"))
+  cat(paste0("\nBuilding URL to query species in Bgee release ", release, "...\n"))
   host <- allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)]
   myUrl <- paste0(host, "?page=species&display_type=tsv")
 
@@ -52,7 +52,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   options(timeout = 600)
 
   ## Query webservice
-  cat(paste0("Submitting URL to Bgee webservice... (", myUrl,")\n"))
+  cat(paste0("\nSubmitting URL to Bgee webservice... (", myUrl,")\n"))
   download.file(myUrl, destfile = file.path(getwd(), "species.tsv"))
 
   ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -66,7 +66,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
               n=5)
   if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
     ## The file transfer was successful!
-    cat(paste0("Query to Bgee webservice successful!\n"))
+    cat(paste0("\nQuery to Bgee webservice successful!\n"))
     allSpecies <- read.table(file.path(getwd(), "species.tsv"),
                              header=TRUE,
                              sep="\t",
@@ -88,7 +88,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   } else if(length(ordering) == 1 & is.numeric(ordering) & ordering <= length(allSpecies[1,])){
     return(allSpecies[order(allSpecies[,ordering]),])
   } else {
-    cat(paste0("Invalid ordering parameter, returning the data frame unsorted.\n"))
+    cat(paste0("\nWARNING: Invalid ordering parameter, returning the data frame unsorted.\n"))
     return(allSpecies)
   }
 }

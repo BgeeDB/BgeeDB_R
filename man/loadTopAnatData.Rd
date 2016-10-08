@@ -35,11 +35,12 @@ For information, the most useful stages (going no deeper than level 3 of the ont
 }}
 }
 \value{
-A list of 3 elements:
+A list of 4 elements:
 \itemize{
   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
   \item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
+  \item{The Bgee class object thta was used to retrieve the data.}
 }
 }
 \description{

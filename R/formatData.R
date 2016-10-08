@@ -35,7 +35,7 @@
 #' @importFrom tidyr spread_
 #' @export
 
-formatData = function(data, stats = NULL, callType = "all"){
+formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
 
   ## check that fields of Bgee object are not empty
   if (length(myBgeeObject$quantitativeData) == 0 | length(myBgeeObject$dataType) == 0){
@@ -57,7 +57,7 @@ formatData = function(data, stats = NULL, callType = "all"){
   } else if (myBgeeObject$dataType == "affymetrix" & stats != "intensities"){
     cat("\nWARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\". This will be used for the next steps.\n")
     stats <- "intensities"
-  } else if (myBgeeObject$dataType == "rna_seq" & release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
+  } else if (myBgeeObject$dataType == "rna_seq" & myBgeeObject$release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
     stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
   } else if (myBgeeObject$dataType == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
     stop("Choose whether data formatting should create a matrix of RPKMs, TPMs or read counts, with stats option set as \"rpkm\", \"tpm\" or \"counts\"")

@@ -4,9 +4,11 @@
 \alias{formatData}
 \title{Format RNA-seq or Affymetrix data downloaded from Bgee.}
 \usage{
-formatData(data, stats = NULL, callType = "all")
+formatData(myBgeeObject, data, stats = NULL, callType = "all")
 }
 \arguments{
+\item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species and data type.}
+
 \item{data}{A list of data frames including data from multiple experiments, or a data frame including data from a single experiment.}
 
 \item{stats}{A character indicating what expression values should be used in the formatted data expressionSet object matrix.
@@ -23,8 +25,6 @@ formatData(data, stats = NULL, callType = "all")
   \item{"present high quality"}
   \item{"all"}
 }}
-
-\item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species and data type.}
 }
 \value{
 If data was a list of data frames from multiple experiments, returns a list of ExpressionSet objects. If data was a data frame from a single experiment, returns an ExpressionSet object.

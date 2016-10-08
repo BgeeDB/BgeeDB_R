@@ -19,7 +19,7 @@
 #'
 #' @field release Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.
 #'
-#' @field useApiKey A field specifying if users should be tracked with an API key for our internal usage statistics and for the management of queries to server. Default to TRUE. The API key created is a secure hash that does not allow formal identification of the user. If this is not fitting your needs, "useApiKey" can be set to FALSE and the package will work anonymously. In this case, please be careful not to launch too many queries in parallel and try to reuse cached data files as much as possible (see "pathToData" argument).
+#' @field sendStats A field specifying whether monitoring of users is performed for our internal usage statistics. This is useful to improve the settings of our servers and to get reliable usage statistics (e.g., when asking for funding for Bgee). No identification of the users is attempted, nor possible. Default to TRUE. This option can be set to FALSE, notably if all data files are in cache and that users want to be able to work offline.
 #'
 #' @field quantitativeData A field specifying if a single type of quantitative expression data ("rna_seq" or "affymetrix") was specified and if it is available for targeted species, helping the package to know if it should proceed with the execution of getAnnotation() and getData() functions.
 #'
@@ -46,8 +46,9 @@ Bgee <- setRefClass(
     experimentUrl = "character",
     allExperimentsUrl = "character",
     topAnatUrl = "character",
-    useApiKey = "logical",
-    quantitativeData = "logical"
+    sendStats = "logical",
+    quantitativeData = "logical",
+    apiKey = "character"
   ),
 
   methods = list(
@@ -78,17 +79,23 @@ Bgee <- setRefClass(
         stop("ERROR: Invalid path for data files.")
       }
 
+
       ## Get release information
-      if (file.exists(file.path(pathToData, "release.tsv"))){
-        cat(paste0("\nNOTE: the file describing Bgee releases information was found in the download directory ",
-                   pathToData, ". Data will not be redownloaded.\n"))
-        allReleases <- read.table(file.path(pathToData, "release.tsv"), header=TRUE, sep="\t")
-      } else {
-        cat("Querying Bgee to get release information...\n")
-        allReleases <- .getBgeeRelease(removeFile = FALSE)
+      cat("\nQuerying Bgee to get release information...\n")
+      allReleases <- try(.getBgeeRelease(removeFile = FALSE), silent=TRUE)
+      if (class(allReleases) == "data.frame"){
         file.rename(from=file.path(getwd(), 'release.tsv'),
                     to=file.path(pathToData, "release.tsv"))
+      } else if (class(allReleases) == "try-error"){
+        if (file.exists(file.path(pathToData, "release.tsv"))){
+          cat(paste0("\nWARNING: BgeeDB could not access Bgee releases information from the internet, but a release information file was found in the download directory ",
+                     pathToData, ". This release file will be used, but be warned that it may not be up to date!\n"))
+          allReleases <- read.table(file.path(pathToData, "release.tsv"), header=TRUE, sep="\t")
+        } else {
+          stop("ERROR: BgeeDB could not access Bgee releases information. Is your internet connection working?")
+        }
       }
+
 
       if (length(release) == 0) {
         release <<- gsub("\\.", "_", allReleases$release[1])
@@ -113,7 +120,7 @@ Bgee <- setRefClass(
 
       ## Get species information
       if (file.exists(paste0(pathToData, "/species_Bgee_", release, ".tsv"))){
-        cat(paste0("\nNOTE: the file describing Bgee species information was found in the download directory ",
+        cat(paste0("\nNOTE: the file describing Bgee species information for release ", release, " was found in the download directory ",
                    pathToData, ". Data will not be redownloaded.\n"))
         allSpecies <- read.table(paste0(pathToData, "/species_Bgee_", release, ".tsv"),
                                  header=TRUE,
@@ -210,13 +217,29 @@ Bgee <- setRefClass(
       }
 
 
-      ## useApiKey field
-      if (length(useApiKey) == 0) {
-        useApiKey <<- TRUE
-      } else if (length(useApiKey) != 1 | (length(useApiKey) == 1 & !is.logical(useApiKey))) {
-        cat("\nNOTE: You did not specify a valid value for the \"useApiKey\" field (should be TRUE or FALSE). The field will be set to TRUE for the next steps.\n")
-        useApiKey <<- TRUE
+      ## sendStats field
+      if (length(sendStats) == 0) {
+        sendStats <<- TRUE
+      } else if (length(sendStats) != 1 | (length(sendStats) == 1 & !is.logical(sendStats))) {
+        cat("\nNOTE: You did not specify a valid value for the \"sendStats\" field (should be TRUE or FALSE). The field will be set to TRUE for the next steps.\n")
+        sendStats <<- TRUE
       }
+
+
+      ## Create a concatenated string made of several variables that should be unique to the user, using Sys.info(), Sys.getenv() and R.version variables.
+      myUserInfo <- c(Sys.info()[c("sysname", "release", "version", "machine", "login")], Sys.getenv()[c("R_HOME", "R_LIBS_USER")], R.version)
+      ## Use library digest to create a SHA512 hash, that will be used as API key
+      apiKey <<- digest(myUserInfo, algo = "sha512")
+      cat(paste0("\nAPI key built: ", apiKey, "\n"))
+
+      ## TO DO: test that key stays identical for same user on different days etc
+
+      ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ## The API key allows to monitor usage of our package and to limit the number of simultaneous queries
+      ## to the server from the same user. It is a secure hash that does not allow the identification of
+      ## the user.
+      ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     },
 
     get_annotation = function(...){

@@ -30,11 +30,12 @@
 #'
 #' @param confidence A character indicating if only high quality present calls should be retrieved. Options are "all" or "high_quality". Default is "all".
 #'
-#' @return A list of 3 elements:
+#' @return A list of 4 elements:
 #' \itemize{
 #'   \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
 #'   \item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
 #'   \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
+#'   \item{The Bgee class object thta was used to retrieve the data.}
 #' }
 #'
 #' @author Julien Roux
@@ -50,7 +51,7 @@
 loadTopAnatData <- function(myBgeeObject, callType="presence",
                             confidence="all", stage=NULL){
   ## check that fields of Bgee object are not empty
-  if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0 | length(myBgeeObject$useApiKey) == 0){
+  if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0 | length(myBgeeObject$sendStats) == 0){
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
   }
   if ( callType != "presence" ){
@@ -61,36 +62,10 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
   }
 
 
-  if (myBgeeObject$useApiKey == TRUE){
-    ## Create a concatenated string made of all Sys.info() variables
-    ## ("sysname", "release", "version", "nodename", "machine", "login", "user", "effective_user")
-    myUserString <- paste(as.character(Sys.info()), collapse="/")
-
-    ## Use library digest to create a SHA256 hash from that string, that will be used as API key
-    myHash <- digest(myUserString, algo = "sha256")
-
-    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ## This API key allows to track users for our package usage statistics and to limit the number of
-    ## simultaneous queries to the webservice from the same user. It is a secure hash built from the
-    ## Sys.info() variables values, but these informations are not displayed to us, and are not accessible
-    ## to anyone. If these conditions do not fit your needs, it is possible to disable the use of the API key
-    ## with the "useApiKey" option set to FALSE when the Bgee object is built. In this case, please be careful
-    ## not to launch too many queries in parallel and try to reuse cached data files as much as possible
-    ## (see "pathToData" argument).
-    ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    cat(paste0("API key built: ", myHash, "\n"))
-  }
-
-
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
   ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
   options(timeout = 600)
-
-
-  ## TO DO: if useApiKey is TRUE, send a query to our webservice for statistics purposes of topAnat use
-  ## (even when cached files are reused)
 
 
   ## First query: organ relationships
@@ -101,12 +76,11 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
         ". Data will not be redownloaded.\n"))
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
-    myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID")
-    ## TO DO: append API key myHash to URL if (myBgeeObject$useApiKey == TRUE)
+    myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
+    success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
 
     ## Read 5 last lines of file: should be empty indicating success of data transmission
     ## We cannot use a system call to UNIX command since some user might be on Windows
@@ -131,8 +105,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
-    myUrl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME")
-    ## TO DO: append API key myHash to URL if (myBgeeObject$useApiKey == TRUE)
+    myUrl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
@@ -175,8 +148,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
-    myUrl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID")
-    ## TO DO: append API key myHash to URL if (myBgeeObject$useApiKey == TRUE)
+    myUrl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
 
     ## Add data type to file name: only if not all data types asked
     if ( sum(myBgeeObject$dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
@@ -262,5 +234,5 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
   organNames <- rbind(organNames, c("BGEE:0", "root"))
 
   cat("\nDone.\n")
-  return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames))
+  return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames, bgee.object = myBgeeObject))
 }

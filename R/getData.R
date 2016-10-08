@@ -40,7 +40,7 @@ getData = function(myBgeeObject, experimentId = NULL){
   }
 
   if (length(experimentId) == 0){
-    cat(paste0("The experiment is not defined. Hence taking all ", myBgeeObject$dataType, " experiments available for ", myBgeeObject$speciesName, ".\n"))
+    cat(paste0("\nThe experiment is not defined. Hence taking all ", myBgeeObject$dataType, " experiments available for ", myBgeeObject$speciesName, ".\n"))
 
     ## Get name of data file from URL
     allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
@@ -51,15 +51,14 @@ getData = function(myBgeeObject, experimentId = NULL){
                  ". Data will not be redownloaded.\n"))
       allData <- readRDS(file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
     } else {
-      cat("Downloading expression data...\n")
+      cat("\nDownloading expression data...\n")
       success <- download.file(myBgeeObject$allExperimentsUrl,
                                destfile=file.path(myBgeeObject$pathToData, allExpressionValues),
                                mode='wb')
       if (success != 0){
         stop("ERROR: Download from FTP was not successful.")
       }
-      cat("Saved expression data file in", myBgeeObject$pathToData, "folder.\n")
-      cat("Unzipping file...\n")
+      cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now unzipping file...\n")
       tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
       myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
       allData <- lapply(unlist(myData, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
@@ -69,7 +68,7 @@ getData = function(myBgeeObject, experimentId = NULL){
         names(allData[[i]]) <- make.names(names(allData[[i]]))
       }
 
-      cat("Saving all data in .rds file...\n")
+      cat("\nSaving all data in .rds file...\n")
       saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
 
       ## clean up downloaded files
@@ -91,15 +90,14 @@ getData = function(myBgeeObject, experimentId = NULL){
                    " for", experimentId, ". Data will not be redownloaded.\n"))
         allData <- readRDS(paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))
       } else {
-        cat("Downloading expression data for the experiment", experimentId, "...\n")
+        cat("\nDownloading expression data for the experiment", experimentId, "...\n")
         success <- download.file(finalExperimentUrl,
                                  destfile=tempFile,
                                  mode='wb')
         if (success != 0){
           stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
         }
-        cat("Saved expression data file in", myBgeeObject$pathToData, "folder.\n")
-        cat(paste0("Unzipping ", tempFile," file...\n"))
+        cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now unzipping ", tempFile," file...\n"))
         # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
         myData <- unzip(tempFile, exdir=myBgeeObject$pathToData)
         allData <- lapply(myData, function(x) as.data.frame(fread(x)))
@@ -112,7 +110,7 @@ getData = function(myBgeeObject, experimentId = NULL){
         if (length(allData) == 1){
           allData <- as.data.frame(allData[[1]])
         }
-        cat("Saving all data in .rds file...\n")
+        cat("\nSaving all data in .rds file...\n")
         saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))
 
         ## cleaning up downloaded files
@@ -125,5 +123,5 @@ getData = function(myBgeeObject, experimentId = NULL){
   }
 
   return(allData)
-  cat("Done.")
+  cat("\nDone.")
 }

@@ -90,12 +90,16 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   }
   ## If geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes
   if (sum(names(geneList) %in% names(topAnatData$gene2anatomy)) != length(geneList)){
-    cat("\nWARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
+    cat("\nWARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis.", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), "genes in background will be kept.\n")
   }
 
   if (nodeSize == 0){
     stop("ERROR: the node size parameter has to be at least 1.")
   }
+  if (!is.numeric(nodeSize)){
+    stop("ERROR: the node size parameter should be a numeric, integer value.")
+  }
+  nodeSize <- as.integer(nodeSize)
 
   ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
   topAnatObject <- .makeTopAnatDataObject(
@@ -106,6 +110,30 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
                                           nodeSize = nodeSize,
                                           gene2Nodes = topAnatData$gene2anatomy
                                          )
+
+
+  ## Create a hash from the topAnatObject and the topAnatData objects
+  myAnalysisInfo <- c(topAnatObject, topAnatData)
+  ## Use library digest to create a SHA512 hash, that will be used as job Id
+  jobId <- digest(myAnalysisInfo, algo = "sha512")
+
+  ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ## The job id is used for our internal statistics. It is a secure hash that does not allow the
+  ## identification of the gene lists and datasets used by the user, but will inform us on the
+  ## number of distinct analyses that are run with the package.
+  ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  cat(paste0("\nJob Id hash built: ", jobId, "\n"))
+  ## TO DO: remove this message
+  ## TO DO: test if taking same gene list and new topAnatData (e.g., created from cached files) gives same hash?
+
+  ## Send a query to our webservice for statistics purposes of topAnat use (even when cached files are used)
+  if (topAnatData$bgee.object$sendStats == TRUE){
+    myUrl <- paste0(topAnatData$bgee.object$topAnatUrl, "?page=stats&action=launch_top_anat_analysis&api_key=", topAnatData$bgee.object$apiKey, "&job_id=", jobId, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    ## Send query, but no need to wait for the answer
+    try(getURL(myUrl, followLocation = TRUE, .opts = list(timeout = 1)), silent=TRUE)
+    ## TO DO: if internet connection not active and sendStat == TRUE, test if try() allows to pursue anyway?
+  }
 
   return(topAnatObject)
 }
