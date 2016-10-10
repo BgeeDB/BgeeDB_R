@@ -1,19 +1,26 @@
 \name{NEWS}
-\title{News for Package \pkg{BgeeDB}}
+\title{News for package \pkg{BgeeDB}}
 
-\section{Changes in version 1.2 (2016-10-10)}{
+\section{Version 1.2 (2016-10-10)}{
   \itemize{
-    \item Implemented a way to deal with different Bgee releases and versioning of cached files.
-    \item Implemented a way to deal with addition of TPMs as expression unit future Bgee releases.
-    \item Fixed data frames headers including spaces to more convenient headers with spaces replaced by dots.
-    \item Harmonized the use of a Bgee class object by other functions throughout the packages.
+    \item Implemented possibility to deal with different Bgee releases.
+    \item Improved storage and versioning of cached files.
+    \item Implemented use of API key to query our servers in order to prevent overloading and spamming.
+    \item Improved management of downloading errors.
+    \item Harmonized the use of a Bgee class object by all functions of the package. For example, loadTopAnatData() now requires an input Bgee class object to specify species, dataType and pathToData arguments.
+    \item Added input Bgee class object to output of loadtopAnatData() function.
     \itam Created new getAnnotation(), getData() and formatData() independent functions to replace the Bgee class methods get_annotation(), get_data() and format_data().
     \item In formatData() function, when affymetrix data is used, the "stats" parameter is automatically set to "intensities".
-    \item Added argument allowing to sort result table in makeTable() function
+    \item Added possibility to reproduce an analysis offline if all data files were previously downloaded in cache.
+    \item Fixed data frames headers including spaces to more convenient headers with spaces replaced by dots.
+    \item Harmonized use of camelCase in functions arguments.
+    \item Added argument allowing to sort result table in makeTable() function.
+    \item Implemented management of TPMs as expression unit in future Bgee releases.
+    \itme Updated vignette.
   }
 }
 
-\section{Changes in version 1.0.3 (2016-08-31)}{
+\section{Version 1.0.3 (2016-08-31)}{
   \itemize{
     \item Update of format_data() function to output an Expression Set object.
     \item Fixed makeTable "FDR" column which was a factor instead of a numeric.

@@ -82,18 +82,27 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
 
-    ## Read 5 last lines of file: should be empty indicating success of data transmission
-    ## We cannot use a system call to UNIX command since some user might be on Windows
-    tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
-    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
-      ## The file transfer was successful, we rename the temporary file
-      file.rename(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName))
+    if (success == 0){
+      ## Read 5 last lines of file: should be empty indicating success of data transmission
+      ## We cannot use a system call to UNIX command since some user might be on Windows
+      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
+      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+        ## The file transfer was successful, we rename the temporary file
+        file.rename(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName))
+      } else {
+        ## delete the temporary file
+        file.remove(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
+        stop(paste0("File ", organRelationshipsFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      }
+      cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
-      ## delete the temporary file
-      file.remove(paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
-      stop(paste0("File ", organRelationshipsFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      serverAnswer = try(getURL(myUrl))
+      if (class(serverAnswer) == "try-error"){
+        stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
+      } else {
+        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
+      }
     }
-    cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
   ## Second query: organ names
@@ -109,20 +118,29 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
+    success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
 
-    ## Read 5 last lines of file: should be empty indicating success of data transmission
-    ## We cannot use a system call to UNIX command since some user might be on Windows
-    tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE, quote = ""), n=5)
-    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
-      ## The file transfer was successful, we rename the temporary file
-      file.rename(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", organNamesFileName))
+    if (success == 0){
+      ## Read 5 last lines of file: should be empty indicating success of data transmission
+      ## We cannot use a system call to UNIX command since some user might be on Windows
+      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE, quote = ""), n=5)
+      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+        ## The file transfer was successful, we rename the temporary file
+        file.rename(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", organNamesFileName))
+      } else {
+        ## delete the temporary file
+        file.remove(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
+        stop(paste0("File ", organNamesFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      }
+     cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
-      ## delete the temporary file
-      file.remove(paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
-      stop(paste0("File ", organNamesFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      serverAnswer = try(getURL(myUrl))
+      if (class(serverAnswer) == "try-error"){
+        stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
+      } else {
+        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
+      }
     }
-    cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
   ## Third query: gene to organs mapping
@@ -166,20 +184,29 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+    success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
 
-    ## Read 5 last lines of file: should be empty indicating success of data transmission
-    ## We cannot use a system call to UNIX command since some user might be on Windows
-    tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
-    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
-      ## The file transfer was successful, we rename the temporary file
-      file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
+    if (success == 0){
+      ## Read 5 last lines of file: should be empty indicating success of data transmission
+      ## We cannot use a system call to UNIX command since some user might be on Windows
+      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
+      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+        ## The file transfer was successful, we rename the temporary file
+        file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
+      } else {
+        ## delete the temporary file
+        file.remove(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+        stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      }
+      cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
     } else {
-      ## delete the temporary file
-      file.remove(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
-      stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+      serverAnswer = try(getURL(myUrl))
+      if (class(serverAnswer) == "try-error"){
+        stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
+      } else {
+        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
+      }
     }
-    cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
   ## Process the data and build the final list to return

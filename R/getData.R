@@ -87,7 +87,7 @@ getData = function(myBgeeObject, experimentId = NULL){
       ## check if RDS file already in cache. If so, skip download step
       if (file.exists(paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))){
         cat(paste0("\nNOTE: expression data file in .rds format was found in the download directory ", myBgeeObject$pathToData,
-                   " for", experimentId, ". Data will not be redownloaded.\n"))
+                   " for ", experimentId, ". Data will not be redownloaded.\n"))
         allData <- readRDS(paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))
       } else {
         cat("\nDownloading expression data for the experiment", experimentId, "...\n")

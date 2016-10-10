@@ -232,8 +232,6 @@ Bgee <- setRefClass(
       apiKey <<- digest(myUserInfo, algo = "sha512")
       cat(paste0("\nAPI key built: ", apiKey, "\n"))
 
-      ## TO DO: test that key stays identical for same user on different days etc
-
       ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ## The API key allows to monitor usage of our package and to limit the number of simultaneous queries
       ## to the server from the same user. It is a secure hash that does not allow the identification of

@@ -69,6 +69,7 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
 
   if(length(data) == 1) data[[1]] else data
 
+  cat("\nExtracting expression data matrix...\n")
   if(stats  == "rpkm"){
     columns <- c("Library.ID", "Gene.ID", "RPKM")
     expr <- .extract.data(data, columns, callType)
@@ -79,7 +80,6 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     columns <- c("Library.ID", "Gene.ID", "Read.count")
     expr <- .extract.data(data, columns, callType)
   } else {
-    cat("Extracting intensities...\n")
     columns <- c("Chip.ID", "Probeset.ID", "Log.of.normalized.signal.intensity", "Gene.ID")
     expr <- .extract.data(data, columns, callType)
   }
@@ -129,12 +129,10 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
                      xtt[,-1, drop = FALSE]
                    }
     )
-    cat("Extracting features...\n")
+    cat("\nExtracting features information...\n")
     features <- mapply(.extract.data.feature, calls, expr, rep(list(columns), times=length(calls)))
-    cat("Done...\n")
-    cat("Extracting pheno...\n")
+    cat("\nExtracting samples information...\n")
     phenos <- mapply(.extract.data.pheno, calls, rep(list(columns[1]), times=length(calls)))
-    cat("Done...\n")
   } else {
     ## if only a single dataframe
     calls <- .calling(data, callType, columns[3])
@@ -145,12 +143,10 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     ## Remove feature column to keep only data
     expr <- xtt[,-1, drop = FALSE]
 
-    cat("Extracting features...\n")
+    cat("\nExtracting features information...\n")
     features <- .extract.data.feature( calls, expr, columns)
-    cat("Done...\n")
-    cat("Extracting pheno...\n")
+    cat("\nExtracting samples information...\n")
     phenos <- .extract.data.pheno( calls, columns[1])
-    cat("Done...\n")
   }
   return(list(assayData = expr, pheno = phenos, features = features, calls = calls))
 }
@@ -188,10 +184,10 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
 .calling <- function(x, callType, column){
   ## check data type
   if(callType == "present"){
-    cat("keeping only present genes...\n")
+    cat("  Keeping only present genes.\n")
     x[(x$Detection.flag == "absent"), column] <- NA
   } else if (callType == "present high quality"){
-    cat("keeping only present high quality genes...\n")
+    cat("  Keeping only present high quality genes.\n")
     x[which(x$Detection.flag == "absent" | x$Detection.quality == "poor quality"), column] <- NA
   }
   return(x)

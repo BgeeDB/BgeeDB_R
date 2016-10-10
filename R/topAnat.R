@@ -116,6 +116,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   myAnalysisInfo <- c(topAnatObject, topAnatData)
   ## Use library digest to create a SHA512 hash, that will be used as job Id
   jobId <- digest(myAnalysisInfo, algo = "sha512")
+  ## cat(paste0("\nJob Id hash built: ", jobId, "\n"))
 
   ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ## The job id is used for our internal statistics. It is a secure hash that does not allow the
@@ -123,16 +124,11 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## number of distinct analyses that are run with the package.
   ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  cat(paste0("\nJob Id hash built: ", jobId, "\n"))
-  ## TO DO: remove this message
-  ## TO DO: test if taking same gene list and new topAnatData (e.g., created from cached files) gives same hash?
-
   ## Send a query to our webservice for statistics purposes of topAnat use (even when cached files are used)
   if (topAnatData$bgee.object$sendStats == TRUE){
     myUrl <- paste0(topAnatData$bgee.object$topAnatUrl, "?page=stats&action=launch_top_anat_analysis&api_key=", topAnatData$bgee.object$apiKey, "&job_id=", jobId, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     ## Send query, but no need to wait for the answer
     try(getURL(myUrl, followLocation = TRUE, .opts = list(timeout = 1)), silent=TRUE)
-    ## TO DO: if internet connection not active and sendStat == TRUE, test if try() allows to pursue anyway?
   }
 
   return(topAnatObject)

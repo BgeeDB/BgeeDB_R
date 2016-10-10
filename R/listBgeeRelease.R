@@ -34,14 +34,19 @@ listBgeeRelease <- function(release=NULL){
 .getBgeeRelease <- function(removeFile=TRUE){
   ## query FTP to get file describing all releases
   releaseUrl <- 'ftp://ftp.bgee.org/release.tsv'
-  success <- download.file(releaseUrl, quiet = TRUE,
-                           destfile=file.path(getwd(), 'release.tsv'))
-  if (success != 0){
+  success <- try(download.file(releaseUrl, quiet = TRUE,
+                           destfile=file.path(getwd(), 'release.tsv.tmp')))
+  if (success == 0 & file.exists(file.path(getwd(), 'release.tsv.tmp'))){
+    file.rename(from=file.path(getwd(), 'release.tsv.tmp'),
+                to=file.path(getwd(), 'release.tsv'))
+    allReleases <- read.table("release.tsv", header=TRUE, sep="\t")
+    if (removeFile == TRUE){
+      file.remove(file.path(getwd(), 'release.tsv'))
+    }
+  } else {
+    file.remove(file.path(getwd(), 'release.tsv.tmp'))
     stop("ERROR: File describing releases could not be downloaded from FTP.")
   }
-  allReleases <- read.table("release.tsv", header=TRUE, sep="\t")
-  if (removeFile == TRUE){
-    file.remove(file.path(getwd(), 'release.tsv'))
-  }
+
   return(allReleases)
 }
