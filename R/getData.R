@@ -61,7 +61,7 @@ getData = function(myBgeeObject, experimentId = NULL){
       cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now unzipping file...\n")
       tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
       myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
-      allData <- lapply(unlist(myData, rec = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
+      allData <- lapply(unlist(myData, recursive = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
 
       ## remove spaces in headers
       for (i in 1:length(allData)){
