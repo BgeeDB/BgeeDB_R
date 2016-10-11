@@ -24,9 +24,9 @@ getAnnotation = function(myBgeeObject){
     ## Check that download of quantitative data is possible for targeted species and data type
     ## Try to output error message that helps a bit the user
     if (myBgeeObject$quantitativeData != TRUE){
-      if (length(dataType) > 1){
+      if (length(myBgeeObject$dataType) > 1){
         stop("ERROR: downloading annotation files is only possible if a single data type (\"rna_seq\" or \"affymetrix\") is specified in the input Bgee class object.")
-      } else if (length(dataType) == 1 & (dataType == "rna_seq" | dataType == "affymetrix")){
+      } else if (length(myBgeeObject$dataType) == 1 & (myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "affymetrix")){
         stop("ERROR: downloading annotation files is not possible for the species and data type specified in the input Bgee class object. Maybe the specified data type is not available for the targeted species in Bgee? See listBgeeSpecies() for details on data types availability for each species.")
       } else {
         stop("ERROR: downloading annotation files is not possible for the species and data type specified in the input Bgee class object.")
