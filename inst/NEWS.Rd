@@ -9,7 +9,7 @@
     \item Improved management of downloading errors.
     \item Harmonized the use of a Bgee class object by all functions of the package. For example, loadTopAnatData() now requires an input Bgee class object to specify species, dataType and pathToData arguments.
     \item Added input Bgee class object to output of loadtopAnatData() function.
-    \itam Created new getAnnotation(), getData() and formatData() independent functions to replace the Bgee class methods get_annotation(), get_data() and format_data().
+    \item Created new getAnnotation(), getData() and formatData() independent functions to replace the Bgee class methods get_annotation(), get_data() and format_data().
     \item In formatData() function, when affymetrix data is used, the "stats" parameter is automatically set to "intensities".
     \item Added possibility to reproduce an analysis offline if all data files were previously downloaded in cache.
     \item Fixed data frames headers including spaces to more convenient headers with spaces replaced by dots.
