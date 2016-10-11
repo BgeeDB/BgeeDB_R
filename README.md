@@ -4,12 +4,12 @@ output: html_document
 # BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests
 ##### Andrea Komljenović, Julien Roux, Marc Robinson-Rechavi, Frédéric Bastian
 
-```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from humans and many other animal species.
+```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from human and many other animal species.
  
 The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), but with more flexibility in the choice of parameters and developmental stages.
 
 In summary, the BgeeDB package allows to: 
-* 1. List annotation of RNA-seq and microarry data available the Bgee database
+* 1. List annotation of RNA-seq and microarray data available the Bgee database
 * 2. Download the processed gene expression data available in the Bgee database
 * 3. Download the gene expression calls and use them to perform TopAnat analyses 
 
@@ -142,11 +142,11 @@ The strigency on the quality of expression calls can be changed with the ```conf
 ## myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="high_quality")
 ```
 
-*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument whne creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple paralle topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
+*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of re-downloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
 
 #### Prepare a topGOdata-like object allowing to perform TopAnat analysis
 
-First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). We expect these genes to be enriched for expression in male tissues, notablythe testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
+First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). We expect these genes to be enriched for expression in male tissues, notably testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
