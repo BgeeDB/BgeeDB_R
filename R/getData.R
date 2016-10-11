@@ -73,7 +73,7 @@ getData = function(myBgeeObject, experimentId = NULL){
 
       ## clean up downloaded files
       file.remove(tempFiles)
-      file.remove(unlist(myData, rec = TRUE))
+      file.remove(unlist(myData, recursive = TRUE))
       file.remove(file.path(myBgeeObject$pathToData, allExpressionValues))
     }
   } else if( length(experimentId) == 1){
