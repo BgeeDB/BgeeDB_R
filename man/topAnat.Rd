@@ -26,7 +26,8 @@ To perform the enrichment test for expression in anatomical structures for each 
 }
 \examples{
 {
-  myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+  myTopAnatData <- loadTopAnatData(bgee)
   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",
@@ -61,12 +62,12 @@ To perform the enrichment test for expression in anatomical structures for each 
                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-                   "ENSMUSG00000027496")
+                    "ENSMUSG00000027496")
   myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=1)
 }
 
 }
 \author{
-Julien Roux \email{julien.roux@unil.ch}.
+Julien Roux
 }
 
