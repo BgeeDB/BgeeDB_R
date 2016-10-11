@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
-\section{Version 1.2 (2016-10-10)}{
+\section{Version 1.2.0 (2016-10-10)}{
   \itemize{
     \item Implemented possibility to deal with different Bgee releases.
     \item Improved storage and versioning of cached files.
@@ -16,7 +16,7 @@
     \item Harmonized use of camelCase in functions arguments.
     \item Added argument allowing to sort result table in makeTable() function.
     \item Implemented management of TPMs as expression unit in future Bgee releases.
-    \itme Updated vignette.
+    \item Updated vignette.
   }
 }
 
