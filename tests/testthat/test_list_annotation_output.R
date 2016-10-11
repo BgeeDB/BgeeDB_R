@@ -3,7 +3,7 @@ context("expect_output")
 
 test_that("Annotation files", {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-  annotation_bgee_mouse <- getAnnotation()
+  annotation_bgee_mouse <- getAnnotation(bgee)
 
 
   expect_that( annotation_bgee_mouse, is_a("list") )
