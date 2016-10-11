@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
-\section{Version 1.2.0 (2016-10-10)}{
+\section{Version 2.0.0 (2016-10-10)}{
   \itemize{
     \item Implemented possibility to deal with different Bgee releases.
     \item Improved storage and versioning of cached files.

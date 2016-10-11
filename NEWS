@@ -1,6 +1,19 @@
-CHANGES IN VERSION 1.0.3
+CHANGES IN VERSION 2.0.0
 =========================
 
-    o Update of makeTable function. Update of format_data in Bgee function. 31.8.2016.
-      The format_data function now outputs ExpressionSet objects.
-      Some small bugs are fixed regarding the extracting the data.	
+    o Implemented possibility to deal with different Bgee releases.	    
+    o Improved storage and versioning of cached files.
+    o Implemented use of API key to query our servers in order to prevent overloading and 	spamming.		
+    o Improved management of downloading errors.
+    o Harmonized the use of a Bgee class object by all functions of the package. For 	
+	example, loadTopAnatData() now requires an input Bgee class object to specify 		species, dataType and pathToData arguments.	
+    o Added input Bgee class object to output of loadtopAnatData() function.
+    o Created new getAnnotation(), getData() and formatData() independent functions to 		replace the Bgee class methods get_annotation(), get_data() and format_data().
+   o In formatData() function, when affymetrix data is used, the "stats" parameter is 		automatically set to "intensities".
+    o Added possibility to reproduce an analysis offline if all data files were previously 	downloaded in cache.
+    o Fixed data frames headers including spaces to more convenient headers with spaces 	replaced by dots.
+    o Harmonized use of camelCase in functions arguments.
+    o Added argument allowing to sort result table in makeTable() function.
+    o Implemented management of TPMs as expression unit in future Bgee releases.
+    o Updated vignette.
+ 
