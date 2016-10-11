@@ -8,6 +8,8 @@ loadTopAnatData(myBgeeObject, callType = "presence", confidence = "all",
   stage = NULL)
 }
 \arguments{
+\item{myBgeeObject}{An output object from Bgee$new().}
+
 \item{callType}{A character of indicating the type of expression calls to be used for enrichment. Only calls for significant detection of expression are implemented so far ("presence"). Differential expression calls, based on differential expression analysis, might be implemented in the future.}
 
 \item{confidence}{A character indicating if only high quality present calls should be retrieved. Options are "all" or "high_quality". Default is "all".}
