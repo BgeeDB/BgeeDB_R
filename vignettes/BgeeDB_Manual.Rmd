@@ -22,8 +22,8 @@ In summary, the BgeeDB package allows to:
 
 In R:
 ``` {r}
-source("https://bioconductor.org/biocLite.R")
-biocLite("BgeeDB")
+# source("https://bioconductor.org/biocLite.R")
+# biocLite("BgeeDB")
 ```
 
 ## How to use BgeeDB package
