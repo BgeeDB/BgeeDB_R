@@ -114,19 +114,19 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
   ## Create a hash from the topAnatObject and the topAnatData objects
   myAnalysisInfo <- c(topAnatObject, topAnatData)
-  ## Use library digest to create a SHA512 hash, that will be used as job Id
-  jobId <- digest(myAnalysisInfo, algo = "sha512")
-  ## cat(paste0("\nJob Id hash built: ", jobId, "\n"))
+  ## Use library digest to create a SHA512 hash, that will be used as analysis Id
+  analysisId <- digest(myAnalysisInfo, algo = "sha512")
+  ## cat(paste0("\nAnalysis Id hash built: ", analysisId, "\n"))
 
   ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ## The job id is used for our internal statistics. It is a secure hash that does not allow the
+  ## The analysis id is used for our internal statistics. It is a secure hash that does not allow the
   ## identification of the gene lists and datasets used by the user, but will inform us on the
   ## number of distinct analyses that are run with the package.
   ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   ## Send a query to our webservice for statistics purposes of topAnat use (even when cached files are used)
   if (topAnatData$bgee.object$sendStats == TRUE){
-    myUrl <- paste0(topAnatData$bgee.object$topAnatUrl, "?page=stats&action=launch_top_anat_analysis&api_key=", topAnatData$bgee.object$apiKey, "&job_id=", jobId, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    myUrl <- paste0(topAnatData$bgee.object$topAnatUrl, "?page=stats&action=launch_top_anat_analysis&api_key=", topAnatData$bgee.object$apiKey, "&analysis_id=", analysisId, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     ## Send query, but no need to wait for the answer
     try(getURL(myUrl, followLocation = TRUE, .opts = list(timeout = 1)), silent=TRUE)
   }
