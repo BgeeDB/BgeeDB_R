@@ -1,36 +1,35 @@
 \name{NEWS}
-\title{News for Package \pkg{BgeeDB}}
+\title{News for package \pkg{BgeeDB}}
 
-\section{Changes in version 0.99.6 (2016-04-28)}{
+\section{Version 2.0.0 (2016-10-10)}{
   \itemize{
-    \item  Bug fix in format_data function.
+    \item Implemented possibility to deal with different Bgee releases.
+    \item Improved storage and versioning of cached files.
+    \item Implemented use of API key to query our servers in order to prevent overloading and spamming.
+    \item Improved management of downloading errors.
+    \item Harmonized the use of a Bgee class object by all functions of the package. For example, loadTopAnatData() now requires an input Bgee class object to specify species, dataType and pathToData arguments.
+    \item Added input Bgee class object to output of loadtopAnatData() function.
+    \item Created new getAnnotation(), getData() and formatData() independent functions to replace the Bgee class methods get_annotation(), get_data() and format_data().
+    \item In formatData() function, when affymetrix data is used, the "stats" parameter is automatically set to "intensities".
+    \item Added possibility to reproduce an analysis offline if all data files were previously downloaded in cache.
+    \item Fixed data frames headers including spaces to more convenient headers with spaces replaced by dots.
+    \item Harmonized use of camelCase in functions arguments.
+    \item Added argument allowing to sort result table in makeTable() function.
+    \item Implemented management of TPMs as expression unit in future Bgee releases.
+    \item Updated vignette.
   }
 }
 
-\section{Changes in version 0.99.4 (2016-04-26)}{
+\section{Version 1.0.3 (2016-08-31)}{
   \itemize{
-    \item  Bug fix for Affymetrix data.
+    \item Update of format_data() function to output an Expression Set object.
+    \item Fixed makeTable "FDR" column which was a factor instead of a numeric.
+    \item Fixed get_data() and format_data() functions, which did not work when multiple chip types were available for an experiment.
   }
 }
 
-\section{Changes in version 0.99.3 (2016-04-22)}{
+\section{Version 1.0.0 (2016-05-03)}{
   \itemize{
-    \item  Added download for Affymetrix data.
-  }
-}
-
-
-\section{Changes in version 0.0.4 (2016-03-20)}{
-  \itemize{
-    \item  Added loadTopAnatData function.
-  }
-}
-
-\section{Changes in version 0.0.1 (2016-03-13)}{
-  \itemize{
-    \item Added topAnat script.
-      This function produces a topAnatObject,
-      ready to use for gene set enrichment testing
-      using functions from the topGO package
+    \item Public release of BgeeDB Bioconductor package. Enjoy!
   }
 }

@@ -1,4 +1,3 @@
-########################
 #' @title Formats results of the enrichment test on anatomical structures.
 #'
 #' @description This function loads the results from the topGO test and creates an output table with organ names,
@@ -13,13 +12,15 @@
 #' @param cutoff An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
 #' Default is 1, meaning that all terms are included.
 #'
+#' @param ordering A numeric indicating which column should be used to sort the data frame. If the column number is preceded by a \"-\" sign, results are displayed in decreasing ordering. Default is "7", returning data frame sorted by p-values in increasing order.
+#'
 #' @return A data frame with significantly enriched anatomical structures, sorted by p-value.
 #'
-#' @author Julien Roux \email{julien.roux@unil.ch}.
+#' @author Julien Roux
 #'
 #' @examples{
-#'  ## Launch topGO test on data loaded from Bgee
-#'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(bgee)
 #'   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
 #'   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
 #'                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",
@@ -42,7 +43,7 @@
 #'                     "ENSMUSG00000038537", "ENSMUSG00000078716", "ENSMUSG00000096820",
 #'                     "ENSMUSG00000075089", "ENSMUSG00000049971", "ENSMUSG00000014303",
 #'                     "ENSMUSG00000056054", "ENSMUSG00000033082", "ENSMUSG00000020801",
-#'                    "ENSMUSG00000030590", "ENSMUSG00000026188", "ENSMUSG00000014301",
+#'                     "ENSMUSG00000030590", "ENSMUSG00000026188", "ENSMUSG00000014301",
 #'                     "ENSMUSG00000073491", "ENSMUSG00000014529", "ENSMUSG00000036960",
 #'                     "ENSMUSG00000058748", "ENSMUSG00000047388", "ENSMUSG00000002204",
 #'                     "ENSMUSG00000034285", "ENSMUSG00000109129", "ENSMUSG00000035275",
@@ -54,30 +55,49 @@
 #'                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
 #'                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
 #'                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-#'                    "ENSMUSG00000027496")
+#'                     "ENSMUSG00000027496")
 #'   myTopAnatObject <- topAnat(myTopAnatData, geneList)
 #'   resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
-#'  ## Format results
+#'   ## Format results
 #'   tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 #' }
 #' @import stats
 #' @export
 
-makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
+makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7){
   ## Perform some checks on the input data
   if(is.na(score(results)) || length(score(results)) == 0){
-    stop("Problem: the results object is empty.")
+    stop("ERROR: the results object is empty.")
   }
   if (!is.numeric(cutoff)){
     cutoff <- as.numeric(cutoff)
   }
   if(is.null(topAnatObject)){
-    stop("Problem: the topAnatObject is empty.")
+    stop("ERROR: the topAnatObject is empty.")
   }
   if( length(topAnatData$organ.names[,1]) == 0 ) {
-    stop("Problem: the organ.names data frame of your topAnatData object is empty.")
+    stop("ERROR: the organ.names data frame of your topAnatData object is empty.")
   }
 
+  dec <- FALSE
+  is.wholenumber <- function(x, tol = .Machine$double.eps^0.5){
+    abs(x - round(x)) < tol
+  }
+  if(length(ordering) == 0){
+    ordering <- 7
+  }
+  if(length(ordering) == 1 & is.numeric(ordering) & ordering <= 8){
+    if (ordering < 0){
+      dec <- TRUE
+      ordering <- -ordering
+    }
+    if (!is.wholenumber(ordering)){
+      stop("ERROR: problem with ordering argument. It should be an integer (column number).")
+    }
+  }
+  else {
+    stop("ERROR: problem with ordering argument. It should be an integer (column number), preceded by a \"-\" sign if decreasing ordering is needed. It should not be bigger than the number of columns in results data frame.")
+  }
   ## retrieve p-values for the enrichment
   scores <- score(results)
   fdr <- p.adjust(p=scores, method = "fdr")
@@ -85,24 +105,30 @@ makeTable <- function(topAnatData, topAnatObject, results, cutoff=1){
   topTerms <- as.data.frame(topTerms)
 
   if( nrow(topTerms) != 0 ){
-    cat(paste0("\nBuilding the results table for the ", nrow(topTerms), " significant terms at FDR threshold of ", cutoff, "... "))
+    cat(paste0("\nBuilding the results table for the ", nrow(topTerms), " significant terms at FDR threshold of ", cutoff, "...\n"))
     odds <- termStat(topAnatObject, row.names(topTerms))
     foldEnrichment <- odds[2]/odds[3]
 
-    # Rounding odds, P-values and FDR to 2 decimal places
-    foldEnrichment <- format(foldEnrichment, digits=3)
-    topTerms <- format(topTerms, digits=3)
-    fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)
+    ## Rounding odds, P-values and FDR to 2 decimal places
+    ## Now commented because might be problematic for downstream reuse of the data. Maybe reintroduce with optional argument?
+    # foldEnrichment <- format(foldEnrichment, digits=3)
+    # topTerms <- format(topTerms, digits=3)
+    # fdr[row.names(topTerms)] <- format(fdr[row.names(topTerms)], digits=3)
 
     topTerms <- cbind(odds, foldEnrichment, topTerms, fdr[row.names(topTerms)])
-    names(topTerms) <- c("annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")
     topTable <- merge(topAnatData$organ.names, topTerms, by.x=1, by.y=0)
-    topTable <- topTable[order(as.numeric(topTable$pValue)), ]
+    names(topTable) <- c("organId", "organName", "annotated", "significant", "expected", "foldEnrichment" , "pValue", "FDR")
+
+    cat(paste0("Ordering results by ", names(topTable)[ordering], " column in ", ifelse(dec, "decreasing", "increasing")," order...\n"))
+    topTable <- topTable[order(topTable[, ordering], decreasing=dec), ]
+
+    ## remove arbitrary numbers that are used as row names
+    row.names(topTable) <- topTable$organId
 
     cat("Done\n\n")
     return(topTable)
   } else {
-    cat("\nWarning: there was no significant term at a FDR threshold of", cutoff, "\n\n")
+    cat("\nWARNING: there was no significant term at FDR threshold of", cutoff, "\n\n")
     return(NA)
   }
 }

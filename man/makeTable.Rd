@@ -4,7 +4,7 @@
 \alias{makeTable}
 \title{Formats results of the enrichment test on anatomical structures.}
 \usage{
-makeTable(topAnatData, topAnatObject, results, cutoff = 1)
+makeTable(topAnatData, topAnatObject, results, cutoff = 1, ordering = 7)
 }
 \arguments{
 \item{topAnatData}{A list produced by the function loadTopAnatData().}
@@ -15,6 +15,8 @@ makeTable(topAnatData, topAnatObject, results, cutoff = 1)
 
 \item{cutoff}{An FDR cutoff between 0 and 1. Only terms with FDR lower than this cutoff are included.
 Default is 1, meaning that all terms are included.}
+
+\item{ordering}{A numeric indicating which column should be used to sort the data frame. If the column number is preceded by a \"-\" sign, results are displayed in decreasing ordering. Default is "7", returning data frame sorted by p-values in increasing order.}
 }
 \value{
 A data frame with significantly enriched anatomical structures, sorted by p-value.
@@ -25,8 +27,8 @@ fold enrichment and FDR. Data are sorted by p-value and only terms below the spe
 }
 \examples{
 {
- ## Launch topGO test on data loaded from Bgee
-  myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+  myTopAnatData <- loadTopAnatData(bgee)
   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",
@@ -49,7 +51,7 @@ fold enrichment and FDR. Data are sorted by p-value and only terms below the spe
                     "ENSMUSG00000038537", "ENSMUSG00000078716", "ENSMUSG00000096820",
                     "ENSMUSG00000075089", "ENSMUSG00000049971", "ENSMUSG00000014303",
                     "ENSMUSG00000056054", "ENSMUSG00000033082", "ENSMUSG00000020801",
-                   "ENSMUSG00000030590", "ENSMUSG00000026188", "ENSMUSG00000014301",
+                    "ENSMUSG00000030590", "ENSMUSG00000026188", "ENSMUSG00000014301",
                     "ENSMUSG00000073491", "ENSMUSG00000014529", "ENSMUSG00000036960",
                     "ENSMUSG00000058748", "ENSMUSG00000047388", "ENSMUSG00000002204",
                     "ENSMUSG00000034285", "ENSMUSG00000109129", "ENSMUSG00000035275",
@@ -61,14 +63,14 @@ fold enrichment and FDR. Data are sorted by p-value and only terms below the spe
                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-                   "ENSMUSG00000027496")
+                    "ENSMUSG00000027496")
   myTopAnatObject <- topAnat(myTopAnatData, geneList)
   resFis <- runTest(myTopAnatObject, algorithm = 'elim', statistic = 'fisher')
- ## Format results
+  ## Format results
   tableOver <- makeTable(myTopAnatData, myTopAnatObject, resFis, 0.1)
 }
 }
 \author{
-Julien Roux \email{julien.roux@unil.ch}.
+Julien Roux
 }
 

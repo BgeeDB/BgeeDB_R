@@ -1,27 +1,24 @@
+citHeader("If you use the BgeeDB package, or data from the Bgee database, please cite the following articles:")
 
-citHeader("To cite reports in publications, please use:")
-
-
-
-citEntry(entry = "manual",
-    title = "BgeeDB: an R package for annotation and gene expression data retrieval from Bgee database",
-    author = personList( as.person("Andrea Komljenovic"), as.person("Julien Roux")),
-    year = "2016",
-    url = "http://github.com/wirawara/BgeeDB",
-    textVersion  = paste("Komljenovic A, Roux J (2016).",
-        "BgeeDB: an R package for annotation and gene expression data retrieval from Bgee database.")
+citEntry(entry = "article",
+         title = "BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests",
+        author = personList( as.person("Andrea Komljenovic"),
+                             as.person("Julien Roux"),
+                             as.person("Marc Robinson-Rechavi"),
+                             as.person("Frederic Bastian")),
+       journal = "F1000Research",
+          year = "2016",
+  textVersion  = "Komljenovic A, Roux J, Robinson-Rechavi M, and Bastian F (2016). BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests. F1000Research"
 )
 
-citEntry(entry="Article",
+citEntry(
+         entry = "article",
          title = "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species",
-         author = personList( as.person("Frederic Bastian")),
-         year = "2008",
-         journal = "Data Integration Life Sci. Lecture Notes in Computer Science",
+        author = "Frederic Bastian et al.",
+          year = "2008",
+       journal = "Data Integration Life Sci. Lecture Notes in Computer Science",
          issue = "5109",
-         pages= "124-31",
-         textVersion =
-           paste("Bastian F et al. (2008).",
-                 "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species.",
-                 "Data Integration Life Sci. Lecture Notes in Computer Science", "5109", "124-31" ) )
-
+         pages = "124-31",
+   textVersion = "Bastian F et al. (2008). Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species. Data Integration Life Sci. Lecture Notes in Computer Science, 5109, 124-31"
+)
 

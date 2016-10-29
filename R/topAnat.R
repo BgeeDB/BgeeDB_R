@@ -1,4 +1,3 @@
-########################
 #' @title Produces an object allowing to perform GO-like enrichment of anatomical terms using the topGO package
 #'
 #' @description This function produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package. This object uses the Uberon ontology instead of the GO ontology.
@@ -15,10 +14,11 @@
 #'
 #' @return topAnatObject, a topGO-compatible object ready for gene set enrichment testing.
 #'
-#' @author Julien Roux \email{julien.roux@unil.ch}.
+#' @author Julien Roux
 #'
 #' @examples{
-#'   myTopAnatData <- loadTopAnatData(species = "10090", datatype = "rna_seq")
+#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+#'   myTopAnatData <- loadTopAnatData(bgee)
 #'   geneList <- as.factor(c(rep(0, times=90), rep(1, times=10)))
 #'   names(geneList) <- c("ENSMUSG00000064370", "ENSMUSG00000064368", "ENSMUSG00000064367",
 #'                     "ENSMUSG00000064363", "ENSMUSG00000065947", "ENSMUSG00000064360",
@@ -53,7 +53,7 @@
 #'                     "ENSMUSG00000041827", "ENSMUSG00000042345", "ENSMUSG00000028530",
 #'                     "ENSMUSG00000038722", "ENSMUSG00000075088", "ENSMUSG00000039629",
 #'                     "ENSMUSG00000067567", "ENSMUSG00000057594", "ENSMUSG00000005907",
-#'                    "ENSMUSG00000027496")
+#'                     "ENSMUSG00000027496")
 #'   myTopAnatObject <- topAnat(myTopAnatData, geneList, nodeSize=1)
 #' }
 #'
@@ -65,13 +65,13 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## Test if topAnatData not empty
   cat("\nChecking topAnatData object.........\n")
   if( length(topAnatData$gene2anatomy) == 0 ) {
-    stop("Problem: the gene2anatomy list of your topAnatData object is empty.")
+    stop("ERROR: the gene2anatomy list of your topAnatData object is empty.")
   }
   if( length(topAnatData$organ.relationships) == 0 ) {
-    stop("Problem: the organ.relationships list of your topAnatData object is empty.")
+    stop("ERROR: the organ.relationships list of your topAnatData object is empty.")
   }
   if( length(topAnatData$organ.names[,1]) == 0 ) {
-    stop("Problem: the organ.names data frame of your topAnatData object is empty.")
+    stop("ERROR: the organ.names data frame of your topAnatData object is empty.")
   }
 
   ## Test if gene list is fine
@@ -80,22 +80,26 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     geneList <- as.factor(geneList)
   }
   if (length(geneList) == 0){
-    stop("Problem: the gene list provided is empty.")
+    stop("ERROR: the gene list provided is empty.")
   }
   if (length(levels(geneList)) != 2){
-    stop("Problem: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
+    stop("ERROR: the gene list provided is not in the right format (should be a named vector including only 0 and 1 values).")
   }
   if (length(geneList) < 100) {
-    cat("Warning: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
+    cat("\nWARNING: Given the low number of genes provided, it is very unlikely that the test will have enough power.\n")
   }
   ## If geneList includes genes not present in topAnatData$gene2anatomy, restrict to these genes
   if (sum(names(geneList) %in% names(topAnatData$gene2anatomy)) != length(geneList)){
-    cat("Warning: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. ", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), " genes in background will be kept.\n")
+    cat("\nWARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis.", sum(names(geneList) %in% names(topAnatData$gene2anatomy)), "genes in background will be kept.\n")
   }
 
   if (nodeSize == 0){
-    stop("Problem: the node size parameter has to be at least 1.")
+    stop("ERROR: the node size parameter has to be at least 1.")
   }
+  if (!is.numeric(nodeSize)){
+    stop("ERROR: the node size parameter should be a numeric, integer value.")
+  }
+  nodeSize <- as.integer(nodeSize)
 
   ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
   topAnatObject <- .makeTopAnatDataObject(
@@ -107,11 +111,31 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
                                           gene2Nodes = topAnatData$gene2anatomy
                                          )
 
+
+  ## Create a hash from the topAnatObject and the topAnatData objects
+  myAnalysisInfo <- c(topAnatObject, topAnatData)
+  ## Use library digest to create a SHA512 hash, that will be used as analysis Id
+  analysisId <- digest(myAnalysisInfo, algo = "sha512")
+  ## cat(paste0("\nAnalysis Id hash built: ", analysisId, "\n"))
+
+  ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ## The analysis id is used for our internal statistics. It is a secure hash that does not allow the
+  ## identification of the gene lists and datasets used by the user, but will inform us on the
+  ## number of distinct analyses that are run with the package.
+  ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  ## Send a query to our webservice for statistics purposes of topAnat use (even when cached files are used)
+  if (topAnatData$bgee.object$sendStats == TRUE){
+    myUrl <- paste0(topAnatData$bgee.object$topAnatUrl, "?page=stats&action=launch_top_anat_analysis&api_key=", topAnatData$bgee.object$apiKey, "&analysis_id=", analysisId, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    ## Send query, but no need to wait for the answer
+    try(getURL(myUrl, followLocation = TRUE, .opts = list(timeout = 1)), silent=TRUE)
+  }
+
   return(topAnatObject)
 }
 
 #################################################################
-## Sets of functions written wiht help of Adrian Alexa (author of the topGO package, personnal communication) to make topGO work with another ontology than the Gene Ontology
+## Sets of functions written with help of Adrian Alexa (author of the topGO package, personnal communication) to make topGO work with another ontology than the Gene Ontology
 
 .annFUN.gene2Nodes <- function(feasibleGenes = NULL, gene2Nodes) {
   ## Restrict the mappings to the feasibleGenes set
@@ -242,7 +266,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
     packageName <- getNativeSymbolInfo("R_do_new_object")$package[['name']]
     .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)
   }
-  
+
   ## some checking
   if(is.null(names(allGenes)))
     stop("allGenes must be a named vector")

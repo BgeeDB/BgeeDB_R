@@ -2,26 +2,37 @@
 % Please edit documentation in R/listBgeeSpecies.R
 \name{listBgeeSpecies}
 \alias{listBgeeSpecies}
-\title{List species with Affymetrix or RNA-seq data in the Bgee database}
+\title{List species in the Bgee database and the available data types for each of them}
 \usage{
-listBgeeSpecies(...)
+listBgeeSpecies(release = NULL, ordering = NULL, allReleases = NULL,
+  removeFile = TRUE)
 }
 \arguments{
-\item{...}{an empty parameter}
+\item{release}{A character specifying a targeted release number. In the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". If not specified, the latest release is used.}
+
+\item{ordering}{A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.}
+
+\item{allReleases}{A data frame with information on all releases. Avoid redownloading this information if .getBgeeRelease() already called.}
+
+\item{removeFile}{Boolean indicating whether the downloaded file should be deleted. Default to TRUE.}
 }
 \value{
-A list of species with available Affymetrix or RNA-seq data in the Bgee
+A data frame with species Id, genus name, species name, common name and data type availability for targeted Bgee release
 }
 \description{
-Returns a list of available genomes for different platforms in Bgee.
+Returns information on available species in Bgee
 }
 \examples{
 {
  listBgeeSpecies()
+ # species present in a specific Bgee release
+ listBgeeSpecies(release = "13.2")
+ # in order to order species according to theit taxonomical IDs
+ listBgeeSpecies(ordering = 1)
 }
 
 }
 \author{
-Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
+Julien Roux
 }
 

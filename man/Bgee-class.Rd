@@ -4,82 +4,40 @@
 \name{Bgee-class}
 \alias{Bgee}
 \alias{Bgee-class}
-\title{Retrieving the Bgee database data}
-\value{
-\itemize{
- \item{A \code{get_annotation()} list, lists the annotation of experiments for chosen species.}
- \item{A \code{get_data()}, if empty returns a list of experiments, if chosen experiment ID, then returns the dataframe of the chosen experiment; for chosen species}
- \item{A \code{format_data()}, transforms the data into matrix of expression values, e.g. RPKMs or raw counts}}
-}
+\title{Bgee Reference Class}
 \description{
-A Reference Class to give annotation available on Bgee for particular species and the requested data (rna_seq, affymetrix)
+This is used to specify information at the beginning of a BgeeDB working session, for example, the targeted species and data type. An object of this class is then passed as argument to other functions of the package to provide these informations. See examples in vignette.
 }
 \details{
-The expression calls come from Bgee (http://r.bgee.org), that integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, or in-situ hybridizations) in multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference of normal gene expression.
-This Class retrieves annotation of all experiments in Bgee database (get_annotation), downloading the data (get_data), and formating the data into expression matrix (format_data). See examples and vignette.
+Bgee (\url{http://bgee.org}) integrates different expression data types (RNA-seq, Affymetrix microarray, ESTs, and in-situ hybridizations) from multiple animal species. Expression patterns are based exclusively on curated "normal", healthy, expression data (e.g., no gene knock-out, no treatment, no disease), to provide a reference atlas of normal gene expression.
 }
 \section{Fields}{
 
 \describe{
-\item{\code{species}}{A character of species name as listed from Bgee. The species are:
+\item{\code{species}}{A character indicating the species to be used, in the form "Genus_species", or a numeric indicating the species NCBI taxonomic id. Only species with data in Bgee will work. See the listBgeeSpecies() function to get the list of species available in the Bgee release used.}
+
+\item{\code{dataType}}{A vector of characters indicating data type(s) to be used. To be chosen among:
 \itemize{
-   \item{"Anolis_carolinensis"}
-   \item{"Bos_taurus"}
-   \item{"Caenorhabditis_elegans"}
-   \item{"Danio_rerio"}
-   \item{"Drosophila_melanogaster"}
-   \item{"Gallus_gallus"}
-   \item{"Gorilla_gorilla"}
-   \item{"Homo_sapiens"}
-   \item{"Macaca_mulatta"}
-   \item{"Monodelphis_domestica"}
-   \item{"Mus_musculus"}
-   \item{"Ornithorhynchus_anatinus"}
-   \item{"Pan_paniscus"}
-   \item{"Pan_troglodytes"}
-   \item{"Rattus_norvegicus"}
-   \item{"Sus_scrofa"}
-   \item{"Xenopus_tropicalis"}}
+  \item{"rna_seq"}
+  \item{"affymetrix"}
+  \item{"est"}
+  \item{"in_situ"}
+}
+By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. For download of quantitative expression data, a single data type should be chosen among "rna_seq" or 'affymetrix".}
 
-Homo sapiens is default species.}
+\item{\code{pathToData}}{Path to the directory where the data files are stored. By default the working directory is used. If many analyses are launched in parallel, please consider re-using the cached data files instead of redownlaoding them for each analysis.}
 
-\item{\code{datatype}}{A character of data platform. Two types of datasets can be downloaded:
-\itemize{
-     \item{"rna_seq"}
-     \item{"affymetrix"}}
-By default, RNA-seq data is retrieved from database.}
+\item{\code{release}}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.}
 
-\item{\code{experiment.id}}{A character.
-On default is NULL: takes all available data for that species.
-If GSE[0-9]+: takes specified experiment, eg. GSE30617.}
+\item{\code{sendStats}}{A field specifying whether monitoring of users is performed for our internal usage statistics. This is useful to improve the settings of our servers and to get reliable usage statistics (e.g., when asking for funding for Bgee). No identification of the users is attempted, nor possible. Default to TRUE. This option can be set to FALSE, notably if all data files are in cache and that users want to be able to work offline.}
 
-\item{\code{data}}{A dataframe of downloaded Bgee data.}
-
-\item{\code{calltype}}{A character. There exist two types of expression calls in Bgee - present and absent.
- \itemize{
-   \item{"expressed"}
-   \item{"all"}}
-User can retrieve only expressed (present) calls, or mixed (present and absent) calls. The default is expressed (present) calltype.}
-
-\item{\code{stats}}{A character. The expression values can be retrieved in RPKMs and raw counts:
- \itemize{
-   \item{"rpkm"}
-   \item{"counts"}}
-The default is RPKMs.}
+\item{\code{quantitativeData}}{A field specifying if a single type of quantitative expression data ("rna_seq" or "affymetrix") was specified and if it is available for targeted species, helping the package to know if it should proceed with the execution of getAnnotation() and getData() functions.}
 }}
 \examples{
 {
- bgee <- Bgee$new(species = "Mus_musculus", datatype = "rna_seq")
- annotation_bgee_mouse <- bgee$get_annotation()
- data_bgee_mouse <- bgee$get_data()
- data_bgee_mouse_gse30617 <- bgee$get_data(experiment.id = "GSE30617")
- gene.expression.mouse.rpkm <- bgee$format_data(data_bgee_mouse_gse30617,
- calltype = "expressed", stats = "rpkm")
- }
-
-
+ bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+ bgee <- Bgee$new(species = "Mus_musculus")
 }
-\author{
-Andrea Komljenovic \email{andrea.komljenovic at unil.ch}.
+
 }
 
