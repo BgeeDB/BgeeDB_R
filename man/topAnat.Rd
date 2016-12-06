@@ -16,7 +16,7 @@ topAnat(topAnatData, geneList, nodeSize = 10, ...)
 \item{...}{Additional parameters as passed to build topGOdata object in topGO package.}
 }
 \value{
-topAnatObject, a topGO-compatible object ready for gene set enrichment testing.
+topAnatObject, a topAnatData class object, ready for gene set enrichment testing with topGO.
 }
 \description{
 This function produces a topAnatObject, ready to use for gene set enrichment testing using functions from the topGO package. This object uses the Uberon ontology instead of the GO ontology.

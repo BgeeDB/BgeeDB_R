@@ -1,14 +1,14 @@
 Package: BgeeDB
 Type: Package
 Title: Annotation and gene expression data retrieval from Bgee database
-Version: 1.99.0
+Version: 2.1.1
 Date: 2016-10-06
 Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
 Maintainer: Andrea Komljenovic  <andreakomljenovic@gmail.com>, Frederic Bastian <bgee@sib.swiss>
 Description: A package for the annotation and gene expression
     data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms,
     mapped to genes by expression patterns.
-Depends: R (>= 3.3.0), topGO, tidyr
+Depends: R (>= 3.0.0), topGO, tidyr
 Imports: data.table, RCurl, digest, methods, stats, utils, dplyr,
         graph, Biobase
 License: GPL-2
