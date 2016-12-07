@@ -41,6 +41,6 @@ test_that("Creating the topAnat object is working", {
                        "ENSMUSG00000027496")
   myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 
-  expect_is(myTopAnatObject, "topAnatData")
+  expect_is(myTopAnatObject, "topGOdata")
   expect_message( message("Annotating nodes (Can be long)......") )
 })

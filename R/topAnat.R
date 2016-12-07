@@ -12,7 +12,7 @@
 #'
 #' @param ... Additional parameters as passed to build topGOdata object in topGO package.
 #'
-#' @return topAnatObject, a topAnatData class object, ready for gene set enrichment testing with topGO.
+#' @return topAnatObject, a topGO-compatible object ready for gene set enrichment testing.
 #'
 #' @author Julien Roux
 #'
@@ -63,7 +63,7 @@
 topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
 
   ## Test if topAnatData not empty
-  cat("\nChecking topAnatData object.............\n")
+  cat("\nChecking topAnatData object.........\n")
   if( length(topAnatData$gene2anatomy) == 0 ) {
     stop("ERROR: the gene2anatomy list of your topAnatData object is empty.")
   }
@@ -75,7 +75,7 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   }
 
   ## Test if gene list is fine
-  cat("\nChecking gene list......................\n")
+  cat("\nChecking gene list..................\n")
   if (!is.factor(geneList)){
     geneList <- as.factor(geneList)
   }
@@ -101,15 +101,16 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   }
   nodeSize <- as.integer(nodeSize)
 
-  ## Building the modified topAnatData object. This also reports to the user how many genes are in the background / foreground
-  topAnatObject <- new("topAnatData",
-                         description = "topAnatData class object, ready for anatomical ontology enrichment test",
-                         ontology = "UBERON ontology describing animal anatomical structures",
-                         allGenes = geneList,
-                         nodeSize = nodeSize,
-                         parentMapping = topAnatData$organ.relationships,
-                         gene2Nodes = topAnatData$gene2anatomy
-                         )
+  ## Building the modified topGOdata object. This reports to the user how many genes are in the background / foreground
+  topAnatObject <- .makeTopAnatDataObject(
+                                          parentMapping = topAnatData$organ.relationships,
+                                          allGenes = geneList,
+                                          description = "topGO object, ready for anatomical ontology enrichment test",
+                                          ontology = "UBERON animal anatomical structures ontology",
+                                          nodeSize = nodeSize,
+                                          gene2Nodes = topAnatData$gene2anatomy
+                                         )
+
 
   ## Create a hash from the topAnatObject and the topAnatData objects
   myAnalysisInfo <- c(topAnatObject, topAnatData)
@@ -230,109 +231,98 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
              edgeL = .edgeList,
              edgemode = 'directed'))
 }
-######################## topAnatData class ########################
-## This class is an extension of the topGOdata class from
-## the topGO package. The additional fields are:
-## - parentMapping: a list describing parent-child
-##   relationships in the ontology to be used in place of
-##   the Gene Ontology
-## - gene2Nodes: a list providing the mapping of genes to
-##   term from the new ontology
+#################################################################
 
-## Declare topAnatData as an extension of topGOdata class
-setClass("topAnatData",
-         representation = representation(
-           ## Added slot to give us the structure of the ontology
-           parentMapping = "character",
-           ## Added slot to give us the mapping of genes to terms of the ontology
-           gene2Nodes = "character"),
-         contains = "topGOdata"
-)
+.makeTopAnatDataObject <- function(## the child-parrent relationship
+                                parentMapping,
+                                ## a named numeric or factor, the names are the genes ID
+                                allGenes,
+                                ## function to select the signif. genes
+                                geneSelectionFun = NULL,
+                                ## minimum node size
+                                nodeSize = 0,
+                                ## annotation data
+                                gene2Nodes,
+                                ## additional parameters
+                                ...) {
 
-setMethod("initialize", "topAnatData",
-          function(.Object,
-                   ## which Ontology to be used
-                   ontology = "Uberon",
-                   ## a named numeric or factor, the names are the genes ID
-                   allGenes,
-                   ## function to select the signif. genes
-                   geneSelectionFun = NULL,
-                   ## description of the class
-                   description = character(0),
-                   ## minimum node size
-                   nodeSize = 1,
-                   ## the child-parent relationship
-                   parentMapping,
-                   ## annotation data
-                   gene2Nodes,
-                   ## additional parameters
-                   ...) {
+  ## code from new()
+  ClassDef <- getClass("topGOdata", where = topenv(parent.frame()))
 
-            .Object@description <- description
-            .Object@ontology <- ontology
+  ## On Windows, the symbol has a different name:
+  if (Sys.info()['sysname'] == "Windows"){
+    packageName <- getNativeSymbolInfo("new_object")$package[['name']]
+    .Object <- .Call("new_object", ClassDef, PACKAGE=packageName)
+  } else {
+    ## Mac or Linux:
+    ## .Object <- .Call("R_do_new_object", ClassDef, PACKAGE = "base")
+    ## ## With R > 2.3.1, PACKAGE = "base" doesn't seem to work
+    ## .Object <- .Call("R_do_new_object", ClassDef)
+    ## ## Works if code is sourced, but there is a namespace conflict.
+    ## ## In fact we should not invoke the base package. See this thread:
+    ## ## http://r.789695.n4.nabble.com/question-re-error-message-package-error-quot-
+    ## ##        functionName-quot-not-resolved-from-current-namespace-td4663892.html
+    ## ## 'PACKAGE' is meant to name the DLL rather than the R package...
+    packageName <- getNativeSymbolInfo("R_do_new_object")$package[['name']]
+    .Object <- .Call("R_do_new_object", ClassDef, PACKAGE=packageName)
+  }
 
-            ## some checking
-            if(is.null(names(allGenes)))
-              stop("allGenes must be a named vector")
+  ## some checking
+  if(is.null(names(allGenes)))
+    stop("allGenes must be a named vector")
 
-            if(!is.factor(allGenes) && !is.numeric(allGenes))
-              stop("allGenes should be a factor or a numeric vector")
+  if(!is.factor(allGenes) && !is.numeric(allGenes))
+    stop("allGenes should be a factor or a numeric vector")
 
-            .Object@allGenes <- names(allGenes)
+  .Object@allGenes <- names(allGenes)
 
-            if(is.factor(allGenes)) {
-              if(length(levels(allGenes)) != 2)
-                stop("allGenes must be a factor with 2 levels")
-              .Object@allScores <- factor(as.character(allGenes))
-              .Object@geneSelectionFun <- function(x) {
-                return(as.logical(as.integer(levels(x)))[x])
-              }
-            }
-            else {
-              .Object@allScores <- as.numeric(allGenes)
+  if(is.factor(allGenes)) {
+    if(length(levels(allGenes)) != 2)
+      stop("allGenes must be a factor with 2 levels")
+    .Object@allScores <- factor(as.character(allGenes))
+    .Object@geneSelectionFun <- function(x) {
+      return(as.logical(as.integer(levels(x)))[x])
+    }
+  }
+  else {
+    .Object@allScores <- as.numeric(allGenes)
 
-              ## function to select which genes are significant
-              if(is.null(geneSelectionFun))
-                warning("No function to select the significant genes provided!")
-              .Object@geneSelectionFun <- geneSelectionFun
-            }
+    ## function to select which genes are significant
+    if(is.null(geneSelectionFun))
+      warning("No function to select the significant genes provided!")
+    .Object@geneSelectionFun <- geneSelectionFun
+  }
 
-            ## size of the nodes which will be pruned
-            .Object@nodeSize = as.integer(max(nodeSize, 1))
+  ## size of the nodes which will be pruned
+  .Object@nodeSize = as.integer(nodeSize)
 
-            ## this function is returning a list of terms from the specified ontology
-            ## with each entry being a vector of genes
-            cat("\nBuilding most specific Ontology terms... ")
-            mostSpecificTerms <- .annFUN.gene2Nodes(feasibleGenes = .Object@allGenes, gene2Nodes = gene2Nodes)
-            cat(" ( ", length(mostSpecificTerms), " Ontology terms found. )\n")
+  ## this function is returning a list of terms from the specified ontology
+  ## with each entry being a vector of genes
+  cat("\nBuilding 'most specific' Terms......")
+  mostSpecificTerms <- .annFUN.gene2Nodes(feasibleGenes = .Object@allGenes, gene2Nodes = gene2Nodes)
+  cat("  (", length(mostSpecificTerms), "Terms found. )\n")
 
-            ## the graph is build starting from the most specific terms
-            cat("\nBuilding DAG topology................... ")
-            g <- .buildGraph.topology(names(mostSpecificTerms), parentMapping)
-            cat(" ( ",  graph::numNodes(g), " Ontology terms and ", graph::numEdges(g), " relations. )\n")
+  ## build the graph starting from the most specific terms ...
+  cat("\nBuild DAG topology..................")
+  g <- .buildGraph.topology(names(mostSpecificTerms), parentMapping)
+  cat("  (",  graph::numNodes(g), "terms and", graph::numEdges(g), "relations. )\n")
 
-            ## probably is good to store the leves but for the moment we don't
-            .nodeLevel <- buildLevels(g, leafs2root = TRUE)
+  ## probably is good to store the levels but for the moment we don't
+  .nodeLevel <- buildLevels(g, leafs2root = TRUE)
 
-            ## annotate the nodes in the graph with genes
-            cat("\nAnnotating nodes (Can be long).......... ")
-            g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
+  ## annotate the nodes in the graph with genes
+  cat("\nAnnotating nodes (Can be long)......")
+  g <- topGO:::mapGenes2GOgraph(g, mostSpecificTerms, nodeLevel = .nodeLevel) ## leafs2root
 
-            ## select the feasible genes
-            gRoot <- getGraphRoot(g)
-            feasibleGenes <- ls(graph::nodeData(g, n = gRoot, attr = "genes")[[gRoot]])
-            cat(" ( ", length(feasibleGenes), " genes annotated to the Ontology terms. )\n")
+  ## select the feasible genes
+  gRoot <- getGraphRoot(g)
+  feasibleGenes <- ls(graph::nodeData(g, n = gRoot, attr = "genes")[[gRoot]])
+  cat("  (", length(feasibleGenes), "genes annotated to the nodes. )\n")
 
-            .Object@feasible <- .Object@allGenes %in% feasibleGenes
+  .Object@feasible <- .Object@allGenes %in% feasibleGenes
 
+  cc <- .countsInNode(g, graph::nodes(g))
+  .Object@graph <- graph::subGraph(names(cc)[cc >= .Object@nodeSize], g)
 
-            ## prune the GO graph
-            if(.Object@nodeSize > 1) {
-              cc <- .countsInNode(g, graph::nodes(g))
-              .Object@graph <- graph::subGraph(names(cc)[cc >= .Object@nodeSize], g)
-            } else {
-              .Object@graph <-  g
-            }
-
-            .Object
-          })
+  .Object
+}
