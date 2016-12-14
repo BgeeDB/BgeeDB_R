@@ -66,6 +66,8 @@ getData = function(myBgeeObject, experimentId = NULL){
       ## remove spaces in headers
       for (i in 1:length(allData)){
         names(allData[[i]]) <- make.names(names(allData[[i]]))
+        ## In cases where there is a double dot in the name, replace by a single dot
+        names(allData[[i]]) <- gsub("\\.\\.", ".", names(allData[[i]]))
       }
 
       cat("\nSaving all data in .rds file...\n")
@@ -105,6 +107,8 @@ getData = function(myBgeeObject, experimentId = NULL){
         ## remove spaces in headers
         for (i in 1:length(allData)){
           names(allData[[i]]) <- make.names(names(allData[[i]]))
+          ## In cases where there is a double dot in the name, replace by a single dot
+          names(allData[[i]]) <- gsub("\\.\\.", ".", names(allData[[i]]))
         }
 
         if (length(allData) == 1){
