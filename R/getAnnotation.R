@@ -78,7 +78,8 @@ getAnnotation = function(myBgeeObject){
   ## remove spaces in headers
   for (i in 1:length(myAnnotation)){
     names(myAnnotation[[i]]) <- make.names(names(myAnnotation[[i]]))
-    ## In cases where there is a double dot in the name, replace by a single dot
+    ## Double dot arise from the column headers "Min. read length" and "Max. read length" in FTP file
+    ## These are replaced by a single dot:
     names(myAnnotation[[i]]) <- gsub("\\.\\.", ".", names(myAnnotation[[i]]))
   }
   return(myAnnotation)

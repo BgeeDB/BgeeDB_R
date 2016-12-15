@@ -66,7 +66,8 @@ getData = function(myBgeeObject, experimentId = NULL){
       ## remove spaces in headers
       for (i in 1:length(allData)){
         names(allData[[i]]) <- make.names(names(allData[[i]]))
-        ## In cases where there is a double dot in the name, replace by a single dot
+        ## Double dot arise from the column headers "Min. read length" and "Max. read length" in FTP file
+        ## These are replaced by a single dot:
         names(allData[[i]]) <- gsub("\\.\\.", ".", names(allData[[i]]))
       }
 
@@ -107,7 +108,8 @@ getData = function(myBgeeObject, experimentId = NULL){
         ## remove spaces in headers
         for (i in 1:length(allData)){
           names(allData[[i]]) <- make.names(names(allData[[i]]))
-          ## In cases where there is a double dot in the name, replace by a single dot
+          ## Double dot arise from the column headers "Min. read length" and "Max. read length" in FTP file
+          ## These are replaced by a single dot:
           names(allData[[i]]) <- gsub("\\.\\.", ".", names(allData[[i]]))
         }
 
