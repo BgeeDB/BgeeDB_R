@@ -65,7 +65,7 @@ Bgee <- setRefClass(
       }
       if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) ){
         cat("\nWARNING: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". This will be removed. Please check for typos.\n")
-        dataType <- dataType[dataType %in% c("rna_seq","affymetrix","est","in_situ")]
+        dataType <<- dataType[dataType %in% c("rna_seq","affymetrix","est","in_situ")]
       }
 
 
