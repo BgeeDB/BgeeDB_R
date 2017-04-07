@@ -15,7 +15,7 @@ License: GPL-2
 VignetteBuilder: knitr
 biocViews: Software, DataImport, Sequencing, GeneExpression,
         Microarray, GO, GeneSetEnrichment
-Suggests: knitr, BiocStyle, testthat, rmarkdown
+Suggests: biomaRt, knitr, BiocStyle, testthat, rmarkdown
 LazyLoad: yes
 RoxygenNote: 5.0.1
 NeedsCompilation: no
