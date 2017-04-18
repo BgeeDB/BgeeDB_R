@@ -14,7 +14,7 @@ citEntry(entry = "article",
 citEntry(
          entry = "article",
          title = "Bgee: Integrating and Comparing Heterogeneous Transcriptome Data Among Species",
-        author = "Frederic Bastian et al.",
+        author = personList( as.person("Frederic Bastian")),
           year = "2008",
        journal = "Data Integration Life Sci. Lecture Notes in Computer Science",
          issue = "5109",

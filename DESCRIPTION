@@ -17,6 +17,6 @@ biocViews: Software, DataImport, Sequencing, GeneExpression,
         Microarray, GO, GeneSetEnrichment
 Suggests: knitr, BiocStyle, testthat, rmarkdown
 LazyLoad: yes
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 NeedsCompilation: no
 Packaged: 2016-10-11 14:05:07 UTC; akomljen

@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.2.0 (2017-04)}{
+  \itemize{
+    \item
+
+  }
+}
+
 \section{Version 2.0.0 (2016-10-10)}{
   \itemize{
     \item Implemented possibility to deal with different Bgee releases.
