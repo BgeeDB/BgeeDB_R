@@ -24,4 +24,3 @@ Returns information on available Bgee releases, the access URL for FTP and webse
 \author{
 Julien Roux
 }
-
