@@ -17,7 +17,7 @@
 #'
 #' @field pathToData Path to the directory where the data files are stored. By default the working directory is used. If many analyses are launched in parallel, please consider re-using the cached data files instead of redownlaoding them for each analysis.
 #'
-#' @field release Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.
+#' @field release Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Work for release >=13.2. By default, the latest relase of Bgee is used.
 #'
 #' @field sendStats A field specifying whether monitoring of users is performed for our internal usage statistics. This is useful to improve the settings of our servers and to get reliable usage statistics (e.g., when asking for funding for Bgee). No identification of the users is attempted, nor possible. Default to TRUE. This option can be set to FALSE, notably if all data files are in cache and that users want to be able to work offline.
 #'
@@ -54,7 +54,6 @@ Bgee <- setRefClass(
   methods = list(
     initialize = function(...) {
       callSuper(...)
-
 
       ## check data type
       if (length(dataType) == 0) {
@@ -97,15 +96,19 @@ Bgee <- setRefClass(
         }
       }
 
-
       if (length(release) == 0) {
-        release <<- gsub("\\.", "_", allReleases$release[1])
+        release <<- gsub("\\.", "_", format(allReleases$release, drop0Trailing = F)[1])
       } else if (length(release) == 1) {
         # In case the release number is written with a dot
-        release <<- gsub("\\.", "_", release)
-        # test if required release exists
-        if (sum(allReleases$release == gsub("_", ".", release)) != 1) {
-          stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
+        release <<- as.character(gsub("\\.", "_", release))
+        if(grepl("_",release)){
+          # test if required release exists
+          # TODO same code than in the listSpeciesRelease
+          if (sum(as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))) != 1) {
+            stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
+          }
+        } else {
+          stop("Bgee release number must follow the format \"Release.subrelease\" or \"Release_subrelease\", e.g., \"13.2\" or \"13_2\". See function listBgeeRelease() to see available releases.")
         }
       } else {
         stop("ERROR: The specified release number is invalid.")
@@ -113,7 +116,7 @@ Bgee <- setRefClass(
 
 
       ## Specify URL to be used for topAnat. Can be done for any species and data type
-      topAnatUrl <<-  as.character(allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)])
+      topAnatUrl <<-  as.character(allReleases$TopAnat.URL[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
       if ( !grepl("/$", topAnatUrl) ){
         topAnatUrl <<- paste0(topAnatUrl, "/")
       }
@@ -132,8 +135,6 @@ Bgee <- setRefClass(
         allSpecies <- listBgeeSpecies(release = release,
                                       allReleases = allReleases,
                                       removeFile = FALSE)
-        file.rename(from=file.path(getwd(), 'species.tsv'),
-                    to=paste0(pathToData, "/species_Bgee_", release, ".tsv"))
       }
 
       ## check species argument (compulsory, no default value)
@@ -183,23 +184,23 @@ Bgee <- setRefClass(
           if (dataType == "rna_seq") {
             ## annotation file
             annotationUrl <<- as.character(
-              allReleases$RNA.Seq.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
+              allReleases$RNA.Seq.annotation.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
             ## Data from specific experiment
             experimentUrl <<- as.character(
-              allReleases$RNA.Seq.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+              allReleases$RNA.Seq.experiment.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
             ## Data from all experiments
             allExperimentsUrl <<- as.character(
-              allReleases$RNA.Seq.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+              allReleases$RNA.Seq.all.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
           } else if (dataType == "affymetrix") {
             ## annotation file
             annotationUrl <<- as.character(
-              allReleases$Affymetrix.annotation.URL.pattern[allReleases$release == gsub("_", ".", release)])
+              allReleases$Affymetrix.annotation.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
             ## Data from specific experiment
             experimentUrl <<- as.character(
-              allReleases$Affymetrix.experiment.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+              allReleases$Affymetrix.experiment.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
             ## Data from all experiments
             allExperimentsUrl <<- as.character(
-              allReleases$Affymetrix.all.value.URL.pattern[allReleases$release == gsub("_", ".", release)])
+              allReleases$Affymetrix.all.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
           }
 
           ## Regex substitution to get the correct URLs
@@ -239,6 +240,13 @@ Bgee <- setRefClass(
       ## the user.
       ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+      ## Message to users. Can for example be used to encourage users to update their version of the package.
+      messageToUsers <- as.character(allReleases$messageToUsers[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
+      if(!(is.na(messageToUsers) || is.null(messageToUsers))){
+        cat(paste0("\nIMPORTANT INFORMATION: ", messageToUsers, "\n"))
+      }
+
     },
 
     get_annotation = function(...){
@@ -252,6 +260,7 @@ Bgee <- setRefClass(
     format_data = function(...){
       stop("ERROR: this function is deprecated. Use formatData() function instead.")
     }
+
   )
 )
 

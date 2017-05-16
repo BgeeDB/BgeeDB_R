@@ -1,6 +1,14 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.3.1 (2017-05)}{
+  \itemize{
+    \item Compatibility with the new Bgee release 14 (www.bgee.org/bgee14/) only for the processed data download part.
+    \item The TopAnat part still temporarily uses data from Bgee release 13.2, until the webservice is ready.
+    \item Retro compatibility with Bgee release 13.2 (www.bgee.org/bgee13/)
+  }
+}
+
 \section{Version 2.2.0 (2017-04)}{
   \itemize{
     \item Instead of returning a topGO-compatible object, topAnat.R now returns an object from the topAnatData class, an extension of topGOdata class from the topGO package.
