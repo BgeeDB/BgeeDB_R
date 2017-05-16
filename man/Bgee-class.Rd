@@ -27,7 +27,7 @@ By default all data type are included: \code{c("rna_seq","affymetrix","est","in_
 
 \item{\code{pathToData}}{Path to the directory where the data files are stored. By default the working directory is used. If many analyses are launched in parallel, please consider re-using the cached data files instead of redownlaoding them for each analysis.}
 
-\item{\code{release}}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Will work for release >=13.2. By default, the latest relase of Bgee is used.}
+\item{\code{release}}{Bgee release number to download data from, in the form "Release.subrelease" or "Release_subrelease", e.g., "13.2" or 13_2". Work for release >=13.2. By default, the latest relase of Bgee is used.}
 
 \item{\code{sendStats}}{A field specifying whether monitoring of users is performed for our internal usage statistics. This is useful to improve the settings of our servers and to get reliable usage statistics (e.g., when asking for funding for Bgee). No identification of the users is attempted, nor possible. Default to TRUE. This option can be set to FALSE, notably if all data files are in cache and that users want to be able to work offline.}
 

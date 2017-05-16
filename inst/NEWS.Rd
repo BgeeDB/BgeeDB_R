@@ -1,10 +1,11 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
-\section{Version 2.3.0 (2017-05)}{
+\section{Version 2.3.1 (2017-05)}{
   \itemize{
-    \item Compatibility with the new Bgee 14 (www.bgee.org/bgee14/)
-    \item Retro compatibility with Bgee 13 (www.bgee.org/bgee13/)
+    \item Compatibility with the new Bgee release 14 (www.bgee.org/bgee14/) only for the processed data download part.
+    \item The TopAnat part still temporarily uses data from Bgee release 13.2, until the webservice is ready.
+    \item Retro compatibility with Bgee release 13.2 (www.bgee.org/bgee13/)
   }
 }
 

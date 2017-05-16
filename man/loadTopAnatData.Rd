@@ -4,7 +4,7 @@
 \alias{loadTopAnatData}
 \title{Retrieve data from Bgee to perform GO-like enrichment of anatomical terms, mapped to genes by expression patterns.}
 \usage{
-loadTopAnatData(myBgeeObject, callType = "presence", confidence = "all",
+loadTopAnatData(myBgeeObject, callType = "presence", confidence = NULL,
   stage = NULL)
 }
 \arguments{
@@ -12,7 +12,7 @@ loadTopAnatData(myBgeeObject, callType = "presence", confidence = "all",
 
 \item{callType}{A character of indicating the type of expression calls to be used for enrichment. Only calls for significant detection of expression are implemented so far ("presence"). Differential expression calls, based on differential expression analysis, might be implemented in the future.}
 
-\item{confidence}{A character indicating if only high quality present calls should be retrieved. Options are "all" or "high_quality". Default is "all".}
+\item{confidence}{A character indicating if only high quality present calls should be retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality". For Bgee release 14 and above, options are "silver" (default) and "gold".}
 
 \item{stage}{A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage is specified, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the developmental stage displaying expression; this is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology).
 For information, the most useful stages (going no deeper than level 3 of the ontology) include:
@@ -59,5 +59,5 @@ The expression calls come from Bgee (\url{http://bgee.org}), that integrates dif
 
 }
 \author{
-Julien Roux
+Julien Roux, Julien Wollbrett
 }

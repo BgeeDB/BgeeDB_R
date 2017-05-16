@@ -97,7 +97,7 @@ Bgee <- setRefClass(
       }
 
       if (length(release) == 0) {
-        release <<- gsub("\\.", "_", allReleases$release[1])
+        release <<- gsub("\\.", "_", format(allReleases$release, drop0Trailing = F)[1])
       } else if (length(release) == 1) {
         # In case the release number is written with a dot
         release <<- as.character(gsub("\\.", "_", release))
@@ -107,8 +107,8 @@ Bgee <- setRefClass(
           if (sum(as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))) != 1) {
             stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
           }
-        } else{
-          stop("Bgee release number must follow the format \"Release.subrelease\" or \"Release_subrelease\", e.g., \"13.2\" or \"13_2\"")
+        } else {
+          stop("Bgee release number must follow the format \"Release.subrelease\" or \"Release_subrelease\", e.g., \"13.2\" or \"13_2\". See function listBgeeRelease() to see available releases.")
         }
       } else {
         stop("ERROR: The specified release number is invalid.")
@@ -240,9 +240,11 @@ Bgee <- setRefClass(
       ## the user.
       ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+      ## Message to users. Can for example be used to encourage users to update their version of the package.
       messageToUsers <- as.character(allReleases$messageToUsers[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
       if(!(is.na(messageToUsers) || is.null(messageToUsers))){
-        cat(paste0("\nIMPORTANT INFORMATION : ",messageToUsers,"\n"))
+        cat(paste0("\nIMPORTANT INFORMATION: ", messageToUsers, "\n"))
       }
 
     },
@@ -258,8 +260,6 @@ Bgee <- setRefClass(
     format_data = function(...){
       stop("ERROR: this function is deprecated. Use formatData() function instead.")
     }
-
-
 
   )
 )

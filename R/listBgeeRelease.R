@@ -33,7 +33,6 @@ listBgeeRelease <- function(release=NULL){
 # Function returning a data frame describing all releases available for Bgee
 .getBgeeRelease <- function(removeFile=TRUE){
   ## query FTP to get file describing all releases
-  #TODO allow download of release from the release_v2 file stored on the ftp
   releaseUrl <- 'ftp://ftp.bgee.org/release_v2.tsv'
   success <- try(download.file(releaseUrl, quiet = TRUE,
                            destfile=file.path(getwd(), 'release.tsv.tmp')))
@@ -48,8 +47,7 @@ listBgeeRelease <- function(release=NULL){
     file.remove(file.path(getwd(), 'release.tsv.tmp'))
     stop("ERROR: File describing releases could not be downloaded from FTP.")
   }
-  #allReleases <- read.table("release.tsv", header=TRUE, sep="\t")
-  sapply(as.character(allReleases$minimumVersionBgeeDB),compareVersion,as.character(packageVersion("BgeeDB")))
-  allAvailableReleases <- allReleases[  sapply(as.character(allReleases$minimumVersionBgeeDB),compareVersion,as.character(packageVersion("BgeeDB"))) >= 0,]
+  ## Keep release available with the current version of the package
+  allAvailableReleases <- allReleases[  sapply(as.character(allReleases$minimumVersionBgeeDB), compareVersion, as.character(packageVersion("BgeeDB"))) <= 0,]
   return(allAvailableReleases)
 }

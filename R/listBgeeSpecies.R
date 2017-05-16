@@ -47,13 +47,12 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
 
   cat(paste0("\nBuilding URL to query species in Bgee release ", release, "...\n"))
   myUrl <- allReleases$TopAnat.URL[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))]
-  #create the url of the webservice depending on selected version of Bgee
+  #create the url of the webservice depending on selected release of Bgee
   if(compareVersion(gsub("_", ".",release), OLD_WEBSERVICE_VERSION) > 0){
-    myUrl <- paste0(myUrl, "?page=r_package&action=get_all_species&display_type=tsv&source=BgeeDB_R_package&source_version=",packageVersion("BgeeDB"))
-  } else{
-    myUrl <- paste0(myUrl, "?page=species&display_type=tsv&source=BgeeDB_R_package&source_version=",packageVersion("BgeeDB"))
+    myUrl <- paste0(myUrl, "?page=r_package&action=get_all_species&display_type=tsv&source=BgeeDB_R_package&source_version=", packageVersion("BgeeDB"))
+  } else {
+    myUrl <- paste0(myUrl, "?page=species&display_type=tsv&source=BgeeDB_R_package&source_version=", packageVersion("BgeeDB"))
   }
-
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)

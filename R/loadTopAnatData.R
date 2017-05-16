@@ -30,7 +30,7 @@
 #'   }
 #' }
 #'
-#' @param confidence A character indicating if only high quality present calls should be retrieved. Options are "all" or "high_quality". Default is "all".
+#' @param confidence A character indicating if only high quality present calls should be retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality". For Bgee release 14 and above, options are "silver" (default) and "gold".
 #'
 #' @return A list of 4 elements:
 #' \itemize{
@@ -54,10 +54,15 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   OLD_WEBSERVICE_VERSION = '13.2'
 
   #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #FIXME For the moment, as TopAnat 14 doesn't work, we force the use of Bgee 13.2 by hardcoding it.
+  #FIXME For version 2.3.1, as TopAnat webservice does not work for Bgee release 14, we force the use of data from Bgee 13.2 by hardcoding it.
+  # A warning message is displayed to the user when creating the Bgee object.
   myBgeeObject$release <- "13_2"
   myBgeeObject$topAnatUrl <- "http://bgee.org/bgee13/"
-  myBgeeObject$pathToData <- gsub("\\d+_\\d+$","13_2",myBgeeObject$pathToData)
+  myBgeeObject$pathToData <- gsub("\\d+_\\d+$", "13_2", myBgeeObject$pathToData)
+  if (!file.exists(myBgeeObject$pathToData)) {
+    dir.create(myBgeeObject$pathToData)
+  }
+  cat("\nIMPORTANT INFORMATION: Bgee object is modified to use data from Bgee release 13.2 for TopAnat analysis. This is a temporary fix while the webservice for Bgee release 14 is being updated.\n")
   #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -66,26 +71,26 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
   }
   if ( callType != "presence" ){
-    stop("ERROR: no other call types than present expression calls can be retrieved for now.")
+    stop("ERROR: no other call types than \"presence\" expression calls can be retrieved for now.")
   }
-  if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
-    if(is.null(confidence)){
-      confidence = "SILVER"
+  if ( compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0 ){
+    if ( is.null(confidence) ){
+      confidence = "silver"
     }
-    if ( (confidence != "GOLD") && (confidence != "SILVER") ){
-      stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ",myBgeeObject$release, " allowed values are \"SILVER\" or \"GOLD\".\nBy default \"SILVER\" quality is selected."))
+    if ( (confidence != "gold") && (confidence != "silver") ){
+      stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ", myBgeeObject$release, " allowed values are \"silver\" or \"gold\".\nBy default \"silver\" quality is selected."))
     }
-  }else{
+  } else {
     if(is.null(confidence)){
       confidence = "all"
     }
     if ( (confidence != "all") && (confidence != "high_quality") ){
-      stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ",myBgeeObject$release, " allowed values are \"all\" or \"high_quality\".\nBy default \"all\" quality is selected."))
+      stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ", myBgeeObject$release, " allowed values are \"all\" or \"high_quality\".\nBy default \"all\" quality is selected."))
     }
   }
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
-  options(internet.info=2)
+  options(internet.info = 2)
   ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
   options(timeout = 600)
 
@@ -99,9 +104,9 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
     myUrl <- myBgeeObject$topAnatUrl
-    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
       myUrl <- paste0(myUrl, "?page=r_package&action=get_anat_entity_relations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
-    }else {
+    } else {
       myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     }
     ## Query webservice
@@ -141,7 +146,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
     myUrl <- myBgeeObject$topAnatUrl
-    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
       myUrl <- paste0(myUrl, "?page=r_package&action=get_anat_entities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     }else {
       myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
@@ -185,11 +190,9 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(myBgeeObject$dataType), collapse="_")))
   }
   ## If high quality data needed, specify in file name. Otherwise not specified
-  if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
-    if ( confidence == "GOLD" ){
-      gene2anatomyFileName <- paste0(gene2anatomyFileName, "_GOLD")
-    }
-  } else{
+  if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, toupper(confidence))
+  } else {
     if ( confidence == "high_quality" ){
       gene2anatomyFileName <- paste0(gene2anatomyFileName, "_HIGH")
     }
@@ -204,7 +207,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
     myUrl <- myBgeeObject$topAnatUrl
-    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
       myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=r_package&action=get_expression_calls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
     }else {
       myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
@@ -217,13 +220,9 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       }
     }
     ## Add data quality
-    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
-      if ( confidence == "GOLD" ){
-        myUrl <- paste0(myUrl, "&data_qual=GOLD")
-      }else if(confidence == "SILVER"){
-        myUrl <- paste0(myUrl, "&data_qual=SILVER")
-      }
-    }else{
+    if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+      myUrl <- paste0(myUrl, "&data_qual=", toupper(confidence))
+    } else {
       if(confidence == "high_quality"){
         myUrl <- paste0(myUrl, "&data_qual=HIGH")
       }
