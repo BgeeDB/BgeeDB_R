@@ -40,7 +40,7 @@
 #'   \item{The Bgee class object thta was used to retrieve the data.}
 #' }
 #'
-#' @author Julien Roux
+#' @author Julien Roux, Julien Wollbrett
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
@@ -50,8 +50,17 @@
 #' @import utils digest
 #' @export
 
-loadTopAnatData <- function(myBgeeObject, callType="presence",
-                            confidence="all", stage=NULL){
+loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL){
+  OLD_WEBSERVICE_VERSION = '13.2'
+
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  #FIXME For the moment, as TopAnat 14 doesn't work, we force the use of Bgee 13.2 by hardcoding it.
+  myBgeeObject$release <- "13_2"
+  myBgeeObject$topAnatUrl <- "http://bgee.org/bgee13/"
+  myBgeeObject$pathToData <- gsub("\\d+_\\d+$","13_2",myBgeeObject$pathToData)
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
   ## check that fields of Bgee object are not empty
   if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0 | length(myBgeeObject$sendStats) == 0){
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
@@ -59,10 +68,21 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
   if ( callType != "presence" ){
     stop("ERROR: no other call types than present expression calls can be retrieved for now.")
   }
-  if ( (confidence != "all") && (confidence != "high_quality") ){
-    stop("ERROR: the data confidence parameter specified is not among the allowed values (\"all\" or \"high_quality\").")
+  if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    if(is.null(confidence)){
+      confidence = "SILVER"
+    }
+    if ( (confidence != "GOLD") && (confidence != "SILVER") ){
+      stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ",myBgeeObject$release, " allowed values are \"SILVER\" or \"GOLD\".\nBy default \"SILVER\" quality is selected."))
+    }
+  }else{
+    if(is.null(confidence)){
+      confidence = "all"
+    }
+    if ( (confidence != "all") && (confidence != "high_quality") ){
+      stop(paste0("ERROR: the data confidence parameter specified is not among the allowed values. For Bgee ",myBgeeObject$release, " allowed values are \"all\" or \"high_quality\".\nBy default \"all\" quality is selected."))
+    }
   }
-
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
@@ -78,8 +98,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
         ". Data will not be redownloaded.\n"))
   } else {
     cat("\nBuilding URLs to retrieve organ relationships from Bgee.........\n")
-    myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
-
+    myUrl <- myBgeeObject$topAnatUrl
+    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+      myUrl <- paste0(myUrl, "?page=r_package&action=get_anat_entity_relations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    }else {
+      myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.ontologycommon.RelationDAO.getAnatEntityRelations&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=SOURCE_ID&attr_list=TARGET_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    }
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
     success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
@@ -116,7 +140,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
   } else {
     cat("\nBuilding URLs to retrieve organ names from Bgee.................\n")
-    myUrl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    myUrl <- myBgeeObject$topAnatUrl
+    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+      myUrl <- paste0(myUrl, "?page=r_package&action=get_anat_entities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    }else {
+      myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.anatdev.AnatEntityDAO.getAnatEntities&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=ID&attr_list=NAME&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    }
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
@@ -156,8 +185,14 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(myBgeeObject$dataType), collapse="_")))
   }
   ## If high quality data needed, specify in file name. Otherwise not specified
-  if ( confidence == "high_quality" ){
-    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_HIGH")
+  if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+    if ( confidence == "GOLD" ){
+      gene2anatomyFileName <- paste0(gene2anatomyFileName, "_GOLD")
+    }
+  } else{
+    if ( confidence == "high_quality" ){
+      gene2anatomyFileName <- paste0(gene2anatomyFileName, "_HIGH")
+    }
   }
   gene2anatomyFileName <- paste0(gene2anatomyFileName, ".tsv")
 
@@ -168,7 +203,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
 
   } else {
     cat("\nBuilding URLs to retrieve mapping of gene to organs from Bgee...\n")
-    myUrl <-  paste0(myBgeeObject$topAnatUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    myUrl <- myBgeeObject$topAnatUrl
+    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+      myUrl <- paste0(myBgeeObject$topAnatUrl, "?page=r_package&action=get_expression_calls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    }else {
+      myUrl <- paste0(myUrl, "?page=dao&action=org.bgee.model.dao.api.expressiondata.ExpressionCallDAO.getExpressionCalls&display_type=tsv&species_list=", myBgeeObject$speciesId, "&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=", myBgeeObject$apiKey, "&source=BgeeDB_R_package&source_version=", as.character(packageVersion("BgeeDB")))
+    }
 
     ## Add data type to file name: only if not all data types asked
     if ( sum(myBgeeObject$dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
@@ -177,9 +217,18 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
       }
     }
     ## Add data quality
-    if ( confidence == "high_quality" ){
-      myUrl <- paste0(myUrl, "&data_qual=HIGH")
+    if(compareVersion(gsub("_", ".",myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
+      if ( confidence == "GOLD" ){
+        myUrl <- paste0(myUrl, "&data_qual=GOLD")
+      }else if(confidence == "SILVER"){
+        myUrl <- paste0(myUrl, "&data_qual=SILVER")
+      }
+    }else{
+      if(confidence == "high_quality"){
+        myUrl <- paste0(myUrl, "&data_qual=HIGH")
+      }
     }
+
     if ( !is.null(stage) ){
       myUrl <- paste0(myUrl, "&stage_id=", stage)
     }
@@ -254,7 +303,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence",
   cat("\nAdding BGEE:0 as unique root of all terms of the ontology.......\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
   ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
-  missingParents <- organNames$ID[!organNames$ID %in% names(organRelationships)]
+
+  missingParents <- organNames$ID[!(organNames$ID %in% names(organRelationships))]
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
   ## Add new keys
