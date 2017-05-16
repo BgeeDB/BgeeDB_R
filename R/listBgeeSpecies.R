@@ -6,7 +6,7 @@
 #'
 #' @param allReleases A data frame with information on all releases. Avoid redownloading this information if .getBgeeRelease() already called.
 #'
-#' @param ordering A numeric indicating which column should be used to sort the data frame. Default NULL, returning unsorted data frame.
+#' @param ordering A numeric indicating the number of the column which should be used to sort the data frame. Default NULL, returning unsorted data frame.
 #'
 #' @param removeFile Boolean indicating whether the downloaded file should be deleted. Default to TRUE.
 #'
@@ -24,6 +24,9 @@
 #' @export
 
 listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, removeFile=TRUE){
+
+  OLD_WEBSERVICE_VERSION = '13.2'
+
   if (length(allReleases)==0) {
     cat("\nQuerying Bgee to get release information...\n")
     allReleases <- .getBgeeRelease()
@@ -35,7 +38,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
     # In case the release number is written with a dot
     release <- gsub("\\.", "_", release)
     # test if required release exists
-    if (sum(allReleases$release == gsub("_", ".", release))!=1){
+    if (sum(as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release)))!=1){
       stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
     }
   } else {
@@ -43,8 +46,14 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   }
 
   cat(paste0("\nBuilding URL to query species in Bgee release ", release, "...\n"))
-  host <- allReleases$TopAnat.URL[allReleases$release == gsub("_", ".", release)]
-  myUrl <- paste0(host, "?page=species&display_type=tsv")
+  myUrl <- allReleases$TopAnat.URL[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))]
+  #create the url of the webservice depending on selected version of Bgee
+  if(compareVersion(gsub("_", ".",release), OLD_WEBSERVICE_VERSION) > 0){
+    myUrl <- paste0(myUrl, "?page=r_package&action=get_all_species&display_type=tsv&source=BgeeDB_R_package&source_version=",packageVersion("BgeeDB"))
+  } else{
+    myUrl <- paste0(myUrl, "?page=species&display_type=tsv&source=BgeeDB_R_package&source_version=",packageVersion("BgeeDB"))
+  }
+
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info=2)
@@ -53,11 +62,11 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
 
   ## Query webservice
   cat(paste0("\nSubmitting URL to Bgee webservice... (", myUrl,")\n"))
-  download.file(myUrl, destfile = file.path(getwd(), "species.tsv"))
-
+  filePath <- paste0(getwd(), "/species_Bgee_", release, ".tsv")
+  download.file(myUrl, destfile = filePath)
   ## Read 5 last lines of file: should be empty indicating success of data transmission
   ## We cannot use a system call to UNIX command since some user might be on Windows
-  tmp <- tail(read.table(file.path(getwd(), "species.tsv"),
+  tmp <- tail(read.table(filePath,
                          header=TRUE,
                          sep="\t",
                          comment.char="",
@@ -67,18 +76,18 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
     ## The file transfer was successful!
     cat(paste0("\nQuery to Bgee webservice successful!\n"))
-    allSpecies <- read.table(file.path(getwd(), "species.tsv"),
+    allSpecies <- read.table(filePath,
                              header=TRUE,
                              sep="\t",
                              blank.lines.skip=TRUE,
                              as.is=TRUE)
     if (removeFile == TRUE){
       ## Remove temporary file
-      file.remove(file.path(getwd(), "species.tsv"))
+      file.remove(filePath)
     }
   } else {
     ## delete the temporary file
-    file.remove(file.path(getwd(), "species.tsv"))
+    file.remove(filePath)
     stop(paste0("ERROR: The queried file is truncated, ",
                 "there may be a temporary problem with the Bgee webservice."))
   }
