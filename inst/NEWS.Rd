@@ -1,6 +1,16 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.2.0 (2017-04)}{
+  \itemize{
+    \item Instead of returning a topGO-compatible object, topAnat.R now returns an object from the topAnatData class, an extension of topGOdata class from the topGO package.
+    \item Fixed small issue with management of data types given as input by the user (dataType argument when creating new Bgee class)
+    \item Fixed bug in experiment Id check step. Now accomodates SRA Ids.
+    \item Fixed data frames header names that included double dots.
+    \item Removed dependency to biomaRt in vignette. Code is still detailed but not run, instead a pre-created gene list object is loaded from the data/ directory.
+  }
+}
+
 \section{Version 2.0.0 (2016-10-10)}{
   \itemize{
     \item Implemented possibility to deal with different Bgee releases.

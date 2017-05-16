@@ -77,8 +77,8 @@ getData = function(myBgeeObject, experimentId = NULL){
       file.remove(file.path(myBgeeObject$pathToData, allExpressionValues))
     }
   } else if( length(experimentId) == 1){
-    if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$", experimentId, perl = TRUE)){
-      stop("The experimentId field needs to be a valid GEO or ArrayExpress accession, e.g., 'GSE30617' or 'E-MEXP-2011'")
+    if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$|^SRP\\d+$", experimentId, perl = TRUE)){
+      stop("The experimentId field needs to be a valid GEO, ArrayExpress or SRA accession, e.g., 'GSE30617', 'E-MEXP-2011' or 'SRP044781'")
     } else {
       ## Since experiment Id is defined, we can now substitute it in the URL
       finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId, myBgeeObject$experimentUrl)

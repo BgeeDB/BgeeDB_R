@@ -25,4 +25,3 @@ This function loads the annotation of experiments and samples of quantitative ex
 \author{
 Andrea Komljenovic and Julien Roux.
 }
-

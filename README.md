@@ -146,7 +146,7 @@ The strigency on the quality of expression calls can be changed with the ```conf
 
 *Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of re-downloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
 
-#### Prepare a topGOdata-like object allowing to perform TopAnat analysis
+#### Prepare a topAnatData object allowing to perform TopAnat analysis with topGO
 
 First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). We expect these genes to be enriched for expression in male tissues, notably testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
 

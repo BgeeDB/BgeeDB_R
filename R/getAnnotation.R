@@ -76,8 +76,11 @@ getAnnotation = function(myBgeeObject){
                        experiment.annotation=as.data.frame(fread(file.path(myBgeeObject$pathToData, annotationExperiments)))
   )
   ## remove spaces in headers
-  for (i in 1:length(myAnnotation)){
-    names(myAnnotation[[i]]) <- make.names(names(myAnnotation[[i]]))
-  }
+  names(myAnnotation$experiment.annotation) <- make.names(names(myAnnotation$experiment.annotation))
+  names(myAnnotation$sample.annotation) <- make.names(names(myAnnotation$sample.annotation))
+  ## Double dots are now present in some column names, due to column headers in FTP file such as "Min. read length"
+  ## and "Max. read length". These are replaced by a single dot.
+  names(myAnnotation$sample.annotation) <- gsub("\\.\\.", ".", names(myAnnotation$sample.annotation))
+
   return(myAnnotation)
 }
