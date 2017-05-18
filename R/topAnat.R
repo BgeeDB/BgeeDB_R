@@ -170,6 +170,9 @@ topAnat <- function(topAnatData, geneList, nodeSize = 10, ... ){
   ## get the root of the ontology
   GENE.ONTO.ROOT <- setdiff(unique(unlist(parentMapping, use.names = FALSE)),
       names(parentMapping))
+  if (length(GENE.ONTO.ROOT) > 1){
+    cat('\n Multiple roots were found... Possibly some nodes are not listed in the organ.names data frame\n')
+  }
 
   ## we read all the database once and the access the list
   adjLookUP <- as.list(parentMapping)

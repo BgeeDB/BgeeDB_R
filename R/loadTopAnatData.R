@@ -53,19 +53,6 @@
 loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL){
   OLD_WEBSERVICE_VERSION = '13.2'
 
-  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #FIXME For version 2.3.1, as TopAnat webservice does not work for Bgee release 14, we force the use of data from Bgee 13.2 by hardcoding it.
-  # A warning message is displayed to the user when creating the Bgee object.
-  myBgeeObject$release <- "13_2"
-  myBgeeObject$topAnatUrl <- "http://bgee.org/bgee13/"
-  myBgeeObject$pathToData <- gsub("\\d+_\\d+$", "13_2", myBgeeObject$pathToData)
-  if (!file.exists(myBgeeObject$pathToData)) {
-    dir.create(myBgeeObject$pathToData)
-  }
-  cat("\nIMPORTANT INFORMATION: Bgee object is modified to use data from Bgee release 13.2 for TopAnat analysis. This is a temporary fix while the webservice for Bgee release 14 is being updated.\n")
-  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
   ## check that fields of Bgee object are not empty
   if (length(myBgeeObject$speciesId) == 0 | length(myBgeeObject$topAnatUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0 | length(myBgeeObject$sendStats) == 0){
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object is valid.")
@@ -302,14 +289,21 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   cat("\nAdding BGEE:0 as unique root of all terms of the ontology.......\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
   ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
+  missingParents <- setdiff(unique(unlist(organRelationships, use.names = FALSE)), names(organRelationships))
 
-  missingParents <- organNames$ID[!(organNames$ID %in% names(organRelationships))]
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
   ## Add new keys
   names(organRelationships)[(length(organRelationships) - length(missingParents) + 1):length(organRelationships)] = as.character(missingParents)
   ## Add BGEE:0	/ root to organNames
   organNames <- rbind(organNames, c("BGEE:0", "root"))
+
+  ## Check if some organ names are missing, and add them if necessary
+  missingNames <- setdiff(unique(unique(unlist(organRelationships, use.names = FALSE)), names(organRelationships)), organNames$ID)
+  if (length(missingNames) > 0){
+    cat(paste0("\nWARNING: some organs names appear to be missing. There might be some problem with the ontology data.\n"))
+    organNames <- rbind(organNames, setNames(data.frame(missingNames, "?"), names(organNames)))
+  }
 
   cat("\nDone.\n")
   return(list(gene2anatomy = gene2anatomy, organ.relationships = organRelationships, organ.names = organNames, bgee.object = myBgeeObject))
