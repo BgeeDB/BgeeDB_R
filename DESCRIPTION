@@ -1,8 +1,8 @@
 Package: BgeeDB
 Type: Package
 Title: Annotation and gene expression data retrieval from Bgee database
-Version: 2.3.2
-Date: 2017-05-16
+Version: 2.3.3
+Date: 2017-06-20
 Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
 Maintainer: Julien Wollbrett <julien.wollbrett@unil.ch>, Julien Roux <julien.roux@unibas.ch>, Andrea Komljenovic  <andreakomljenovic@gmail.com>, Frederic Bastian <bgee@sib.swiss>
 Description: A package for the annotation and gene expression
@@ -19,4 +19,3 @@ Suggests: knitr, BiocStyle, testthat, rmarkdown
 LazyLoad: yes
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2016-10-11 14:05:07 UTC; akomljen
