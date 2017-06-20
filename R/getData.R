@@ -4,7 +4,7 @@
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
 #'
-#' @param experimentId An ArrayExpress or GEO accession, e.g., GSE30617. Default is NULL: takes all available experiments for targeted species and data type.
+#' @param experimentId An ArrayExpress or GEO accession, e.g., GSE43721. Default is NULL: takes all available experiments for targeted species and data type.
 #'
 #' @return If experimentId is not specified, returns a list of data frames with data from all experiments for targeted species and data type. If experimentId is specified, returns a data frame with data from this experiment.
 #'
@@ -13,7 +13,7 @@
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 #'   dataMouse <- getData(bgee)
-#'   dataMouseGSE30617 <- getData(bgee, experimentId = "GSE30617")
+#'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
 #' }
 #'
 #' @export
@@ -78,7 +78,7 @@ getData = function(myBgeeObject, experimentId = NULL){
     }
   } else if( length(experimentId) == 1){
     if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$|^SRP\\d+$", experimentId, perl = TRUE)){
-      stop("The experimentId field needs to be a valid GEO, ArrayExpress or SRA accession, e.g., 'GSE30617', 'E-MEXP-2011' or 'SRP044781'")
+      stop("The experimentId field needs to be a valid GEO, ArrayExpress or SRA accession, e.g., 'GSE43721', 'E-MEXP-2011' or 'SRP044781'")
     } else {
       ## Since experiment Id is defined, we can now substitute it in the URL
       finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId, myBgeeObject$experimentUrl)
