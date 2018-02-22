@@ -243,7 +243,7 @@ Bgee <- setRefClass(
 
       ## Message to users. Can for example be used to encourage users to update their version of the package.
       messageToUsers <- as.character(allReleases$messageToUsers[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
-      if(!(is.na(messageToUsers) || is.null(messageToUsers))){
+      if(!(is.na(messageToUsers) || is.null(messageToUsers) || identical(messageToUsers, ''))){
         cat(paste0("\nIMPORTANT INFORMATION: ", messageToUsers, "\n"))
       }
 
