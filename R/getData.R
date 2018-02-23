@@ -58,22 +58,27 @@ getData = function(myBgeeObject, experimentId = NULL){
       if (success != 0){
         stop("ERROR: Download from FTP was not successful.")
       }
-      if(regexpr("*.zip$", allExpressionValues)){
+      if(grepl(".zip$", allExpressionValues, perl = TRUE)){
         cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...\n")
         tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
         myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
-      }else if(regexpr("*.tar.gz$", allExpressionValues)){
+        file.remove(tempFiles)
+      }else if(grepl(".tar.gz$", allExpressionValues, perl = TRUE)){
         cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...\n")
-        #using untar it is possible to untar OR list files present in a tarball. It is not possible to do both actions in one line of code
+        # When using untar it is only possible to untar OR list files present in a tarball. 
+        # It is not possible to do both actions in one line of code
         tempFiles <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
         tempFiles <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE)
-        myData <- lapply(file.path(myBgeeObject$pathToData, tempFiles), untar, exdir=myBgeeObject$pathToData)
-        myData <- lapply(file.path(myBgeeObject$pathToData, tempFiles), untar, exdir=myBgeeObject$pathToData, list = TRUE)
+        tempFiles <- file.path(myBgeeObject$pathToData, tempFiles)
+        myData <- lapply(tempFiles, untar, exdir=myBgeeObject$pathToData)
+        myData <- lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)
+        myData <- file.path(myBgeeObject$pathToData, myData)
+        unlink(dirname(tempFiles[1]), recursive = TRUE)
       }else{
         stop("\nThe compressed file can not be unzip nor untar\n")
       }
       allData <- lapply(unlist(myData, recursive = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
-
+      
       ## remove spaces in headers
       for (i in 1:length(allData)){
         names(allData[[i]]) <- make.names(names(allData[[i]]))
@@ -83,7 +88,6 @@ getData = function(myBgeeObject, experimentId = NULL){
       saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
 
       ## clean up downloaded files
-      file.remove(tempFiles)
       file.remove(unlist(myData, recursive = TRUE))
       file.remove(file.path(myBgeeObject$pathToData, allExpressionValues))
     }
@@ -109,10 +113,10 @@ getData = function(myBgeeObject, experimentId = NULL){
           stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
         }
         # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
-        if(regexpr("*.zip$",tempFile)){
+        if(grepl(".zip$",tempFile, perl = TRUE)){
           cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now unzip ", tempFile," file...\n"))
           myData <- unzip(tempFile, exdir=myBgeeObject$pathToData)
-        }else if(regexpr("*.tar.gz$",tempFile)){
+        }else if(grepl(".tar.gz$",tempFile, perl = TRUE)){
           cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now untar ", tempFile," file...\n"))
           #using untar it is possible to untar OR list files present in a tarball. It is not possible to do both actions in one line of code
           untar(tempFile, exdir=myBgeeObject$pathToData)
