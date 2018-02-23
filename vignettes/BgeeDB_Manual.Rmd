@@ -179,7 +179,7 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 The above code using the `biomaRt` package is not executed in this vignette to prevent building issues of our package in case of biomaRt downtime. Instead we use a `geneList` object saved in the `data/` folder that we built using pre-downloaded data. 
 
 ```{r}
-load("../data/geneList.RData")
+data(geneList)
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 ```
 

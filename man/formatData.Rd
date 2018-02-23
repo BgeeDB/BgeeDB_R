@@ -35,9 +35,9 @@ This function formats the data downloaded with the getData() function into an ob
 \examples{
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-  dataMouseGSE30617 <- getData(bgee, experimentId = "GSE30617")
-  dataMouseGSE30617.rpkm <- formatData(bgee,
-                                       dataMouseGSE30617,
+  dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
+  dataMouseGSE43721.rpkm <- formatData(bgee,
+                                       dataMouseGSE43721,
                                        callType = "present",
                                        stats = "rpkm")
 }

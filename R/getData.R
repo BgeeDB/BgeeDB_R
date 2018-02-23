@@ -4,7 +4,7 @@
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
 #'
-#' @param experimentId An ArrayExpress or GEO accession, e.g., GSE30617. Default is NULL: takes all available experiments for targeted species and data type.
+#' @param experimentId An ArrayExpress or GEO accession, e.g., GSE43721. Default is NULL: takes all available experiments for targeted species and data type.
 #'
 #' @return If experimentId is not specified, returns a list of data frames with data from all experiments for targeted species and data type. If experimentId is specified, returns a data frame with data from this experiment.
 #'
@@ -13,7 +13,7 @@
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 #'   dataMouse <- getData(bgee)
-#'   dataMouseGSE30617 <- getData(bgee, experimentId = "GSE30617")
+#'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
 #' }
 #'
 #' @export
@@ -58,11 +58,27 @@ getData = function(myBgeeObject, experimentId = NULL){
       if (success != 0){
         stop("ERROR: Download from FTP was not successful.")
       }
-      cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now unzipping file...\n")
-      tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
-      myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
+      if(grepl(".zip$", allExpressionValues, perl = TRUE)){
+        cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...\n")
+        tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
+        myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
+        file.remove(tempFiles)
+      }else if(grepl(".tar.gz$", allExpressionValues, perl = TRUE)){
+        cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...\n")
+        # When using untar it is only possible to untar OR list files present in a tarball. 
+        # It is not possible to do both actions in one line of code
+        tempFiles <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
+        tempFiles <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE)
+        tempFiles <- file.path(myBgeeObject$pathToData, tempFiles)
+        myData <- lapply(tempFiles, untar, exdir=myBgeeObject$pathToData)
+        myData <- lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)
+        myData <- file.path(myBgeeObject$pathToData, myData)
+        unlink(dirname(tempFiles[1]), recursive = TRUE)
+      }else{
+        stop("\nThe compressed file can not be unzip nor untar\n")
+      }
       allData <- lapply(unlist(myData, recursive = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
-
+      
       ## remove spaces in headers
       for (i in 1:length(allData)){
         names(allData[[i]]) <- make.names(names(allData[[i]]))
@@ -72,13 +88,12 @@ getData = function(myBgeeObject, experimentId = NULL){
       saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
 
       ## clean up downloaded files
-      file.remove(tempFiles)
       file.remove(unlist(myData, recursive = TRUE))
       file.remove(file.path(myBgeeObject$pathToData, allExpressionValues))
     }
   } else if( length(experimentId) == 1){
     if (!grepl("^GSE\\d+$|^E-\\w+-\\d+.*$|^SRP\\d+$", experimentId, perl = TRUE)){
-      stop("The experimentId field needs to be a valid GEO, ArrayExpress or SRA accession, e.g., 'GSE30617', 'E-MEXP-2011' or 'SRP044781'")
+      stop("The experimentId field needs to be a valid GEO, ArrayExpress or SRA accession, e.g., 'GSE43721', 'E-MEXP-2011' or 'SRP044781'")
     } else {
       ## Since experiment Id is defined, we can now substitute it in the URL
       finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId, myBgeeObject$experimentUrl)
@@ -97,9 +112,19 @@ getData = function(myBgeeObject, experimentId = NULL){
         if (success != 0){
           stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
         }
-        cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now unzipping ", tempFile," file...\n"))
         # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
-        myData <- unzip(tempFile, exdir=myBgeeObject$pathToData)
+        if(grepl(".zip$",tempFile, perl = TRUE)){
+          cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now unzip ", tempFile," file...\n"))
+          myData <- unzip(tempFile, exdir=myBgeeObject$pathToData)
+        }else if(grepl(".tar.gz$",tempFile, perl = TRUE)){
+          cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now untar ", tempFile," file...\n"))
+          #using untar it is possible to untar OR list files present in a tarball. It is not possible to do both actions in one line of code
+          untar(tempFile, exdir=myBgeeObject$pathToData)
+          myData <- untar(tempFile, exdir=myBgeeObject$pathToData, list = TRUE)
+        }else{
+          stop("\nThe file can not be decompressed because it is not a zip nor a tar.gz file\n")
+        }
+        
         allData <- lapply(myData, function(x) as.data.frame(fread(x)))
 
         ## remove spaces in headers
@@ -125,3 +150,4 @@ getData = function(myBgeeObject, experimentId = NULL){
   return(allData)
   cat("\nDone.")
 }
+

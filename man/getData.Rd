@@ -9,7 +9,7 @@ getData(myBgeeObject, experimentId = NULL)
 \arguments{
 \item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species and data type.}
 
-\item{experimentId}{An ArrayExpress or GEO accession, e.g., GSE30617. Default is NULL: takes all available experiments for targeted species and data type.}
+\item{experimentId}{An ArrayExpress or GEO accession, e.g., GSE43721. Default is NULL: takes all available experiments for targeted species and data type.}
 }
 \value{
 If experimentId is not specified, returns a list of data frames with data from all experiments for targeted species and data type. If experimentId is specified, returns a data frame with data from this experiment.
@@ -21,7 +21,7 @@ This function loads the quantitative expression data and presence calls for samp
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
   dataMouse <- getData(bgee)
-  dataMouseGSE30617 <- getData(bgee, experimentId = "GSE30617")
+  dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
 }
 
 }
