@@ -113,6 +113,7 @@ getData = function(myBgeeObject, experimentId = NULL){
           stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
         }
         # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
+
         if(grepl(".zip$",tempFile, perl = TRUE)){
           cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now unzip ", tempFile," file...\n"))
           myData <- unzip(tempFile, exdir=myBgeeObject$pathToData)
@@ -121,6 +122,7 @@ getData = function(myBgeeObject, experimentId = NULL){
           #using untar it is possible to untar OR list files present in a tarball. It is not possible to do both actions in one line of code
           untar(tempFile, exdir=myBgeeObject$pathToData)
           myData <- untar(tempFile, exdir=myBgeeObject$pathToData, list = TRUE)
+          myData <- file.path(myBgeeObject$pathToData, myData)
         }else{
           stop("\nThe file can not be decompressed because it is not a zip nor a tar.gz file\n")
         }

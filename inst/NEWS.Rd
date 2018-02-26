@@ -1,6 +1,15 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.5.0 (2018-02)}{
+  \itemize{
+    \item Compatibility with new tar.gz compressed download files.
+    \item Better management of potential issues with the ontology structure.
+    \item Better management of .RData object datasets used to create the vignette.
+    \item Fixed small issue with species names composed of more than 2 names (e.g Canis lupus familiaris)
+  }
+}
+
 \section{Version 2.3.2 (2017-05)}{
   \itemize{
     \item Compatibility of the TopAnat part of the package with the new Bgee release 14 (www.bgee.org/bgee14/).

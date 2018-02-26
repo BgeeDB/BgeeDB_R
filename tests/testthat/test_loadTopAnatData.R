@@ -3,7 +3,7 @@ context("expect_output")
 
 test_that("Loading of topAnatData files is working", {
   bgee <- Bgee$new(species="Mus_musculus", dataType="rna_seq")
-  myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068")
+  myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000106")
 
   expect_that( myTopAnatData, is_a("list") )
   expect_that( length(myTopAnatData), equals(4) )
