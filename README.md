@@ -1,13 +1,10 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.163768.svg)](https://doi.org/10.5281/zenodo.163768)
+
 ---
-title: "BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests"
-author: "Andrea Komljenovic, Julien Roux, Marc Robinson-Rechavi, Frederic Bastian"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: html_document
 ---
+# BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests
+##### Andrea Komljenović, Julien Roux, Marc Robinson-Rechavi, Frédéric Bastian
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from human and many other animal species.
  
@@ -22,8 +19,8 @@ In summary, the BgeeDB package allows to:
 
 In R:
 ``` {r}
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("BgeeDB")
+source("https://bioconductor.org/biocLite.R")
+biocLite("BgeeDB")
 ```
 
 ## How to use BgeeDB package
@@ -135,7 +132,7 @@ The ```loadTopAnatData()``` function loads a mapping from genes to anatomical st
 # Loading calls of expression
 myTopAnatData <- loadTopAnatData(bgee)
 # Look at the data
-## str(myTopAnatData)
+str(myTopAnatData)
 ```
 
 The strigency on the quality of expression calls can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the a Uberon stage Id in the ```stage``` argument. 
@@ -143,28 +140,28 @@ The strigency on the quality of expression calls can be changed with the ```conf
 ```{r, eval=FALSE}
 ## Loading only high-quality expression calls from affymetrix data made on embryonic samples only 
 ## This is just given as an example, but is not run in this vignette because only few data are returned
-bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
-myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="high_quality")
+## bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
+## myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="high_quality")
 ```
 
-*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
+*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of re-downloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
 
 #### Prepare a topAnatData object allowing to perform TopAnat analysis with topGO
 
-First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" or children terms in the Gene Ontology. We use the ```biomaRt``` package to retrieve this list of genes. We expect them to be enriched for expression in male tissues, notably the testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
+First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). We expect these genes to be enriched for expression in male tissues, notably testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
 
-```{r, eval=FALSE}
+```{r}
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("biomaRt")
 library(biomaRt)
 ensembl <- useMart("ensembl")
 ensembl <- useDataset("drerio_gene_ensembl", mart=ensembl)
 
-# Foreground genes are those with GO annotation "spermatogenesis" or childrem terms 
-myGenes <- getBM(attributes= "ensembl_gene_id", filters=c("go_parent_term"), values=list(c("GO:0007283")), mart=ensembl)
+# Foreground genes are those with GO annotation "spermatogenesis"
+myGenes <- getBM(attributes= "ensembl_gene_id", filters=c("go_id"), values=list(c("GO:0007283")), mart=ensembl)
 
 # Background are all genes with GO annotation
-universe <- getBM(attributes= "ensembl_gene_id", filters=c("with_go"), values=list(c(TRUE)), mart=ensembl)
+universe <- getBM(attributes= "ensembl_gene_id", filters=c("with_go_go"), values=list(c(TRUE)), mart=ensembl)
 
 # Prepare the gene list vector 
 geneList <- factor(as.integer(universe[,1] %in% myGenes[,1]))
@@ -173,13 +170,6 @@ head(geneList)
 summary(geneList == 1)
 
 # Prepare the topGO object
-myTopAnatObject <-  topAnat(myTopAnatData, geneList)
-```
-
-The above code using the `biomaRt` package is not executed in this vignette to prevent building issues of our package in case of biomaRt downtime. Instead we use a `geneList` object saved in the `data/` folder that we built using pre-downloaded data. 
-
-```{r}
-data(geneList)
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 ```
 
@@ -205,11 +195,11 @@ results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 The ```makeTable``` function allows to filter and format the test results, and calculate FDR values. 
 
 ```{r}
-# Display results sigificant at a 10% FDR threshold
-makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.1)
+# Display results sigificant at a 5% FDR threshold
+makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.05)
 ```
 
-At the time of building this vignette (April 2017), the significant terms were all related to male reproductive system (testes), which makes biological sense: there is an expression bias for testis of genes involved in spermatogenesis.
+There is only one significant term, `testis`, which makes biological sense: there is an expression bias for testis of genes involved in spermatogenesis.
 
 By default results are sorted by p-value, but this can be changed with the ```ordering``` parameter by specifying which column should be used to order the results (preceded by a "-" sign to indicate that ordering should be made in decreasing order). For example, it is often convenient to sort  significant structures by decreasing enrichment fold, using `ordering = -6`. The full table of results can be obtained using `cutoff = 1`.
 

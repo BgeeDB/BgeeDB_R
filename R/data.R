@@ -3,5 +3,15 @@
 #' In this example the foreground genes are zebrafish genes annotated with "spermatogenesis" in the Gene Ontology (or annotated to children terms of "spermatogenesis"), and the background is composed of all zebrafish genes with at least one Gene Ontology annotation.
 #' The gene list was built using the biomaRt package, and the code used can be found in the vignette of the package.
 #'
+#' @docType data
+#'
+#' @usage data(geneList)
+#'
 #' @format A named vector of factor values with 22141 elements. The factor levels are "0" for the 22103 genes in the background and "1" for the 38 genes in the foreground. Vector names are the Ensembl IDs of the zebrafish genes.
+#'
+#' @examples
+#' bgee <- Bgee$new(species = "Danio_rerio")
+#' myTopAnatData <- loadTopAnatData(bgee)
+#' data(geneList)
+#' myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 "geneList"

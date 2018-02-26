@@ -149,7 +149,7 @@ Bgee <- setRefClass(
                       release, "."))
         } else {
           speciesId <<- as.numeric(species)
-          speciesName <<- paste(allSpecies[allSpecies$ID == species, 2:3], collapse = "_")
+          speciesName <<- gsub(" ", "_", paste(allSpecies[allSpecies$ID == species, 2:3], collapse = "_"))
         }
       } else {
         speciesSplitted <- unlist(strsplit(species, split = "_"))
@@ -158,7 +158,7 @@ Bgee <- setRefClass(
           stop(paste0("ERROR: The specified species name is invalid, or not available in Bgee release ",
                       release, "."))
         } else {
-          speciesName <<- species
+          speciesName <<- gsub(" ", "_", species)
           speciesId <<- as.numeric(allSpecies$ID[allSpecies$GENUS == speciesSplitted[1] &
                                                    allSpecies$SPECIES_NAME == speciesSplitted[2]])
         }
@@ -243,7 +243,7 @@ Bgee <- setRefClass(
 
       ## Message to users. Can for example be used to encourage users to update their version of the package.
       messageToUsers <- as.character(allReleases$messageToUsers[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
-      if(!(is.na(messageToUsers) || is.null(messageToUsers))){
+      if(!(is.na(messageToUsers) || is.null(messageToUsers) || identical(messageToUsers, ''))){
         cat(paste0("\nIMPORTANT INFORMATION: ", messageToUsers, "\n"))
       }
 

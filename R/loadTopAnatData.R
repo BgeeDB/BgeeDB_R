@@ -289,7 +289,9 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   cat("\nAdding BGEE:0 as unique root of all terms of the ontology.......\n")
   ## There can be multiple roots among all the terms downloaded. We need to add one unique root for topGO to work: BGEE:0
   ## Add all organs from organNames that are not source (child / names of the list) in organsRelationship to the organsRelationship list (with value / target / parent = BGEE:0)
-  missingParents <- setdiff(unique(unlist(organRelationships, use.names = FALSE)), names(organRelationships))
+  ## Some organs are not present in the organRelationships file because they have no relations to other organs (not linked to a target).
+  ## That's why we use all organs present in organNames to find missingParents
+  missingParents <- setdiff(organNames[, 1], names(organRelationships))
 
   ## Add new values
   organRelationships <- c(organRelationships, as.list(rep("BGEE:0", times=length(missingParents))))
