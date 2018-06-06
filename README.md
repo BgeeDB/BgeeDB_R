@@ -10,6 +10,8 @@ output: html_document
  
 The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), but with more flexibility in the choice of parameters and developmental stages.
 
+The pipeline used to generate Bgee expression data is documented and publicly available at (<https://github.com/BgeeDB/bgee_pipeline>)
+
 In summary, the BgeeDB package allows to: 
 * 1. List annotation of RNA-seq and microarray data available the Bgee database
 * 2. Download the processed gene expression data available in the Bgee database
