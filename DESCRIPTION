@@ -12,6 +12,8 @@ Depends: R (>= 3.3.0), topGO, tidyr
 Imports: data.table, RCurl, digest, methods, stats, utils, dplyr,
         graph, Biobase
 License: GPL-3
+URL: https://github.com/BgeeDB/BgeeDB_R
+BugReports: https://github.com/BgeeDB/BgeeDB_R/issues
 VignetteBuilder: knitr
 biocViews: Software, DataImport, Sequencing, GeneExpression,
         Microarray, GO, GeneSetEnrichment
