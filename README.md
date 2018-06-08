@@ -15,6 +15,10 @@ In summary, the BgeeDB package allows to:
 * 2. Download the processed gene expression data available in the Bgee database
 * 3. Download the gene expression calls and use them to perform TopAnat analyses 
 
+The pipeline used to generate Bgee expression data is documented and publicly available at (<https://github.com/BgeeDB/bgee_pipeline>)
+
+If you found a bug or have any issues to use ```BgeeDB``` please write a bug report in our own GitHub issues manager available at (<https://github.com/BgeeDB/BgeeDB_R/issues>)
+
 ## Installation
 
 In R:
