@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
-\section{Version 2.5.0 (2018-02)}{
+\section{Version 2.6.0 (2018-02)}{
   \itemize{
     \item Compatibility with new tar.gz compressed download files.
     \item Better management of potential issues with the ontology structure.
