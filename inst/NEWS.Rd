@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.6.1 (2018-06)}{
+  \itemize{
+    \item Fix severe bug on Bge 14.0 tar.gz annotation file management.
+    \item Update README and DESCRIPTION files
+  }
+}
+
 \section{Version 2.6.0 (2018-02)}{
   \itemize{
     \item Compatibility with new tar.gz compressed download files.
