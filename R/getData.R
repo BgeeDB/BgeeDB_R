@@ -124,7 +124,7 @@ getData = function(myBgeeObject, experimentId = NULL){
           myData <- untar(tempFile, exdir=myBgeeObject$pathToData, list = TRUE)
           myData <- file.path(myBgeeObject$pathToData, myData)
         }else{
-          stop("\nThe file can not be decompressed because it is not a zip nor a tar.gz file\n")
+          stop("\nThe file can not be uncompressed because it is not a zip nor a tar.gz file\n")
         }
         
         allData <- lapply(myData, function(x) as.data.frame(fread(x)))
