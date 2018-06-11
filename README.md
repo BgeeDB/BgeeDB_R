@@ -19,6 +19,7 @@ The pipeline used to generate Bgee expression data is documented and publicly av
 
 If you found a bug or have any issues to use ```BgeeDB``` please write a bug report in our own GitHub issues manager available at (<https://github.com/BgeeDB/BgeeDB_R/issues>)
 
+
 ## Installation
 
 In R:

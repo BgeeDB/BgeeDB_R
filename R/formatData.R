@@ -8,7 +8,8 @@
 #'
 #' @param stats A character indicating what expression values should be used in the formatted data expressionSet object matrix.
 #'  \itemize{
-#'    \item{"rpkm" for RNA-seq}
+#'    \item{"rpkm" for RNA-seq (Bgee release 13.2 and before)}
+#'    \item{"fpkm" for RNA-seq (Bgee release 14 and above)}
 #'    \item{"counts" for RNA-seq}
 #'    \item{"tpm" for RNA-seq (Bgee release 14 and above)}
 #'    \item{"intensities" for Affymetrix microarrays}
@@ -60,10 +61,10 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
   } else if (myBgeeObject$dataType == "affymetrix" & stats != "intensities"){
     cat("\nWARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\". This will be used for the next steps.\n")
     stats <- "intensities"
-  } else if (myBgeeObject$dataType == "rna_seq" & myBgeeObject$release == "13_2" & !(stats %in% c('rpkm', 'counts'))){
+  } else if (myBgeeObject$dataType == "rna_seq" & compareVersion(gsub("_", ".", myBgeeObject$release), "13.2") <= 0 & !(stats %in% c('rpkm', 'counts'))){
     stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
-  } else if (myBgeeObject$dataType == "rna_seq" & !(stats %in% c('rpkm', 'counts', 'tpm'))){
-    stop("Choose whether data formatting should create a matrix of RPKMs, TPMs or read counts, with stats option set as \"rpkm\", \"tpm\" or \"counts\"")
+  } else if (myBgeeObject$dataType == "rna_seq" & compareVersion(gsub("_", ".", myBgeeObject$release), "13.2") > 0 & !(stats %in% c('fpkm', 'counts', 'tpm'))){
+    stop("Choose whether data formatting should create a matrix of FPKMs, TPMs or read counts, with stats option set as \"fpkm\", \"tpm\" or \"counts\"")
   }
 
   if(!(callType %in% c('present','present high quality','all'))){
@@ -75,6 +76,9 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
   cat("\nExtracting expression data matrix...\n")
   if(stats  == "rpkm"){
     columns <- c("Library.ID", "Gene.ID", "RPKM")
+    expr <- .extract.data(data, columns, callType)
+  } else if(stats  == "fpkm"){
+    columns <- c("Library.ID", "Gene.ID", "FPKM")
     expr <- .extract.data(data, columns, callType)
   } else if(stats  == "tpm"){
     columns <- c("Library.ID", "Gene.ID", "TPM")
