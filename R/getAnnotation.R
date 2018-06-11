@@ -38,30 +38,46 @@ getAnnotation = function(myBgeeObject){
 
   ## Get name of annotation file from the URL field of Bgee object
   annotationFile <- basename(myBgeeObject$annotationUrl)
-
   ## To get the names of experiment and sample files, we start from the annotationFile
   if (myBgeeObject$dataType == "affymetrix"){
     annotationExperiments <- gsub("_chips", "", annotationFile)
   } else if (myBgeeObject$dataType == "rna_seq"){
     annotationExperiments <- gsub("_libraries", "", annotationFile)
   }
-  annotationExperiments <- gsub("zip", "tsv", annotationExperiments)
   annotationSamples     <- gsub("_experiments", "", annotationFile)
-  annotationSamples     <- gsub("zip", "tsv", annotationSamples)
-
+  if(grepl(".zip$", annotationExperiments, perl = TRUE)){
+    annotationExperiments <- gsub("zip", "tsv", annotationExperiments)
+    annotationSamples     <- gsub("zip", "tsv", annotationSamples)
+  }else if(grepl(".tar.gz$", annotationExperiments, perl = TRUE)){
+    annotationExperiments <- gsub("tar.gz", "tsv", annotationExperiments)
+    annotationSamples     <- gsub("tar.gz", "tsv", annotationSamples)
+  }else{
+    stop("\nThe annotation file can not be uncompressed because it is not a zip nor a tar.gz file\n")
+  }
   ## Check if file is already in cache. If so, skip download step
   if (file.exists(file.path(myBgeeObject$pathToData, annotationExperiments)) && file.exists(file.path(myBgeeObject$pathToData, annotationSamples))){
     cat(paste0("\nNOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
                ". Data will not be redownloaded.\n"))
   } else {
-    cat("\nDownloading annotation files...\n")
     success <- download.file(myBgeeObject$annotationUrl,
                              destfile=file.path(myBgeeObject$pathToData, annotationFile),
                              mode='wb')
     if (success != 0){
       stop("ERROR: Download from FTP was not successful.")
     }
-    unzip(file.path(myBgeeObject$pathToData, annotationFile), exdir=myBgeeObject$pathToData)
+    if(grepl(".zip$", annotationFile, perl = TRUE)){
+      myData <- unzip(file.path(myBgeeObject$pathToData, annotationFile), exdir=myBgeeObject$pathToData)
+    }else if(grepl(".tar.gz$", annotationFile, perl = TRUE)){
+      untar(file.path(myBgeeObject$pathToData, annotationFile), exdir=myBgeeObject$pathToData)
+      myData <- untar(file.path(myBgeeObject$pathToData, annotationFile), exdir=myBgeeObject$pathToData, list = TRUE)
+      myData <- file.path(myBgeeObject$pathToData, myData)
+      # move annotation files from "experiments repository" to pathToData repository in order to be consistent with zip uncompression
+      file.rename(from = myData,  to = file.path(myBgeeObject$pathToData, basename(myData)))
+      # delete the "experiment repository" folder
+      unlink(dirname(myData), recursive = TRUE)
+    }else{
+      stop("\nThe annotation file can not be uncompressed because it is not a zip nor a tar.gz file\n")
+    }
     cat("\nSaved annotation files in", myBgeeObject$pathToData, "folder.\n")
     ## Clean directory and remove .zip file
     file.remove(file.path(myBgeeObject$pathToData, annotationFile))
