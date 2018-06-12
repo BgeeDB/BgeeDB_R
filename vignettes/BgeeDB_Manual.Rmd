@@ -109,7 +109,7 @@ The ```callType``` argument allows to retain only actively expressed genes or pr
 
 ```{r}
 # use only present calls and fill expression matric with RPKM values
-gene.expression.mouse.rpkm <- formatData(bgee, data_bgee_mouse_gse30617, callType = "present", stats = "rpkm")
+gene.expression.mouse.rpkm <- formatData(bgee, data_bgee_mouse_gse30617, callType = "present", stats = "fpkm")
 gene.expression.mouse.rpkm 
 ```
 
