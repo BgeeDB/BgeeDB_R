@@ -29,10 +29,10 @@
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 #'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
-#'   dataMouseGSE43721.rpkm <- formatData(bgee,
+#'   dataMouseGSE43721.fpkm <- formatData(bgee,
 #'                                        dataMouseGSE43721,
 #'                                        callType = "present",
-#'                                        stats = "rpkm")
+#'                                        stats = "fpkm")
 #' }
 #'
 #' @importFrom dplyr %>%
