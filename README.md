@@ -86,11 +86,9 @@ lapply(data_bgee_mouse, head)
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
 
-The result of the ```getData()``` function is, for each experiment, a data frame with the different samples listed in rows, one after the other. Each row is a gene and the expression levels are displayed as raw read counts or RPKMs. A detection flag indicates is the gene is significantly expressed above background level of expression. 
+The result of the ```getData()``` function is, for each experiment, a data frame with the different samples listed in rows, one after the other. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. 
 
-*Note 1*: An additional column in the data frame including expression in the TPM unit will be available from Bgee release 14 (planned for the end of 2016). 
-
-*Note 2*: If microarray data are downloaded, rows correspond to probesets and log2 of expression intensities are available instead of read counts/RPKMs.
+*Note*: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.
 
 Alternatively, you can choose to download data from only one particular RNA-seq experiment from Bgee with the `experimentId` parameter:
 
@@ -102,16 +100,16 @@ data_bgee_mouse_gse30617 <- getData(bgee, experimentId = "GSE30617")
 #### Format the RNA-seq data
 
 It is sometimes easier to work with data organized as a matrix, where rows represent genes or probesets and columns represent different samples. The ```formatData()``` function reformats the data into an ExpressionSet object including:
-* An expression data matrix, with genes or probesets as rows, and samples as columns (```assayData``` slot). The ```stats``` argument allows to choose if the matrix should be filled with read counts, RPKMs (and soon TPMs) for RNA-seq data. For microarray data the matrix is filled with log2 expression intensities.
+* An expression data matrix, with genes or probesets as rows, and samples as columns (```assayData``` slot). The ```stats``` argument allows to choose if the matrix should be filled with read counts, RPKMs (up to Bgee 13.2), FPKMs (from Bgee 14.0), or TPMs (from Bgee 14.0) for RNA-seq data. For microarray data the matrix is filled with log2 expression intensities.
 * A data frame listing the samples and their anatomical structure and developmental stage annotation (```phenoData``` slot)
 * For microarray data, the mapping from probesets to Ensembl genes (```featureData``` slot)
 
 The ```callType``` argument allows to retain only actively expressed genes or probesets, if set to "present" or "present high quality". Genes or probesets that are absent in a given sample are given ```NA``` values.
 
 ```{r}
-# use only present calls and fill expression matric with RPKM values
-gene.expression.mouse.rpkm <- formatData(bgee, data_bgee_mouse_gse30617, callType = "present", stats = "rpkm")
-gene.expression.mouse.rpkm 
+# use only present calls and fill expression matric with FPKM values
+gene.expression.mouse.fpkm <- formatData(bgee, data_bgee_mouse_gse30617, callType = "present", stats = "fpkm")
+gene.expression.mouse.fpkm 
 ```
 
 ### Running example: TopAnat gene expression enrichment analysis
@@ -142,36 +140,39 @@ str(myTopAnatData)
 The strigency on the quality of expression calls can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the a Uberon stage Id in the ```stage``` argument. 
 
 ```{r, eval=FALSE}
-## Loading only high-quality expression calls from affymetrix data made on embryonic samples only 
-## This is just given as an example, but is not run in this vignette because only few data are returned
-## bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
-## myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="high_quality")
+## Loading silver and gold expression calls from affymetrix data made on embryonic samples only 
+## This is just given as an example, *do not run this code* because only few data will be returned by the TopAnat gene expression enrichment analysis
+bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
+myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="silver")
 ```
 
-*Note*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of re-downloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
+*Note 1*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
+
+*Note 2*: In releases up to Bgee 13.2 allowed ```confidence`` values were `low_quality` or or `high_quality`. From Bgee 14.0 ```confidence``` values are `gold` or `silver`.
 
 #### Prepare a topAnatData object allowing to perform TopAnat analysis with topGO
 
-First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes, annotated with "spermatogenesis" in the Gene Ontology (using the ```biomaRt``` package). We expect these genes to be enriched for expression in male tissues, notably testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
+First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes with an annotated phenotype related to "pectoral fin" . We use the ```biomaRt``` package to retrieve this list of genes. We expect them to be enriched for expression in male tissues, notably the testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
 
 ```{r}
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("biomaRt")
 library(biomaRt)
-ensembl <- useMart("ensembl")
-ensembl <- useDataset("drerio_gene_ensembl", mart=ensembl)
+ensembl <- useMart("ENSEMBL_MART_ENSEMBL", dataset="drerio_gene_ensembl", host="mar2016.archive.ensembl.org")
 
-# Foreground genes are those with GO annotation "spermatogenesis"
-myGenes <- getBM(attributes= "ensembl_gene_id", filters=c("go_id"), values=list(c("GO:0007283")), mart=ensembl)
+# get the mapping of Ensembl genes to phenotypes. It will corresponds to the background genes
+universe <- getBM(filters=c("phenotype_source"), value=c("ZFIN"), attributes=c("ensembl_gene_id","phenotype_description"), mart=ensembl)
 
-# Background are all genes with GO annotation
-universe <- getBM(attributes= "ensembl_gene_id", filters=c("with_go_go"), values=list(c(TRUE)), mart=ensembl)
+# select phenotypes related to pectoral fin
+phenotypes <- grep("pectoral fin", unique(universe$phenotype_description), value=T)
+
+# Foreground genes are those with an annotated phenotype related to "pectoral fin" 
+myGenes <- unique(universe$ensembl_gene_id[universe$phenotype_description %in% phenotypes])
 
 # Prepare the gene list vector 
-geneList <- factor(as.integer(universe[,1] %in% myGenes[,1]))
-names(geneList) <- universe[,1]
-head(geneList)
-summary(geneList == 1)
+geneList <- factor(as.integer(unique(universe$ensembl_gene_id) %in% myGenes))
+names(geneList) <- unique(universe$ensembl_gene_id)
+summary(geneList)
 
 # Prepare the topGO object
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
@@ -184,11 +185,6 @@ myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 For this step, see the vignette of the ```topGO``` package for more details, as you have to directly use the tests implemented in the ```topGO``` package, as shown in this example:
 
 ```{r}
-results <- runTest(myTopAnatObject, algorithm = 'classic', statistic = 'fisher')
-```
-
-You can also choose one of the topGO decorrelation methods, for example the "weight" method, allowing to avoid redundant results induced by the structure of the ontology.
-```{r, eval=FALSE}
 results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 ```
 
@@ -199,12 +195,27 @@ results <- runTest(myTopAnatObject, algorithm = 'weight', statistic = 'fisher')
 The ```makeTable``` function allows to filter and format the test results, and calculate FDR values. 
 
 ```{r}
-# Display results sigificant at a 5% FDR threshold
-makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.05)
+# Display results sigificant at a 1% FDR threshold
+tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.01)
+head(tableOver)
 ```
 
-There is only one significant term, `testis`, which makes biological sense: there is an expression bias for testis of genes involved in spermatogenesis.
+At the time of building this README (June 2018), there was 27 significant anatomical structures. The first term is “pectoral fin”, and the second “paired limb/fin bud”. Other terms in the list, especially those with high enrichment folds, are clearly related to pectoral fins or substructures of fins. This analysis shows that genes with phenotypic effects on pectoral fins are specifically expressed in or next to these structures
 
 By default results are sorted by p-value, but this can be changed with the ```ordering``` parameter by specifying which column should be used to order the results (preceded by a "-" sign to indicate that ordering should be made in decreasing order). For example, it is often convenient to sort  significant structures by decreasing enrichment fold, using `ordering = -6`. The full table of results can be obtained using `cutoff = 1`.
+
+Of note, it is possible to retrieve for a particular tissue the significant genes that were mapped to it.
+
+```{r}
+# In order to retrieve significant genes mapped to the term " paired limb/fin bud"
+term <- "UBERON:0004357"
+termStat(myTopAnatObject, term) 
+
+# 198 genes mapped to this term for Bgee 14.0 and Ensembl 84
+genesInTerm(myTopAnatObject, term)
+# 48 significant genes mapped to this term for Bgee 14.0 and Ensembl 84
+annotated <- genesInTerm(myTopAnatObject, term)[["UBERON:0004357"]]
+annotated[annotated %in% sigGenes(myTopAnatObject)]
+```
 
 *Warning*: it is debated whether FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
