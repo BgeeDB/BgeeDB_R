@@ -5,6 +5,7 @@
   \itemize{
     \item Fix issue in the formatData() function. It is now possible to format using fpkm expression values when using Bgee 14.0.
     \item Implementation of regression tests
+    \item Update vignette and README
   }
 }
 
