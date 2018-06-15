@@ -3,18 +3,25 @@
 \docType{data}
 \name{geneList}
 \alias{geneList}
-\title{Example of gene list object used to run a topAnat enrichment test, created on April 18th, 2017.
+\title{Example of gene list object used to run a topAnat enrichment test, created on June 2018.
 The format of the gene list is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not.
-In this example the foreground genes are zebrafish genes annotated with "spermatogenesis" in the Gene Ontology (or annotated to children terms of "spermatogenesis"), and the background is composed of all zebrafish genes with at least one Gene Ontology annotation.
+In this example the foreground genes are zebrafish genes with an annotated phenotype related to "pectoral fin", and the background is composed of all zebrafish Ensembl genes with an annotated phenotype from ZFIN.
 The gene list was built using the biomaRt package, and the code used can be found in the vignette of the package.}
-\format{A named vector of factor values with 22141 elements. The factor levels are "0" for the 22103 genes in the background and "1" for the 38 genes in the foreground. Vector names are the Ensembl IDs of the zebrafish genes.}
+\format{A named vector of factor values with 3005 elements. The factor levels are "0" for the 2858 genes in the background and "1" for the 147 genes in the foreground. Vector names are the Ensembl IDs of the zebrafish genes.}
 \usage{
-geneList
+data(geneList)
 }
 \description{
-Example of gene list object used to run a topAnat enrichment test, created on April 18th, 2017.
+Example of gene list object used to run a topAnat enrichment test, created on June 2018.
 The format of the gene list is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not.
-In this example the foreground genes are zebrafish genes annotated with "spermatogenesis" in the Gene Ontology (or annotated to children terms of "spermatogenesis"), and the background is composed of all zebrafish genes with at least one Gene Ontology annotation.
+In this example the foreground genes are zebrafish genes with an annotated phenotype related to "pectoral fin", and the background is composed of all zebrafish Ensembl genes with an annotated phenotype from ZFIN.
 The gene list was built using the biomaRt package, and the code used can be found in the vignette of the package.
 }
+\examples{
+bgee <- Bgee$new(species = "Danio_rerio")
+myTopAnatData <- loadTopAnatData(bgee)
+data(geneList)
+myTopAnatObject <-  topAnat(myTopAnatData, geneList)
+}
 \keyword{datasets}
+
