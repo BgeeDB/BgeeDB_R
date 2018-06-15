@@ -35,3 +35,4 @@ Returns information on available species in Bgee
 \author{
 Julien Roux
 }
+
