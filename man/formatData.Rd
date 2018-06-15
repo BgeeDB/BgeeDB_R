@@ -13,7 +13,8 @@ formatData(myBgeeObject, data, stats = NULL, callType = "all")
 
 \item{stats}{A character indicating what expression values should be used in the formatted data expressionSet object matrix.
 \itemize{
-  \item{"rpkm" for RNA-seq}
+  \item{"rpkm" for RNA-seq (Bgee release 13.2 and before)}
+  \item{"fpkm" for RNA-seq (Bgee release 14 and above)}
   \item{"counts" for RNA-seq}
   \item{"tpm" for RNA-seq (Bgee release 14 and above)}
   \item{"intensities" for Affymetrix microarrays}
@@ -36,13 +37,14 @@ This function formats the data downloaded with the getData() function into an ob
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
-  dataMouseGSE43721.rpkm <- formatData(bgee,
+  dataMouseGSE43721.fpkm <- formatData(bgee,
                                        dataMouseGSE43721,
                                        callType = "present",
-                                       stats = "rpkm")
+                                       stats = "fpkm")
 }
 
 }
 \author{
 Andrea Komljenovic and Julien Roux.
 }
+
