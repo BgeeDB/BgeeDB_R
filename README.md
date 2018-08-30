@@ -24,8 +24,9 @@ If you found a bug or have any issues to use ```BgeeDB``` please write a bug rep
 
 In R:
 ``` {r}
-source("https://bioconductor.org/biocLite.R")
-biocLite("BgeeDB")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("BgeeDB")
 ```
 
 ## How to use BgeeDB package
