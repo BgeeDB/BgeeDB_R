@@ -157,8 +157,9 @@ myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="silve
 First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes with an annotated phenotype related to "pectoral fin" . We use the ```biomaRt``` package to retrieve this list of genes. We expect them to be enriched for expression in male tissues, notably the testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.
 
 ```{r}
-# source("https://bioconductor.org/biocLite.R")
-# biocLite("biomaRt")
+# if (!requireNamespace("BiocManager", quietly=TRUE))
+    # install.packages("BiocManager")
+# BiocManager::install("biomaRt")
 library(biomaRt)
 ensembl <- useMart("ENSEMBL_MART_ENSEMBL", dataset="drerio_gene_ensembl", host="mar2016.archive.ensembl.org")
 
