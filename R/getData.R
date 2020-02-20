@@ -19,7 +19,7 @@
 #' @export
 
 getData = function(myBgeeObject, experimentId = NULL){
-
+  
   ## check that the Bgee object is valid
   if (length(myBgeeObject$quantitativeData) == 0 ){
     stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
@@ -38,20 +38,20 @@ getData = function(myBgeeObject, experimentId = NULL){
       stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
     }
   }
-
+  
   if (length(experimentId) == 0){
-    cat(paste0("\nThe experiment is not defined. Hence taking all ", myBgeeObject$dataType, " experiments available for ", myBgeeObject$speciesName, ".\n"))
-
+    message("The experiment is not defined. Hence taking all ", myBgeeObject$dataType, " experiments available for ", myBgeeObject$speciesName, ".")
+    
     ## Get name of data file from URL
     allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
-
+    
     ## check if RDS file already in cache. If so, skip download step
     if (file.exists(paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))){
-      cat(paste0("\nNOTE: expression data file in .rds format was found in the download directory ", myBgeeObject$pathToData,
-                 ". Data will not be redownloaded.\n"))
+      message("NOTE: expression data file in .rds format was found in the download directory ", myBgeeObject$pathToData,
+              ". Data will not be redownloaded.")
       allData <- readRDS(file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
     } else {
-      cat("\nDownloading expression data...\n")
+      message("Downloading expression data...")
       success <- download.file(myBgeeObject$allExperimentsUrl,
                                destfile=file.path(myBgeeObject$pathToData, allExpressionValues),
                                mode='wb')
@@ -59,34 +59,53 @@ getData = function(myBgeeObject, experimentId = NULL){
         stop("ERROR: Download from FTP was not successful.")
       }
       if(grepl(".zip$", allExpressionValues, perl = TRUE)){
-        cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...\n")
+        message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...")
         tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
         myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
         file.remove(tempFiles)
       }else if(grepl(".tar.gz$", allExpressionValues, perl = TRUE)){
-        cat("\nSaved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...\n")
-        # When using untar it is only possible to untar OR list files present in a tarball. 
+        message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
+        # When using untar it is only possible to untar OR list files/dir present in a tarball. 
         # It is not possible to do both actions in one line of code
-        tempFiles <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
-        tempFiles <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE)
-        tempFiles <- file.path(myBgeeObject$pathToData, tempFiles)
-        myData <- lapply(tempFiles, untar, exdir=myBgeeObject$pathToData)
-        myData <- lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)
-        myData <- file.path(myBgeeObject$pathToData, myData)
+        tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
+        tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE, )
+        tempFilesAndDir <- file.path(myBgeeObject$pathToData, tempFilesAndDir)
+        tempFiles <- NULL
+        for(i in seq(tempFilesAndDir)) {
+          # decompress files and not directories (there was a bug when tar tried to uncompress GTeX experiment)
+          if (isTRUE(file_test("-f", tempFilesAndDir[i]))) {
+            # uncompress expression files
+            myData <-untar(tempFilesAndDir[i], exdir=myBgeeObject$pathToData)
+            tempFiles <- c(tempFiles, tempFilesAndDir[i])
+          } 
+        }
+        
+        # list all expression files
+        myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
+        # order files by size
+        myData <- file.info(myData)
+        myData <- rownames(myData[order(myData$size),])
+        # delete intermediary archives
         unlink(dirname(tempFiles[1]), recursive = TRUE)
+        message("Finished uncompress tar files")
       }else{
         stop("\nThe compressed file can not be unzip nor untar\n")
       }
-      allData <- lapply(unlist(myData, recursive = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
+      allData <- NULL
+      for(i in seq(myData)) {
+        tempData <- suppressWarnings(fread(myData[i]))
+        allData <- rbind(allData, tempData)
+      }
       
       ## remove spaces in headers
-      for (i in 1:length(allData)){
-        names(allData[[i]]) <- make.names(names(allData[[i]]))
-      }
-
-      cat("\nSaving all data in .rds file...\n")
+      names(allData) <- make.names(names(allData))
+      
+      # from data.table. to data.frame
+      allData <- as.data.frame(allData)
+      
+      message("Saving all data in .rds file...")
       saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
-
+      
       ## clean up downloaded files
       file.remove(unlist(myData, recursive = TRUE))
       file.remove(file.path(myBgeeObject$pathToData, allExpressionValues))
@@ -98,14 +117,14 @@ getData = function(myBgeeObject, experimentId = NULL){
       ## Since experiment Id is defined, we can now substitute it in the URL
       finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId, myBgeeObject$experimentUrl)
       tempFile <- file.path(myBgeeObject$pathToData, basename(finalExperimentUrl))
-
+      
       ## check if RDS file already in cache. If so, skip download step
       if (file.exists(paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))){
-        cat(paste0("\nNOTE: expression data file in .rds format was found in the download directory ", myBgeeObject$pathToData,
-                   " for ", experimentId, ". Data will not be redownloaded.\n"))
+        message("NOTE: expression data file in .rds format was found in the download directory ", myBgeeObject$pathToData,
+                " for ", experimentId, ". Data will not be redownloaded.")
         allData <- readRDS(paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))
       } else {
-        cat("\nDownloading expression data for the experiment", experimentId, "...\n")
+        message("Downloading expression data for the experiment ", experimentId, "...")
         success <- download.file(finalExperimentUrl,
                                  destfile=tempFile,
                                  mode='wb')
@@ -113,43 +132,46 @@ getData = function(myBgeeObject, experimentId = NULL){
           stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
         }
         # Unzipping this file can give one expression data file or multiple ones (if multiple chip types used in experiment)
-
+        
         if(grepl(".zip$",tempFile, perl = TRUE)){
-          cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now unzip ", tempFile," file...\n"))
+          message("Saved expression data file in ", myBgeeObject$pathToData, " folder. Now unzip file...")
           myData <- unzip(tempFile, exdir=myBgeeObject$pathToData)
         }else if(grepl(".tar.gz$",tempFile, perl = TRUE)){
-          cat(paste0("\nSaved expression data file in ", myBgeeObject$pathToData, " folder. Now untar ", tempFile," file...\n"))
+          message("Saved expression data file in ", myBgeeObject$pathToData, " folder. Now untar file...")
           #using untar it is possible to untar OR list files present in a tarball. It is not possible to do both actions in one line of code
           untar(tempFile, exdir=myBgeeObject$pathToData)
           myData <- untar(tempFile, exdir=myBgeeObject$pathToData, list = TRUE)
           myData <- file.path(myBgeeObject$pathToData, myData)
+          message("Finished uncompress tar files")
         }else{
-          stop("\nThe file can not be uncompressed because it is not a zip nor a tar.gz file\n")
+          stop("\nThe file can not be uncompressed because it is not a zip nor a tar.gz file")
         }
-        
-        allData <- lapply(myData, function(x) as.data.frame(fread(x)))
-
+        allData <- NULL
+        for (i in seq(myData)) {
+          if(isTRUE(file_test("-f", myData[i]))) {
+            tmpData <- fread(myData[i])
+            allData <- rbind(allData, tmpData)
+            file.remove(myData[i])
+          }
+        }
         ## remove spaces in headers
-        for (i in 1:length(allData)){
-          names(allData[[i]]) <- make.names(names(allData[[i]]))
-        }
-
-        if (length(allData) == 1){
-          allData <- as.data.frame(allData[[1]])
-        }
-        cat("\nSaving all data in .rds file...\n")
+        names(allData) <- make.names(names(allData))
+        
+        # from data.table to data.frame
+        allData <- as.data.frame(allData)
+        
+        message("Saving all data in .rds file...")
         saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))
-
+        
         ## cleaning up downloaded files
         file.remove(tempFile)
-        file.remove(myData)
       }
     }
   } else {
     stop("Please provide only one experiment accession. If you want to get all data for this species and data type, leave experimentId empty")
   }
-
+  
   return(allData)
-  cat("\nDone.")
+  message("Done.")
 }
 
