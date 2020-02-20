@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
-\section{Version 2.14.0 (2020-02)}{
+\section{Version 2.13.1 (2020-02)}{
   \itemize{
     \item Fix issue in the getData() function when trying to uncompress huge tar.gz files (like all human data or GTeX experiment)
   }
