@@ -64,7 +64,7 @@ getData = function(myBgeeObject, experimentId = NULL){
         myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
         file.remove(tempFiles)
       }else if(grepl(".tar.gz$", allExpressionValues, perl = TRUE)){
-        message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
+        message("Saved expression data file in", myBgeeObject$pathToData, " folder. Now untar file...")
         # When using untar it is only possible to untar OR list files/dir present in a tarball. 
         # It is not possible to do both actions in one line of code
         tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
@@ -81,7 +81,7 @@ getData = function(myBgeeObject, experimentId = NULL){
         }
         
         # list all expression files
-        myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
+        myData <- file.path(myBgeeObject$pathToData, lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE))
         # order files by size
         myData <- file.info(myData)
         myData <- rownames(myData[order(myData$size),])
@@ -91,18 +91,14 @@ getData = function(myBgeeObject, experimentId = NULL){
       }else{
         stop("\nThe compressed file can not be unzip nor untar\n")
       }
-      allData <- NULL
-      for(i in seq(myData)) {
-        tempData <- suppressWarnings(fread(myData[i]))
-        allData <- rbind(allData, tempData)
-      }
+      
+      allData <- lapply(unlist(myData, recursive = TRUE), function(x) as.data.frame(suppressWarnings(fread(x))))
       
       ## remove spaces in headers
-      names(allData) <- make.names(names(allData))
-      
-      # from data.table. to data.frame
-      allData <- as.data.frame(allData)
-      
+      for (i in seq(length(allData))) {
+        names(allData[[i]]) <- make.names(names(allData[[i]]))          
+      }
+
       message("Saving all data in .rds file...")
       saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_all_experiments_expression_data.rds"))
       
@@ -146,19 +142,12 @@ getData = function(myBgeeObject, experimentId = NULL){
         }else{
           stop("\nThe file can not be uncompressed because it is not a zip nor a tar.gz file")
         }
-        allData <- NULL
-        for (i in seq(myData)) {
-          if(isTRUE(file_test("-f", myData[i]))) {
-            tmpData <- fread(myData[i])
-            allData <- rbind(allData, tmpData)
-            file.remove(myData[i])
-          }
-        }
-        ## remove spaces in headers
-        names(allData) <- make.names(names(allData))
+        allData <- lapply(myData, function(x) as.data.frame(fread(x)))
         
-        # from data.table to data.frame
-        allData <- as.data.frame(allData)
+        ## remove spaces in headers
+        for (i in seq(length(allData))) {
+          names(allData[[i]]) <- make.names(names(allData[[i]]))          
+        }
         
         message("Saving all data in .rds file...")
         saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))
