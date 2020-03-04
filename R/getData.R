@@ -142,12 +142,10 @@ getData = function(myBgeeObject, experimentId = NULL){
         }else{
           stop("\nThe file can not be uncompressed because it is not a zip nor a tar.gz file")
         }
-        allData <- lapply(myData, function(x) as.data.frame(fread(x)))
+        allData <- as.data.frame(fread(myData))
         
-        ## remove spaces in headers
-        for (i in seq(length(allData))) {
-          names(allData[[i]]) <- make.names(names(allData[[i]]))          
-        }
+        ## remove spaces in header
+        names(allData) <- make.names(names(allData))          
         
         message("Saving all data in .rds file...")
         saveRDS(allData, file = paste0(myBgeeObject$pathToData, "/", myBgeeObject$dataType, "_", experimentId, "_expression_data.rds"))

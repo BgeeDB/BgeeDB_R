@@ -6,7 +6,7 @@ test_that("Annotation files", {
   annotation_bgee_mouse <- getAnnotation(bgee)
   expect_that( annotation_bgee_mouse, is_a("list") )
   expect_that( length(annotation_bgee_mouse), equals(2) )
-  expect_that( unique(names(annotation_bgee_mouse) %in% c("experiment.annotation", "sample.annotation")), is_true() )
+  expect_true( unique(names(annotation_bgee_mouse) %in% c("experiment.annotation", "sample.annotation")))
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "affymetrix")
   annotation_bgee_mouse <- getAnnotation(bgee)
   expect_that( annotation_bgee_mouse, is_a("list") )
