@@ -27,7 +27,8 @@
 #' @export
 #' 
 #' 
-getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
+getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, 
+      stageId = NULL) {
   check_object(myBgeeObject)
   import_data(myBgeeObject = myBgeeObject, experimentId = experimentId, 
     sampleId = sampleId, anatEntityId = anatEntityId, stageId = stageId)
@@ -55,13 +56,17 @@ check_object = function(myBgeeObject, experimentId = NULL){
   }
 }
 
-import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
+import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, 
+      stageId = NULL) {
   user_experiments <- detect_experiments(myBgeeObject, experimentId, sampleId, anatEntityId, stageId)
-  missing_experiments <- experiments_to_download(myBgeeObject = myBgeeObject, experimentId = user_experiments)
+  missing_experiments <- experiments_to_download(myBgeeObject = myBgeeObject, 
+    experimentId = user_experiments)
   integrate_experiments(myBgeeObject = myBgeeObject, experimentId = missing_experiments)
 } 
 
-detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
+# function using annotations to select which experiments the suer needs to load all wanted data
+detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+      anatEntityId = NULL, stageId = NULL) {
   annotation <- getAnnotation(myBgeeObject)
   experiments <- annotation$sample.annotation
   # filter list of experiments to download
@@ -86,6 +91,8 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
   return(unique(experiments$Experiment.ID))
 }
 
+# function that check among experiment wanted by user which one are already stored in the
+# local database. Return experiments not already present in the database.
 experiments_to_download = function(myBgeeObject, experimentId) {
   sqlite_file <- file.path(myBgeeObject$pathToData, 
     paste0(myBgeeObject$speciesName, myBgeeObject$sqlite_extension))
@@ -100,24 +107,31 @@ experiments_to_download = function(myBgeeObject, experimentId) {
     }
     dbDisconnect(conn)
   }
+  # if local database does not exist return all experiments
   return(experimentId)
 }
 
+# function that take care of both downloading and integrating data in the local database
+# one local database is created per species (for the moment the package does not contain any
+# multispecies functionality)
 integrate_experiments = function(myBgeeObject, experimentId) {
   sqlite_file <- file.path(myBgeeObject$pathToData, 
     paste0(myBgeeObject$speciesName, myBgeeObject$sqlite_extension))
   if (!length(experimentId) == 0) {
     message("downloading data from Bgee FTP...")
     conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
-    # If more than 15 experiments have to be downloaded then download all experiments of this species (in order not to download too many files from the Bgee FTP)
+    # If more than 15 experiments have to be downloaded then download all experiments of this 
+    # species (in order not to download too many files from the Bgee FTP)
     if (length(experimentId) > 15) {
+      warning("You tried to download more than 15 experiments. All Bgee data for this species will be downloaded.")
       myData <- download_and_uncompress_species(myBgeeObject, conn)
     } else {
       myData <- download_and_uncompress_experiment(myBgeeObject, experimentId, conn)
     }
     message("Save data in local sqlite database")
     for(i in seq(myData)) {
-      dbWriteTable(conn = conn, name = myBgeeObject$dataType, value = myData[i], header=TRUE, append=TRUE, sep="\t")
+      dbWriteTable(conn = conn, name = myBgeeObject$dataType, value = myData[i], header=TRUE, 
+        append=TRUE, sep="\t")
     }
     unlink(myData)
     dbDisconnect(conn)
@@ -125,6 +139,8 @@ integrate_experiments = function(myBgeeObject, experimentId) {
   
 }
 
+# function that download all data of one species for the specified datatype from the ftp
+# and return the name of all uncompressed files
 download_and_uncompress_species = function(myBgeeObject, conn) {
   message("Downloading all expression data for species ",myBgeeObject$speciesName)
   allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
@@ -137,19 +153,23 @@ download_and_uncompress_species = function(myBgeeObject, conn) {
   }
   if (grepl(".zip$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...")
-    tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
+    tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), 
+      exdir=myBgeeObject$pathToData)
     myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
     file.remove(tempFiles)
   } else if (grepl(".tar.gz$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
     # When using untar it is only possible to untar OR list files/dir present in a tarball. 
     # It is not possible to do both actions in one line of code
-    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
-    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE, )
+    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
+      exdir=myBgeeObject$pathToData)
+    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
+      exdir=myBgeeObject$pathToData, list = TRUE, )
     tempFilesAndDir <- file.path(myBgeeObject$pathToData, tempFilesAndDir)
     tempFiles <- NULL
     for(i in seq(tempFilesAndDir)) {
-      # uncompress files and not directories (there was a bug when tar tried to uncompress GTeX experiment)
+      # uncompress files and not directories (there was a bug when tar tried to uncompress GTeX 
+      # experiment)
       # added this verification to be sure there will not be error with other experiments/species
       if (isTRUE(file_test("-f", tempFilesAndDir[i]))) {
         # uncompress expression files
@@ -158,7 +178,8 @@ download_and_uncompress_species = function(myBgeeObject, conn) {
       } 
     }
     # list all expression files
-    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
+    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar,
+      exdir=myBgeeObject$pathToData, list = TRUE)))
     # delete intermediary archives
     unlink(archive_file)
     unlink(dirname(tempFiles[1]), recursive = TRUE)
@@ -167,7 +188,8 @@ download_and_uncompress_species = function(myBgeeObject, conn) {
   return(myData)
 }
 
-
+# function that download a list of experiments from the ftp and return the name of downloaded
+# uncompressed files
 download_and_uncompress_experiment = function(myBgeeObject, experimentId, conn) {
   message("download experiments")
   tempFiles <- NULL
@@ -182,8 +204,10 @@ download_and_uncompress_experiment = function(myBgeeObject, experimentId, conn) 
   }
   message("untar processed expression data...")
   if (grepl(".tar.gz$", tempFiles[1], perl = TRUE)) {
-    myData <- file.path(myBgeeObject$pathToData, lapply(tempFiles, untar, exdir=myBgeeObject$pathToData))
-    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
+    myData <- file.path(myBgeeObject$pathToData, lapply(tempFiles, untar, 
+      exdir=myBgeeObject$pathToData))
+    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, 
+      exdir=myBgeeObject$pathToData, list = TRUE)))
   } else if (grepl(".zip$", tempFiles[1], perl = TRUE)) {
     myData <- unlist(lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData))
   }
@@ -191,8 +215,9 @@ download_and_uncompress_experiment = function(myBgeeObject, experimentId, conn) 
   return(myData)
 }
 
-
-query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
+# function that query the data in the local database
+query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, 
+        stageId = NULL) {
   sqlite_file <- file.path(myBgeeObject$pathToData, 
                            paste0(myBgeeObject$speciesName, myBgeeObject$sqlite_extension))
   conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
@@ -201,29 +226,34 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)) ) {
     query <- paste0(query, " WHERE ")
     if (!is.null(experimentId)) {
-      query <- paste0(query, "[Experiment.ID] IN (\"",paste(as.character(experimentId), collapse="\", \""), "\")")
+      query <- paste0(query, "[Experiment.ID] IN (\"",paste(as.character(experimentId), 
+        collapse="\", \""), "\")")
     }
     if (!is.null(sampleId)) {
       if (!is.null(experimentId)) {
         query <- paste0(query, " AND ")
       }
       if(myBgeeObject$dataType == "rna_seq") {
-        query <- paste0(query, "[Library.ID] IN (\"",paste(as.character(sampleId), collapse="\", \""), "\")")
+        query <- paste0(query, "[Library.ID] IN (\"",paste(as.character(sampleId), 
+          collapse="\", \""), "\")")
       } else if (myBgeeObject$dataType == "affymetrix") {
-        query <- paste0(query, "[Chip.ID] IN (\"",paste(as.character(sampleId), collapse="\", \""), "\")")
+        query <- paste0(query, "[Chip.ID] IN (\"",paste(as.character(sampleId), 
+          collapse="\", \""), "\")")
       }
     }
     if (!is.null(anatEntityId)) {
       if (!(is.null(experimentId) & is.null(sampleId))) {
         query <- paste0(query, " AND ")
       }
-      query <- paste0(query, "[Anatomical.entity.ID] IN (\"",paste(as.character(anatEntityId), collapse="\", \""), "\")")
+      query <- paste0(query, "[Anatomical.entity.ID] IN (\"",paste(as.character(anatEntityId), 
+        collapse="\", \""), "\")")
     }
     if (!is.null(stageId)) {
       if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId))) {
         query <- paste0(query, " AND ")
       }
-      query <- paste0(query, "[Stage.ID] IN (\"",paste(as.character(stageId), collapse="\", \""), "\")")
+      query <- paste0(query, "[Stage.ID] IN (\"",paste(as.character(stageId), 
+        collapse="\", \""), "\")")
     }
     
   }
