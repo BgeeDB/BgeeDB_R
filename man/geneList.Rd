@@ -24,4 +24,3 @@ data(geneList)
 myTopAnatObject <-  topAnat(myTopAnatData, geneList)
 }
 \keyword{datasets}
-

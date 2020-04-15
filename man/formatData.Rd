@@ -47,4 +47,3 @@ This function formats the data downloaded with the getData() function into an ob
 \author{
 Andrea Komljenovic and Julien Roux.
 }
-

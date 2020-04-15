@@ -66,7 +66,7 @@
 
 makeTable <- function(topAnatData, topAnatObject, results, cutoff=1, ordering=7){
   ## Perform some checks on the input data
-  if(is.na(score(results)) || length(score(results)) == 0){
+  if(any(is.na(score(results))) || length(score(results)) == 0){
     stop("ERROR: the results object is empty.")
   }
   if (!is.numeric(cutoff)){

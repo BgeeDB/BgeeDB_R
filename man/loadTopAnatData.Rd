@@ -4,8 +4,12 @@
 \alias{loadTopAnatData}
 \title{Retrieve data from Bgee to perform GO-like enrichment of anatomical terms, mapped to genes by expression patterns.}
 \usage{
-loadTopAnatData(myBgeeObject, callType = "presence", confidence = NULL,
-  stage = NULL)
+loadTopAnatData(
+  myBgeeObject,
+  callType = "presence",
+  confidence = NULL,
+  stage = NULL
+)
 }
 \arguments{
 \item{myBgeeObject}{An output object from Bgee$new().}
@@ -61,4 +65,3 @@ The expression calls come from Bgee (\url{http://bgee.org}), that integrates dif
 \author{
 Julien Roux, Julien Wollbrett
 }
-

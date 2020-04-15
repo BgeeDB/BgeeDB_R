@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.13.1 (2020-02)}{
+  \itemize{
+    \item Fix issue in the getData() function when trying to uncompress huge tar.gz files (like all human data or GTeX experiment)
+  }
+}
+
 \section{Version 2.6.2 (2018-06)}{
   \itemize{
     \item Fix issue in the formatData() function. It is now possible to format using fpkm expression values when using Bgee 14.0.
