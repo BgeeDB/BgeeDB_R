@@ -48,12 +48,13 @@ Bgee <- setRefClass(
     topAnatUrl = "character",
     sendStats = "logical",
     quantitativeData = "logical",
-    apiKey = "character"
+    apiKey = "character",
+    sqlite_extension = "character"
   ),
-
+  
   methods = list(
-    initialize = function(...) {
-      callSuper(...)
+    initialize = function(..., sqlite_extension="_bgee.db") {
+      callSuper(..., sqlite_extension="_bgee.db")
 
       ## check data type
       if (length(dataType) == 0) {

@@ -2,8 +2,8 @@
 % Please edit documentation in R/Bgee.R
 \docType{class}
 \name{Bgee-class}
-\alias{Bgee}
 \alias{Bgee-class}
+\alias{Bgee}
 \title{Bgee Reference Class}
 \description{
 This is used to specify information at the beginning of a BgeeDB working session, for example, the targeted species and data type. An object of this class is then passed as argument to other functions of the package to provide these informations. See examples in vignette.
@@ -33,6 +33,8 @@ By default all data type are included: \code{c("rna_seq","affymetrix","est","in_
 
 \item{\code{quantitativeData}}{A field specifying if a single type of quantitative expression data ("rna_seq" or "affymetrix") was specified and if it is available for targeted species, helping the package to know if it should proceed with the execution of getAnnotation() and getData() functions.}
 }}
+
+
 \examples{
 {
  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
@@ -40,4 +42,3 @@ By default all data type are included: \code{c("rna_seq","affymetrix","est","in_
 }
 
 }
-
