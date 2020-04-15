@@ -13,28 +13,39 @@ getData(
 )
 }
 \arguments{
-\item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species and data type.}
+\item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species 
+and data type.}
 
-\item{experimentId}{Filter allowing to specify one or more ArrayExpress or GEO accession, e.g., GSE43721. Default is NULL: takes all available experiments for targeted species and data type.}
+\item{experimentId}{Filter allowing to specify one or more ArrayExpress or GEO accession, e.g., 
+GSE43721. Default is NULL: takes all available experiments for targeted species and data type.}
 
-\item{sampleId}{Filter allowing to specify one or more sample ID. Depending on the selected datatype this sample IDs can correspond to Chip IDs (affymetrix) or RNA-Seq library IDs (rna_seq). Default is NULL: takes all available samples for targeted species and data type.}
+\item{sampleId}{Filter allowing to specify one or more sample ID. Depending on the selected 
+datatype this sample IDs can correspond to Chip IDs (affymetrix) or RNA-Seq library IDs (rna_seq). 
+Default is NULL: takes all available samples for targeted species and data type.}
 
-\item{anatEntityId}{Filter allowing to specify one or more anatomical entity IDs from the UBERON ontology (http://uberon.github.io/). Default is NULL: takes all available anatomical entities for targeted species and data type.}
+\item{anatEntityId}{Filter allowing to specify one or more anatomical entity IDs from the UBERON 
+ontology (http://uberon.github.io/). Default is NULL: takes all available anatomical entities for 
+targeted species and data type.}
 
-\item{stageId}{Filter allowing to specify one or more developmental stage IDs from Developmental Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is NULL: takes all available developmental stages for targeted species and data type.}
+\item{stageId}{Filter allowing to specify one or more developmental stage IDs from Developmental 
+Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is 
+NULL: takes all available developmental stages for targeted species and data type.}
 }
 \value{
-Return a dataframe containing all Bgee processed expression data from the selected species and datatype using specified filters with operator AND.
+Return a dataframe containing all Bgee processed expression data from the selected species 
+and datatype using specified filters with operator AND.
 }
 \description{
-This function loads the quantitative expression data and presence calls for samples available from Bgee (rna_seq, affymetrix).
+This function loads the quantitative expression data and presence calls 
+for samples available from Bgee (rna_seq, affymetrix).
 }
 \examples{
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
   dataMouse <- getData(bgee)
   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
-  dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
+  dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), 
+                             anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
 }
 
 }
