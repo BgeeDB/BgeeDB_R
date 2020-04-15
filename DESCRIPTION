@@ -1,6 +1,6 @@
 Package: BgeeDB
 Type: Package
-Title: Annotation and gene expression data retrieval from Bgee database. TopAnat, an anatomical entities Enrichment Analysis tool for UBERON ontology.
+Title: Annotation and gene expression data retrieval from Bgee database. TopAnat, an anatomical entities Enrichment Analysis tool for UBERON ontology
 Version: 2.13.2
 Date: 2020-02-20
 Author: Andrea Komljenovic [aut, cre], Julien Roux [aut, cre]
@@ -8,10 +8,10 @@ Maintainer: Julien Wollbrett <julien.wollbrett@unil.ch>, Julien Roux <julien.rou
 Description: A package for the annotation and gene expression
     data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms,
     mapped to genes by expression patterns.
-Depends: R (>= 3.3.0), topGO, tidyr
+Depends: R (>= 3.6.0), topGO, tidyr
 Imports: data.table, RCurl, digest, methods, stats, utils, dplyr, RSQLite,
         graph, Biobase
-License: GPL-3
+License: GPL-3 + file LICENSE
 URL: https://github.com/BgeeDB/BgeeDB_R
 BugReports: https://github.com/BgeeDB/BgeeDB_R/issues
 VignetteBuilder: knitr
