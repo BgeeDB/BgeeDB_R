@@ -147,7 +147,7 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
 
 # function that download all data of one species for the specified datatype from the ftp
 # return the name of all uncompressed files
-download_and_uncompress_species = function(myBgeeObject, conn) {
+download_and_uncompress_species = function(myBgeeObject, experimentId) {
   message("Downloading all expression data for species ", myBgeeObject$speciesName)
   allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
   success <- download.file(myBgeeObject$allExperimentsUrl, destfile=file.path(myBgeeObject$pathToData, allExpressionValues), mode='wb')
@@ -156,15 +156,19 @@ download_and_uncompress_species = function(myBgeeObject, conn) {
   }
   if (grepl(".zip$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...")
-    tempFiles <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
-    myData <- lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData)
-    file.remove(tempFiles)
+    allExperiments <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
+    unlink(file.path(myBgeeObject$pathToData, allExpressionValues))
+    tempFiles <- grep(paste0(".*", paste(experimentId, collapse=".*|.*"), ".*"), allExperiments, value = TRUE)
+    myData <- unlist(lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData))
+    file.remove(allExperiments)
   } else if (grepl(".tar.gz$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
     # When using untar it is only possible to untar OR list files/dir present in a tarball. 
     # It is not possible to do both actions in one line of code
     tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
     tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE)
+    # keep only path to tarball to integrate to the local database. Other tarballs will not be  integrated
+    tempFilesAndDir <- grep(paste0(".*",paste(experimentId,collapse=".*|.*"),".*"), tempFilesAndDir, value = TRUE)
     tempFilesAndDir <- file.path(myBgeeObject$pathToData, tempFilesAndDir)
     tempFiles <- NULL
     for(i in seq(tempFilesAndDir)) {
@@ -188,7 +192,7 @@ download_and_uncompress_species = function(myBgeeObject, conn) {
 
 # function that download a list of experiments from the ftp and return the name of downloaded
 # uncompressed files
-download_and_uncompress_experiment = function(myBgeeObject, experimentId, conn) {
+download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
   message("download experiments")
   tempFiles <- NULL
   for (i in seq(experimentId)) {
