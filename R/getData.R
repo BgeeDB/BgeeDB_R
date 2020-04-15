@@ -1,18 +1,28 @@
 #' @title Retrieve Bgee RNA-seq or Affymetrix data.
 #'
-#' @description This function loads the quantitative expression data and presence calls for samples available from Bgee (rna_seq, affymetrix).
+#' @description This function loads the quantitative expression data and presence calls 
+#' for samples available from Bgee (rna_seq, affymetrix).
 #'
-#' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
+#' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species 
+#' and data type.
 #'
-#' @param experimentId Filter allowing to specify one or more ArrayExpress or GEO accession, e.g., GSE43721. Default is NULL: takes all available experiments for targeted species and data type.
+#' @param experimentId Filter allowing to specify one or more ArrayExpress or GEO accession, e.g., 
+#' GSE43721. Default is NULL: takes all available experiments for targeted species and data type.
 #' 
-#' @param sampleId Filter allowing to specify one or more sample ID. Depending on the selected datatype this sample IDs can correspond to Chip IDs (affymetrix) or RNA-Seq library IDs (rna_seq). Default is NULL: takes all available samples for targeted species and data type.
+#' @param sampleId Filter allowing to specify one or more sample ID. Depending on the selected 
+#' datatype this sample IDs can correspond to Chip IDs (affymetrix) or RNA-Seq library IDs (rna_seq). 
+#' Default is NULL: takes all available samples for targeted species and data type.
 #'
-#' @param anatEntityId Filter allowing to specify one or more anatomical entity IDs from the UBERON ontology (http://uberon.github.io/). Default is NULL: takes all available anatomical entities for targeted species and data type.
+#' @param anatEntityId Filter allowing to specify one or more anatomical entity IDs from the UBERON 
+#' ontology (http://uberon.github.io/). Default is NULL: takes all available anatomical entities for 
+#' targeted species and data type.
 #'
-#' @param stageId Filter allowing to specify one or more developmental stage IDs from Developmental Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is NULL: takes all available developmental stages for targeted species and data type.
+#' @param stageId Filter allowing to specify one or more developmental stage IDs from Developmental 
+#' Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is 
+#' NULL: takes all available developmental stages for targeted species and data type.
 #' 
-#' @return Return a dataframe containing all Bgee processed expression data from the selected species and datatype using specified filters with operator AND.
+#' @return Return a dataframe containing all Bgee processed expression data from the selected species 
+#' and datatype using specified filters with operator AND.
 #'
 #' @author Julien Wollbrett, Andrea Komljenovic and Julien Roux.
 #'
@@ -20,7 +30,8 @@
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 #'   dataMouse <- getData(bgee)
 #'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
-#'   dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
+#'   dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), 
+#'                              anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
 #' }
 #'
 #' @import RSQLite
@@ -55,7 +66,7 @@ check_object = function(myBgeeObject, experimentId = NULL){
 
 ## extract the global path to the sqliteDB
 sqlitePath <- function(myBgeeObject){
-  sqlite_file <<- file.path(myBgeeObject$pathToData, paste0(myBgeeObject$speciesName, myBgeeObject$sqlite_extension))
+  sqlite_file <- file.path(myBgeeObject$pathToData, paste0(myBgeeObject$speciesName, myBgeeObject$sqlite_extension))
   return(sqlite_file)
 }
 
@@ -71,16 +82,22 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
   experiments <- annotation$sample.annotation
   # filter list of experiments to download
   if(!is.null(experimentId)) {
-    experiments <- subset(experiments, Experiment.ID %in% experimentId)
+    experiments <- experiments[experiments$Experiment.ID %in% experimentId,]
   } 
   if(!is.null(sampleId)) {
-    experiments <- subset(experiments, experiments[,2] %in% sampleId)
-    } 
+    if(myBgeeObject$dataType == "rna_seq") {
+      experiments <- experiments[experiments$Library.ID %in% sampleId,]
+    } else if(myBgeeObject$dataType == "affymetrix") {
+      experiments <- experiments[experiments$Chip.ID %in% sampleId,]
+    } else {
+      stop("unrecognized datatype : ", myBgeeObject$dataType)
+    }
+  }
   if(!is.null(anatEntityId)) {
-    experiments <- subset(experiments, Anatomical.entity.ID %in% anatEntityId)
+    experiments <- experiments[experiments$Anatomical.entity.ID %in% anatEntityId,]
   }
   if(!is.null(stageId)) {
-    experiments <- subset(experiments, Stage.ID %in% stageId)
+    experiments <- experiments[experiments$Stage.ID %in% stageId,]
   }
   return(unique(experiments$Experiment.ID))
 }
@@ -183,7 +200,7 @@ download_and_uncompress_experiment = function(myBgeeObject, experimentId, conn) 
     }
     tempFiles <- c(tempFiles, tempFile)
   }
-  message("untar processed expression data...")
+  message("uncompress processed expression data...")
   if (grepl(".tar.gz$", tempFiles[1], perl = TRUE)) {
     myData <- file.path(myBgeeObject$pathToData, lapply(tempFiles, untar, exdir=myBgeeObject$pathToData))
     myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
