@@ -223,29 +223,49 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)) ) {
     query <- paste0(query, " WHERE ")
     if (!is.null(experimentId)) {
-      query <- paste0(query, "[Experiment.ID] IN (\"",paste(as.character(experimentId), collapse="\", \""), "\")")
+      if(length(experimentId) == 1) {
+        query <- paste0(query, "[Experiment.ID] = \"",as.character(experimentId), "\"")
+      } else {
+        query <- paste0(query, "[Experiment.ID] IN (\"",paste(as.character(experimentId), collapse="\", \""), "\")")
+      }
     }
     if (!is.null(sampleId)) {
       if (!is.null(experimentId)) {
         query <- paste0(query, " AND ")
       }
       if(myBgeeObject$dataType == "rna_seq") {
-        query <- paste0(query, "[Library.ID] IN (\"",paste(as.character(sampleId), collapse="\", \""), "\")")
+        if (length(sampleId) == 1 ) {
+          query <- paste0(query, "[Library.ID] = \"", as.character(sampleId), "\"")
+        } else {
+          query <- paste0(query, "[Library.ID] IN (\"",paste(as.character(sampleId), collapse="\", \""), "\")")
+        }
       } else if (myBgeeObject$dataType == "affymetrix") {
-        query <- paste0(query, "[Chip.ID] IN (\"",paste(as.character(sampleId), collapse="\", \""), "\")")
+        if (length(sampleId) == 1 ) {
+          query <- paste0(query, "[Chip.ID] = \"", as.character(sampleId), "\"")
+        } else {
+          query <- paste0(query, "[Chip.ID] IN (\"",paste(as.character(sampleId), collapse="\", \""), "\")")
+        }
       }
     }
     if (!is.null(anatEntityId)) {
       if (!(is.null(experimentId) & is.null(sampleId))) {
         query <- paste0(query, " AND ")
       }
-      query <- paste0(query, "[Anatomical.entity.ID] IN (\"",paste(as.character(anatEntityId), collapse="\", \""), "\")")
+      if(length(anatEntityId) == 1) {
+        query <- paste0(query, "[Anatomical.entity.ID] = \"", as.character(anatEntityId), "\"")
+      } else {
+        query <- paste0(query, "[Anatomical.entity.ID] IN (\"",paste(as.character(anatEntityId), collapse="\", \""), "\")")
+      }
     }
     if (!is.null(stageId)) {
       if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId))) {
         query <- paste0(query, " AND ")
       }
-      query <- paste0(query, "[Stage.ID] IN (\"",paste(as.character(stageId), collapse="\", \""), "\")")
+      if(length(stageId) == 1) {
+        query <- paste0(query, "[Stage.ID] = \"", as.character(stageId), "\"")
+      } else {
+        query <- paste0(query, "[Stage.ID] IN (\"",paste(as.character(stageId), collapse="\", \""), "\")")
+      }
     }
   }
   message("Load queried data. The query is : ", query)
