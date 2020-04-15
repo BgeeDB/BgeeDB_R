@@ -130,10 +130,10 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
     # If more than 15 experiments have to be downloaded then download all experiments of this 
     # species (in order not to download too many files from the Bgee FTP)
     if (length(experimentId) > 15) {
-      warning("You tried to download more than 15 experiments, because of that all the Bgee data for this species will be downloaded.")
-      myData <- download_and_uncompress_species(myBgeeObject, conn)
+      message("You tried to download more than 15 experiments, because of that all the Bgee data for this species will be downloaded.")
+      myData <- download_and_uncompress_species(myBgeeObject, experimentId)
     } else {
-      myData <- download_and_uncompress_experiment(myBgeeObject, experimentId, conn)
+      myData <- download_and_uncompress_experiment(myBgeeObject, experimentId)
     }
     message("Save data in local sqlite database")
     for(i in seq(myData)) {
