@@ -88,7 +88,7 @@ lapply(data_bgee_mouse, head)
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
 
-The result of the ```getData()``` function is, for each experiment, a data frame with the different samples listed in rows, one after the other. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. 
+The result of the ```getData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. 
 
 *Note*: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.
 
@@ -222,3 +222,33 @@ annotated[annotated %in% sigGenes(myTopAnatObject)]
 ```
 
 *Warning*: it is debated whether FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the ```topGO``` package.
+
+#### Store expression data localy
+
+Since version 2.14.0 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database.
+The advantages of this approach compared to the one used in the previous BgeeDB versions are:
+* do not anymore need a server with lot of memory to access to subset of huge dataset (e.g GTeX dataset)
+* more granular filtering using arguments in the getData() function
+* do not download twice the same data
+* fast access to data once integrated in the local database
+
+This approach comes with some drawbacks :
+* the SQLite local database use more disk space than the previously conpressed .rds approach
+* first access to a dataset takes more time (integration to SQLite local database is time consuming)
+
+It is possible to remove .rds files generated in previous versions of BgeeDB and not used anymore since version
+2.14.0. The function below delete all .rds files for the selected species and for all datatype.
+
+```{r eval = FALSE}
+bgee <- Bgee$new(species="Mus_musculus", release = "14.1")
+# delete all old .rds files of species Mus musculus
+deleteOldData(bgee)
+```
+
+As the new SQLite approach use more disk space it is now possible to delete all local data of one species from one release of Bgee.
+
+```{r eval = FALSE}
+bgee <- Bgee$new(species="Mus_musculus", release = "14.1")
+# delete local SQLite database of species Mus musculus from Bgee 14.1
+deleteLocalData(bgee)
+```
