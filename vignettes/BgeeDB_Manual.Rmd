@@ -90,7 +90,7 @@ lapply(data_bgee_mouse, head)
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
 
-The result of the ```getData()``` function is a data frame with the different samples listed in rows, one after the other. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. 
+The result of the ```getData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. 
 
 *Note*: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.
 
@@ -101,7 +101,7 @@ Alternatively, you can choose to download data from one RNA-seq experiment from 
 data_bgee_mouse_gse30617 <- getData(bgee, experimentId = "GSE30617")
 ```
 
-It is possible to download data by combining available filters : 
+It is possible to download data by combining filters : 
 * experimentId : one or more experimentId,
 * sampleId : one or more sampleId (i.e libraryId for RNA-Seq and ChipId for Affymetrix),
 * anatEntityId : one or more anatomical entity ID from the UBERON ontology (https://uberon.github.io/)
@@ -250,7 +250,7 @@ annotated[annotated %in% sigGenes(myTopAnatObject)]
 
 #### Store expression data localy
 
-Since version 2.13.2 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database.
+Since version 2.14.0 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database.
 The advantages of this approach compared to the one used in the previous BgeeDB versions are:
 * do not anymore need a server with lot of memory to access to subset of huge dataset (e.g GTeX dataset)
 * more granular filtering using arguments in the getData() function
@@ -261,8 +261,8 @@ This approach comes with some drawbacks :
 * the SQLite local database use more disk space than the previously conpressed .rds approach
 * first access to a dataset takes more time (integration to SQLite local database is time consuming)
 
-It is possible to remove .rds files generated in previous versions of BgeeDB and not used anymore with the
-function. Thefunction below delete all .rds files for the selected species and for all datatype.
+It is possible to remove .rds files generated in previous versions of BgeeDB and not used anymore since version
+2.14.0. The function below delete all .rds files for the selected species and for all datatype.
 
 ```{r eval = FALSE}
 bgee <- Bgee$new(species="Mus_musculus", release = "14.1")

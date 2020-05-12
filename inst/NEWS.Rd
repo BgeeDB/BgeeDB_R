@@ -1,6 +1,15 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.14.0 (2020-04)}{
+  \itemize{
+    \item Store downloaded data in local SQLite databases
+    \item Add filter options to the getData() function
+    \item Implement functions to delete local SQLite databases
+    \item Update vignette and README
+  }
+}
+
 \section{Version 2.13.1 (2020-02)}{
   \itemize{
     \item Fix issue in the getData() function when trying to uncompress huge tar.gz files (like all human data or GTeX experiment)
