@@ -43,7 +43,7 @@
 #' @author Julien Roux, Julien Wollbrett
 #'
 #' @examples{
-#'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+#'   bgee <- Bgee$new(species = "Bos_taurus", dataType = "rna_seq")
 #'   myTopAnatData <- loadTopAnatData(bgee)
 #' }
 #'
