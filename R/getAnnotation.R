@@ -59,9 +59,8 @@ getAnnotation = function(myBgeeObject){
     cat(paste0("\nNOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
                ". Data will not be redownloaded.\n"))
   } else {
-    success <- download.file(myBgeeObject$annotationUrl,
-                             destfile=file.path(myBgeeObject$pathToData, annotationFile),
-                             mode='wb')
+    success <- bgee_download_file(url = myBgeeObject$annotationUrl,
+                             destfile = file.path(myBgeeObject$pathToData, annotationFile), mode='wb')
     if (success != 0){
       stop("ERROR: Download from FTP was not successful.")
     }
