@@ -34,8 +34,8 @@ listBgeeRelease <- function(release=NULL){
 .getBgeeRelease <- function(removeFile=TRUE){
   ## query FTP to get file describing all releases
   releaseUrl <- 'ftp://ftp.bgee.org/release_v2.tsv'
-  success <- try(download.file(releaseUrl, quiet = TRUE,
-                           destfile=file.path(getwd(), 'release.tsv.tmp')))
+  success <- try(bgee_download_file(url = releaseUrl, quiet = TRUE,
+                           destfile = file.path(getwd(), 'release.tsv.tmp')))
   if (success == 0 & file.exists(file.path(getwd(), 'release.tsv.tmp'))){
     file.rename(from=file.path(getwd(), 'release.tsv.tmp'),
                 to=file.path(getwd(), 'release.tsv'))
