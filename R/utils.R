@@ -11,9 +11,14 @@ bgee_download_file <- function(url, destfile, quiet = FALSE, mode = NULL) {
   if(.Platform$OS.type == "windows") {
     if(capabilities("libcurl")) {
       if(is.null(mode)) {
-        return(curl_download(url = url, destfile = destfile, quiet = quiet))
+        success <- curl_download(url = url, destfile = destfile, quiet = quiet)
       } else{
-        return(curl_download(url = url, destfile = destfile, quiet = quiet, mode = mode))
+        success <- curl_download(url = url, destfile = destfile, quiet = quiet, mode = mode)
+      }
+      if(gsub("\\", "/", success, fixed = TRUE) == destfile) {
+        return(0)
+      } else {
+        return(success)
       }
     } else {
       if(is.null(mode)) {
