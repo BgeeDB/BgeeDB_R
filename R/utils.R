@@ -1,13 +1,40 @@
-# internal function checking if it is possible to use fread.
-# fread is the fastest way to load data but if dataset are too big
-# fread can generate error (because of lack of memory)
-# this function compare the size of a file to the max allowed size
-# in Mb (default value is 800Mb) allowed to use the fread function
-can_use_fread <- function (filePath, maxSize = 800) {
-  fileSize <- file.info(filePath)$size/1024^2
-  if (fileSize <= maxSize) {
-    return(TRUE)
+# internal function managing download of files. Different approach is used depending on the OS.
+# In Windows wininet is used by default but does not allow download longer than 30 seconds.
+# In order to remove this timeout problem the package check if libcurl is available. If available
+# curl package is used. Otherwise wininet is used and can potentially create timeout.
+# in Mac and Linux libcurl is used.
+#' @import curl
+#' @noMd
+#' @noRd
+
+bgee_download_file <- function(url, destfile, quiet = FALSE, mode = NULL) {
+  if(.Platform$OS.type == "windows") {
+    if(capabilities("libcurl")) {
+      if(is.null(mode)) {
+        success <- curl_download(url = url, destfile = destfile, quiet = quiet)
+      } else{
+        success <- curl_download(url = url, destfile = destfile, quiet = quiet, mode = mode)
+      }
+      if(gsub("\\", "/", success, fixed = TRUE) == destfile) {
+        return(0)
+      } else {
+        return(success)
+      }
+    } else {
+      if(is.null(mode)) {
+        return(download.file(url = url, destfile = destfile, quiet = quiet, method = "wininet"))
+      } else{
+        return(download.file(url = url, destfile = destfile, quiet = quiet, method = "wininet", 
+                             mode = mode))
+      }
+    }
+  } else{
+    if(is.null(mode)) {
+      return(download.file(url = url, destfile = destfile, quiet = quiet))
+    } else{
+      return(download.file(url = url, destfile = destfile, quiet = quiet, mode = mode))
+    }
   }
-  return(FALSE)
 }
+
 

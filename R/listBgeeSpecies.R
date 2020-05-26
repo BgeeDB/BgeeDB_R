@@ -62,7 +62,7 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   ## Query webservice
   cat(paste0("\nSubmitting URL to Bgee webservice... (", myUrl,")\n"))
   filePath <- paste0(getwd(), "/species_Bgee_", release, ".tsv")
-  download.file(myUrl, destfile = filePath)
+  bgee_download_file(url = myUrl, destfile = filePath)
   ## Read 5 last lines of file: should be empty indicating success of data transmission
   ## We cannot use a system call to UNIX command since some user might be on Windows
   tmp <- tail(read.table(filePath,
