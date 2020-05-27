@@ -4,7 +4,7 @@ author: "Andrea Komljenovic, Julien Roux, Marc Robinson-Rechavi, Frederic Bastia
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
