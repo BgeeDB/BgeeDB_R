@@ -15,17 +15,18 @@ bgee_download_file <- function(url, destfile, quiet = FALSE, mode = NULL) {
       } else{
         success <- curl_download(url = url, destfile = destfile, quiet = quiet, mode = mode)
       }
-      if(gsub("\\", "/", success, fixed = TRUE) == destfile) {
+      if(gsub("\\", "/", success, fixed = TRUE) == destfile | success == destfile) {
         return(0)
       } else {
         return(success)
       }
     } else {
       if(is.null(mode)) {
-        return(download.file(url = url, destfile = destfile, quiet = quiet, method = "wininet"))
+        warning("Windows OS without compatibility with libcurl. Could result to problems to download files.")
+        warning("Please read the installation section of the vignette to solve any potential error.")
+        return(download.file(url = url, destfile = destfile, quiet = quiet))
       } else{
-        return(download.file(url = url, destfile = destfile, quiet = quiet, method = "wininet", 
-                             mode = mode))
+        return(download.file(url = url, destfile = destfile, quiet = quiet, mode = mode))
       }
     }
   } else{
@@ -36,5 +37,3 @@ bgee_download_file <- function(url, destfile, quiet = FALSE, mode = NULL) {
     }
   }
 }
-
-
