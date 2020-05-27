@@ -79,7 +79,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info = 2)
   ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
-  options(timeout = 600)
+  options(timeout = 1200)
 
 
   ## First query: organ relationships
