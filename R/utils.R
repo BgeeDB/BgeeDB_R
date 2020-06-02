@@ -7,7 +7,7 @@
 #' @noMd
 #' @noRd
 
-bgee_download_file <- function(url, destfile, quiet = FALSE, mode = NULL) {
+bgee_download_file <- function(url, destfile, quiet = TRUE, mode = NULL) {
   if(.Platform$OS.type == "windows") {
     if(capabilities("libcurl")) {
       if(is.null(mode)) {
