@@ -4,7 +4,7 @@ author: "Andrea Komljenovic, Julien Roux, Marc Robinson-Rechavi, Frederic Bastia
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -30,6 +30,8 @@ In R:
     #install.packages("BiocManager")
 #BiocManager::install("BgeeDB")
 ```
+
+In case BgeeDB is run on Windows please be sure your OS has curl installed. It is installed by default on Windows 10, version 1803 or later. If Git for Windows is installed on the OS then curl is already installed. If not installed please install it before running BgeeDB in order to avoid potential timeout errors when downloading files. 
 
 ## How to use BgeeDB package
 

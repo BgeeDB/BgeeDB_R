@@ -57,7 +57,7 @@ The expression calls come from Bgee (\url{http://bgee.org}), that integrates dif
 }
 \examples{
 {
-  bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+  bgee <- Bgee$new(species = "Bos_taurus", dataType = "rna_seq")
   myTopAnatData <- loadTopAnatData(bgee)
 }
 

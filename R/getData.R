@@ -150,7 +150,8 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
 download_and_uncompress_species = function(myBgeeObject, experimentId) {
   message("Downloading all expression data for species ", myBgeeObject$speciesName)
   allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
-  success <- download.file(myBgeeObject$allExperimentsUrl, destfile=file.path(myBgeeObject$pathToData, allExpressionValues), mode='wb')
+  success <- bgee_download_file(url = myBgeeObject$allExperimentsUrl, 
+                                destfile = file.path(myBgeeObject$pathToData, allExpressionValues), mode = 'wb')
   if (success != 0){
     stop("ERROR: Download from FTP was not successful.")
   }
@@ -198,7 +199,7 @@ download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
   for (i in seq(experimentId)) {
     finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId[i], myBgeeObject$experimentUrl)
     tempFile <- file.path(myBgeeObject$pathToData, basename(finalExperimentUrl))
-    success <- download.file(finalExperimentUrl, destfile=tempFile, mode='wb')
+    success <- bgee_download_file(url = finalExperimentUrl, destfile = tempFile, mode = 'wb')
     if (success != 0){
       stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
     }

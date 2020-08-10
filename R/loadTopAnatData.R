@@ -79,7 +79,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
   options(internet.info = 2)
   ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
-  options(timeout = 600)
+  options(timeout = 1200)
 
 
   ## First query: organ relationships
@@ -98,7 +98,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
+    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organRelationshipsFileName, ".tmp"))
 
     if (success == 0){
       ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -141,7 +141,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
+    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", organNamesFileName, ".tmp"))
 
     if (success == 0){
       ## Read 5 last lines of file: should be empty indicating success of data transmission
@@ -221,7 +221,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- download.file(myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
 
     if (success == 0){
       ## Read 5 last lines of file: should be empty indicating success of data transmission
