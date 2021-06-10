@@ -9,7 +9,7 @@ Description: A package for the annotation and gene expression
     data download from Bgee database, and TopAnat analysis: GO-like enrichment of anatomical terms,
     mapped to genes by expression patterns.
 Depends: R (>= 3.6.0), topGO, tidyr
-Imports: data.table, curl, RCurl, digest, methods, stats, utils, dplyr, RSQLite,
+Imports: R.utils, data.table, curl, RCurl, digest, methods, stats, utils, dplyr, RSQLite,
         graph, Biobase
 License: GPL-3 + file LICENSE
 URL: https://github.com/BgeeDB/BgeeDB_R
@@ -19,5 +19,5 @@ biocViews: Software, DataImport, Sequencing, GeneExpression,
         Microarray, GO, GeneSetEnrichment
 Suggests: knitr, BiocStyle, testthat, rmarkdown
 LazyLoad: yes
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 NeedsCompilation: no
