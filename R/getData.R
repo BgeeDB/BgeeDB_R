@@ -184,7 +184,6 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
     }
     unlink(myData)
     dbDisconnect(conn)
-    dbClearResult()
   }
 }
 
