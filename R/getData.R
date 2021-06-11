@@ -176,11 +176,13 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
       # those lines are mandatory as Rank and pValue can have NA values that
       # are transformed to 0 by dbQuery() function.
     }
-    updatePvalues <- dbSendQuery(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
+    if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
+      updatePvalues <- dbSendQuery(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
         where [pValue] = \"NA\""))
-    if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length") {
-      updateRanks <- dbSendQuery(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
-        where [Rank] = \"NA\""))
+      if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length") {
+        updateRanks <- dbSendQuery(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
+          where [Rank] = \"NA\""))
+      }
     }
     unlink(myData)
     dbDisconnect(conn)
