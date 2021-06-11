@@ -11,10 +11,10 @@ vignette: >
 
 ```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from human and many other animal species.
  
-The package retrieves the annotation of RNA-seq or Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), but with more flexibility in the choice of parameters and developmental stages.
+The package retrieves the annotation of RNA-seq, single cell full length RNA-seq and Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), but with more flexibility in the choice of parameters and developmental stages.
 
 In summary, the BgeeDB package allows to: 
-* 1. List annotation of RNA-seq and microarray data available the Bgee database
+* 1. List annotation of RNA-seq, single cell full length RNA-seq and microarray data available the Bgee database
 * 2. Download the processed gene expression data available in the Bgee database
 * 3. Download the gene expression calls and use them to perform TopAnat analyses 
 
@@ -57,7 +57,7 @@ listBgeeSpecies(release = "13.2", order = 2)
 
 #### Create a new Bgee object
 
-In the following example we will choose to focus on mouse ("Mus\_musculus") RNA-seq. Species can be specified using their name or their NCBI taxonomic IDs. To specify that RNA-seq data want to be downloaded, the ```dataType``` argument is set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". 
+In the following example we will choose to focus on mouse ("Mus\_musculus") RNA-seq. Species can be specified using their name or their NCBI taxonomic IDs. To specify that RNA-seq data want to be downloaded, the ```dataType``` argument is set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". To download single cell full length RNA-seq data, set this argument to "sc_full_length". 
 
 ``` {r}
 bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
@@ -92,7 +92,7 @@ lapply(data_bgee_mouse, head)
 data_bgee_experiment1 <- data_bgee_mouse[[1]]
 ```
 
-The result of the ```getData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. 
+The result of the ```getData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. From Bgee 15.0 a pValue allows to have a precise metric indicating how much the gene is significantly expressed above background level of expression (the detection flag is still available and a gene is considered as present if pValue < 0.05).
 
 *Note*: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.
 
@@ -106,9 +106,11 @@ data_bgee_mouse_gse30617 <- getData(bgee, experimentId = "GSE30617")
 It is possible to download data by combining filters : 
 * experimentId : one or more experimentId,
 * sampleId : one or more sampleId (i.e libraryId for RNA-Seq and ChipId for Affymetrix),
-* anatEntityId : one or more anatomical entity ID from the UBERON ontology (https://uberon.github.io/)
-* stageId : one or more developmental stage ID from the developmental stage ontologies (https://github.com/obophenotype/developmental-stage-ontologies)
-
+* anatEntityId : one or more anatomical entity ID from the UBERON ontology (https://uberon.github.io/),
+* stageId : one or more developmental stage ID from the developmental stage ontologies (https://github.com/obophenotype/developmental-stage-ontologies),
+* cellTypeId : one or more cell type, only for single cell datatype (from Bgee 15.0),
+* sex : one or more sex (from Bgee 15.0),
+* strain : one or more strain (from Bgee 15.0),
 ``` {r eval=FALSE}
 # Examples of data downloading using different filtering combination
 # retrieve mouse RNA-Seq data for heart or brain
@@ -146,7 +148,7 @@ Similarly to the quantitative data download example above, the first step of a t
 bgee <- Bgee$new(species = "Danio_rerio")
 ```
 
-*Note* : We are free to specify any data type of interest using the ```dataType``` argument among `rna_seq`, `affymetrix`, `est` or `in_situ`, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying `dataType=c("rna_seq","affymetrix","est","in_situ")`.
+*Note* : We are free to specify any data type of interest using the ```dataType``` argument among `rna_seq`, `affymetrix`, `est` or `in_situ`, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying `dataType=c("rna_seq","sc_full_length","affymetrix","est","in_situ")`.
 
 #### Download the data allowing to perform TopAnat analysis
 
