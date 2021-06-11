@@ -23,13 +23,13 @@
 #' 
 #' @param cellTypeId Filter specific to single cell datatype (sc_full_length) allowing to specify 
 #' one or more cell type IDs from the UBERON ontology (http://uberon.github.io/). Default is 
-#' NULL: takes all available cell types for targeted species and data type.
+#' NULL: takes all available cell types for targeted species and data type. Available for Bgee 15.0 and after
 #' 
 #' @param sex Filter allowing to specify one or more sexes. Default is 
-#' NULL: takes all available sexes for targeted species and data type.
+#' NULL: takes all available sexes for targeted species and data type. Available for Bgee 15.0 and after
 #' 
 #' @param strain Filter allowing to specify one or more strains. Default is 
-#' NULL: takes all available strains for targeted species and data type.
+#' NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after
 #' 
 #' @return Return a dataframe containing all Bgee processed expression data from the selected species 
 #' and datatype using specified filters with operator AND.
@@ -50,6 +50,8 @@
 getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   check_object(myBgeeObject)
+  check_condition_parameters(myBgeeObject = myBgeeObject, anatEntityId = anatEntityId, 
+    stageId = stageId, cellTypeId = cellTypeId, sex = sex, strain = strain)
   import_data(myBgeeObject = myBgeeObject, experimentId = experimentId, sampleId = sampleId, 
     anatEntityId = anatEntityId, stageId = stageId, cellTypeId = cellTypeId, sex = sex, 
     strain = strain)
@@ -75,6 +77,18 @@ check_object = function(myBgeeObject, experimentId = NULL){
       }
     } else if (length(myBgeeObject$experimentUrl) == 0 | length(myBgeeObject$allExperimentsUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
       stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
+    }
+  }
+}
+
+check_condition_parameters = function(myBgeeObject, anatEntityId, stageId, 
+    cellTypeId, sex, strain){
+  ## check that the condition parameters queried are compatible with Bgee release
+  ## selected
+  if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") < 0) {
+    if (!is.null(cellTypeId) | !is.null(sex) | !is.null(strain)) {
+      stop("ERROR: cellTypeId, sex, and strain can be filtered only for Bgee 15.0",
+      " release and after.")
     }
   }
 }
@@ -292,7 +306,8 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
   # generate query
   query <- paste0("SELECT * from ", myBgeeObject$dataType)
-  if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)) ) {
+  if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)
+        & is.null(sex) & is.null(strain) & is.null(cellTypeId)) ) {
     query <- paste0(query, " WHERE ")
     if (!is.null(experimentId)) {
       if(length(experimentId) == 1) {
@@ -340,40 +355,43 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
           collapse="\", \""), "\")")
       }
     }
-    if (!is.null(cellTypeId)) {
-      if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
-          & is.null(stageId))) {
-        query <- paste0(query, " AND ")
+    # All following filters are available for Bgee 15.0 and after
+    if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
+      if (!is.null(cellTypeId)) {
+        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
+            & is.null(stageId))) {
+          query <- paste0(query, " AND ")
+        }
+        if(length(cellTypeId) == 1) {
+          query <- paste0(query, "[Cell.type.ID] = \"", as.character(cellTypeId), "\"")
+        } else {
+          query <- paste0(query, "[Cell.type.ID] IN (\"",paste(as.character(cellTypeId), 
+            collapse="\", \""), "\")")
+        }
       }
-      if(length(cellTypeId) == 1) {
-        query <- paste0(query, "[Cell.type.ID] = \"", as.character(cellTypeId), "\"")
-      } else {
-        query <- paste0(query, "[Cell.type.ID] IN (\"",paste(as.character(cellTypeId), 
-          collapse="\", \""), "\")")
-      }
-    }
-    if (!is.null(sex)) {
-      if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
+      if (!is.null(sex)) {
+        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
             & is.null(stageId) & is.null(cellTypeId))) {
-        query <- paste0(query, " AND ")
+          query <- paste0(query, " AND ")
+        }
+        if(length(sex) == 1) {
+          query <- paste0(query, "[Sex] = \"", as.character(sex), "\"")
+        } else {
+          query <- paste0(query, "[Sex] IN (\"",paste(as.character(sex), 
+            collapse="\", \""), "\")")
+        }
       }
-      if(length(sex) == 1) {
-        query <- paste0(query, "[Sex] = \"", as.character(sex), "\"")
-      } else {
-        query <- paste0(query, "[Sex] IN (\"",paste(as.character(sex), 
-          collapse="\", \""), "\")")
-      }
-    }
-    if (!is.null(strain)) {
-      if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
-            & is.null(stageId) & is.null(cellTypeId) & is.null(sex))) {
-        query <- paste0(query, " AND ")
-      }
-      if(length(strain) == 1) {
-        query <- paste0(query, "[Strain] = \"", as.character(strain), "\"")
-      } else {
-        query <- paste0(query, "[Strain] IN (\"",paste(as.character(strain), 
-          collapse="\", \""), "\")")
+      if (!is.null(strain)) {
+        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
+              & is.null(stageId) & is.null(cellTypeId) & is.null(sex))) {
+          query <- paste0(query, " AND ")
+        }
+        if(length(strain) == 1) {
+          query <- paste0(query, "[Strain] = \"", as.character(strain), "\"")
+        } else {
+          query <- paste0(query, "[Strain] IN (\"",paste(as.character(strain), 
+            collapse="\", \""), "\")")
+        }
       }
     }
   }

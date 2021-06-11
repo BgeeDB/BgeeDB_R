@@ -36,13 +36,13 @@ NULL: takes all available developmental stages for targeted species and data typ
 
 \item{cellTypeId}{Filter specific to single cell datatype (sc_full_length) allowing to specify 
 one or more cell type IDs from the UBERON ontology (http://uberon.github.io/). Default is 
-NULL: takes all available cell types for targeted species and data type.}
+NULL: takes all available cell types for targeted species and data type. Available for Bgee 15.0 and after}
 
 \item{sex}{Filter allowing to specify one or more sexes. Default is 
-NULL: takes all available sexes for targeted species and data type.}
+NULL: takes all available sexes for targeted species and data type. Available for Bgee 15.0 and after}
 
 \item{strain}{Filter allowing to specify one or more strains. Default is 
-NULL: takes all available strains for targeted species and data type.}
+NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after}
 }
 \value{
 Return a dataframe containing all Bgee processed expression data from the selected species 
