@@ -33,7 +33,7 @@ listBgeeRelease <- function(release=NULL){
 # Function returning a data frame describing all releases available for Bgee
 .getBgeeRelease <- function(removeFile=TRUE){
   ## query FTP to get file describing all releases
-  releaseUrl <- 'ftp://ftp.bgee.org/release_v3.tsv'
+  releaseUrl <- 'ftp://ftp.bgee.org/release_v2.tsv'
   success <- try(bgee_download_file(url = releaseUrl, quiet = TRUE,
                            destfile = file.path(getwd(), 'release.tsv.tmp')))
   if (success == 0 & file.exists(file.path(getwd(), 'release.tsv.tmp'))){
