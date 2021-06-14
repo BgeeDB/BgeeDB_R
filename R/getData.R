@@ -63,20 +63,27 @@ getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL,
 check_object = function(myBgeeObject, experimentId = NULL){
   ## check that the Bgee object is valid
   if (length(myBgeeObject$quantitativeData) == 0 ){
-    stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
+    stop("ERROR: there seems to be a problem with the input Bgee class object, some fields ", 
+         "are empty. Please check that the object was correctly built.")
   } else {
     ## Check that download of quantitative data is possible for targeted species and data type
     ## Try to output error message that helps a bit the user
     if (myBgeeObject$quantitativeData != TRUE){
       if (length(myBgeeObject$dataType) > 1){
-        stop("ERROR: downloading quantitative data is only possible if a single data type (\"rna_seq\" or \"affymetrix\") is specified in the input Bgee class object.")
+        stop("ERROR: downloading quantitative data is only possible if a single data ", 
+             "type (\"rna_seq\" or \"affymetrix\") is specified in the input Bgee class object.")
       } else if (length(myBgeeObject$dataType) == 1 & !(myBgeeObject$dataType %in% c('rna_seq','affymetrix'))){
-        stop("ERROR: downloading quantitative data is not possible for the species and data type specified in the input Bgee class object. Maybe the specified data type is not available for the targeted species in Bgee? See listBgeeSpecies() for details on data types availability for each species.")
+        stop("ERROR: downloading quantitative data is not possible for the species and data ", 
+        "type specified in the input Bgee class object. Maybe the specified data type is not available ", 
+        "for the targeted species in Bgee? See listBgeeSpecies() for details on data types availability for each species.")
       } else {
-        stop("ERROR: downloading quantitative data is not possible for the species and data type specified in the input Bgee class object.")
+        stop("ERROR: downloading quantitative data is not possible for the species and data type ", 
+             "specified in the input Bgee class object.")
       }
-    } else if (length(myBgeeObject$experimentUrl) == 0 | length(myBgeeObject$allExperimentsUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
-      stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
+    } else if (length(myBgeeObject$experimentUrl) == 0 | length(myBgeeObject$allExperimentsUrl) == 0 
+        | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
+      stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are ", 
+      "empty. Please check that the object was correctly built.")
     }
   }
 }
@@ -173,7 +180,6 @@ experiments_to_download = function(myBgeeObject, experimentId, sqlite_file) {
 integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
   if (!length(experimentId) == 0) {
     message("downloading data from Bgee FTP...")
-    conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
     # If more than 15 experiments have to be downloaded then download all experiments of this 
     # species (in order not to download too many files from the Bgee FTP)
     if (length(experimentId) > 15) {
@@ -185,21 +191,26 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
     }
     message("Save data in local sqlite database")
     for(i in seq(myData)) {
+      conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
       dbWriteTable(conn = conn, name = myBgeeObject$dataType, 
         value = myData[i], header=TRUE, append=TRUE, sep="\t")
+      dbDisconnect(conn)
       # those lines are mandatory as Rank and pValue can have NA values that
       # are transformed to 0 by dbQuery() function.
     }
     if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
-      updatePvalues <- dbSendQuery(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
+      conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+      updatePvalues <- dbExecute(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
         where [pValue] = \"NA\""))
+      dbDisconnect(conn)
       if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length") {
-        updateRanks <- dbSendQuery(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
+        conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+        updateRanks <- dbExecute(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
           where [Rank] = \"NA\""))
+        dbDisconnect(conn)
       }
     }
     unlink(myData)
-    dbDisconnect(conn)
   }
 }
 
