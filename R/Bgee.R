@@ -9,11 +9,12 @@
 #' @field dataType A vector of characters indicating data type(s) to be used. To be chosen among:
 #' \itemize{
 #'   \item{"rna_seq"}
+#'   \item{"sc_full_length"}
 #'   \item{"affymetrix"}
 #'   \item{"est"}
 #'   \item{"in_situ"}
 #' }
-#' By default all data type are included: \code{c("rna_seq","affymetrix","est","in_situ")}. For download of quantitative expression data, a single data type should be chosen among "rna_seq" or 'affymetrix".
+#' By default all data type are included: \code{c("rna_seq","sc_rna_seq","affymetrix","est","in_situ")}. For download of quantitative expression data, a single data type should be chosen among "rna_seq", "sc_rna_seq" or "affymetrix".
 #'
 #' @field pathToData Path to the directory where the data files are stored. By default the working directory is used. If many analyses are launched in parallel, please consider re-using the cached data files instead of redownlaoding them for each analysis.
 #'
@@ -58,14 +59,14 @@ Bgee <- setRefClass(
 
       ## check data type
       if (length(dataType) == 0) {
-        cat("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"rna_seq\",\"affymetrix\",\"est\",\"in_situ\") for the next steps.\n")
-        dataType <<- c("rna_seq","affymetrix","est","in_situ")
-      } else if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) %in% 1:4 ){
-        stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\".")
+        cat("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"rna_seq\",\"affymetrix\",\"est\",\"in_situ\",\"sc_full_length\") for the next steps.\n")
+        dataType <<- c("rna_seq","affymetrix","est","in_situ","sc_full_length")
+      } else if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ","sc_full_length")) %in% 1:5 ){
+        stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"sc_full_length\", \"est\" and \"in_situ\".")
       }
-      if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ")) ){
-        cat("\nWARNING: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"est\" and \"in_situ\". This will be removed. Please check for typos.\n")
-        dataType <<- dataType[dataType %in% c("rna_seq","affymetrix","est","in_situ")]
+      if ( length(dataType) != sum(dataType %in% c("rna_seq","affymetrix","est","in_situ", "sc_full_length")) ){
+        cat("\nWARNING: you apparently specified a data type that is not among \"rna_seq\", \"affymetrix\", \"sc_full_length\", \"est\" and \"in_situ\". This will be removed. Please check for typos.\n")
+        dataType <<- dataType[dataType %in% c("rna_seq","affymetrix","sc_full_length","est","in_situ")]
       }
 
 
@@ -109,7 +110,7 @@ Bgee <- setRefClass(
             stop("ERROR: The specified release number is invalid, or is not available for BgeeDB.")
           }
         } else {
-          stop("Bgee release number must follow the format \"Release.subrelease\" or \"Release_subrelease\", e.g., \"13.2\" or \"13_2\". See function listBgeeRelease() to see available releases.")
+          stop("Bgee release number must follow the format \"Release.subrelease\" or \"Release_subrelease\", e.g., \"13.2\" or \"15_0\". See function listBgeeRelease() to see available releases.")
         }
       } else {
         stop("ERROR: The specified release number is invalid.")
@@ -175,9 +176,15 @@ Bgee <- setRefClass(
         if (dataType == "rna_seq") {
           quantitativeData <<- allSpecies$RNA_SEQ[allSpecies$ID == speciesId]
         }
-        ## If only Affymetrix data, check availability in species
+        
         else if (dataType == "affymetrix") {
           quantitativeData <<- allSpecies$AFFYMETRIX[allSpecies$ID == speciesId]
+        }
+        ## If only full length single cell data, check availability in species
+        else if (dataType == "sc_full_length") {
+          if(compareVersion(a = gsub("_", ".", release), b = "15.0") >= 0) {
+            quantitativeData <<- allSpecies$FULL_LENGTH[allSpecies$ID == speciesId]
+          }
         }
 
         ## if quantitative data download can be done, fill the URLs fields
@@ -202,6 +209,16 @@ Bgee <- setRefClass(
             ## Data from all experiments
             allExperimentsUrl <<- as.character(
               allReleases$Affymetrix.all.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
+          } else if (dataType == "sc_full_length") {
+            ## annotation file
+            annotationUrl <<- as.character(
+              allReleases$Full.Length.single.cell.RNA.Seq.annotation.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
+            ## Data from specific experiment
+            experimentUrl <<- as.character(
+              allReleases$Full.Length.single.cell.RNA.Seq.experiment.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
+            ## Data from all experiments
+            allExperimentsUrl <<- as.character(
+              allReleases$Full.Length.single.cell.RNA.Seq.all.value.URL.pattern[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
           }
 
           ## Regex substitution to get the correct URLs

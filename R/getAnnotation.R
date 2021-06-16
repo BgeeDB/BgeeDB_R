@@ -1,6 +1,6 @@
 #' @title Retrieve Bgee experiments annotation for targeted species and data type.
 #'
-#' @description This function loads the annotation of experiments and samples of quantitative expression datasets (rna_seq, affymetrix) that are available from Bgee.
+#' @description This function loads the annotation of experiments and samples of quantitative expression datasets (rna_seq, affymetrix, sc_full_length) that are available from Bgee.
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
 
@@ -25,8 +25,8 @@ getAnnotation = function(myBgeeObject){
     ## Try to output error message that helps a bit the user
     if (myBgeeObject$quantitativeData != TRUE){
       if (length(myBgeeObject$dataType) > 1){
-        stop("ERROR: downloading annotation files is only possible if a single data type (\"rna_seq\" or \"affymetrix\") is specified in the input Bgee class object.")
-      } else if (length(myBgeeObject$dataType) == 1 & (myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "affymetrix")){
+        stop("ERROR: downloading annotation files is only possible if a single data type (\"rna_seq\", \"sc_full_length\" or \"affymetrix\") is specified in the input Bgee class object.")
+      } else if (length(myBgeeObject$dataType) == 1 & (myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length" | myBgeeObject$dataType == "affymetrix")){
         stop("ERROR: downloading annotation files is not possible for the species and data type specified in the input Bgee class object. Maybe the specified data type is not available for the targeted species in Bgee? See listBgeeSpecies() for details on data types availability for each species.")
       } else {
         stop("ERROR: downloading annotation files is not possible for the species and data type specified in the input Bgee class object.")
@@ -41,7 +41,7 @@ getAnnotation = function(myBgeeObject){
   ## To get the names of experiment and sample files, we start from the annotationFile
   if (myBgeeObject$dataType == "affymetrix"){
     annotationExperiments <- gsub("_chips", "", annotationFile)
-  } else if (myBgeeObject$dataType == "rna_seq"){
+  } else if (myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length"){
     annotationExperiments <- gsub("_libraries", "", annotationFile)
   }
   annotationSamples     <- gsub("_experiments", "", annotationFile)

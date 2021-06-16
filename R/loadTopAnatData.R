@@ -201,8 +201,12 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
 
     ## Add data type to file name: only if not all data types asked
-    if ( sum(myBgeeObject$dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
+    if ( sum(myBgeeObject$dataType %in% c("rna_seq","sc_full_length","affymetrix","est","in_situ")) < 5 ){
       for (type in toupper(sort(myBgeeObject$dataType))){
+        # solve mismatch between R package and Java API
+        if (type == "SC_FULL_LENGTH") {
+          type = "FULL_LENGTH"
+        }
         myUrl <- paste0(myUrl, "&data_type=", type)
       }
     }

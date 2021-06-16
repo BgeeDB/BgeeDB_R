@@ -1,7 +1,7 @@
 #' @title Retrieve Bgee RNA-seq or Affymetrix data.
 #'
 #' @description This function loads the quantitative expression data and presence calls 
-#' for samples available from Bgee (rna_seq, affymetrix).
+#' for samples available from Bgee (rna_seq, affymetrix, sc_full_length).
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species 
 #' and data type.
@@ -21,6 +21,16 @@
 #' Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is 
 #' NULL: takes all available developmental stages for targeted species and data type.
 #' 
+#' @param cellTypeId Filter specific to single cell datatype (sc_full_length) allowing to specify 
+#' one or more cell type IDs from the UBERON ontology (http://uberon.github.io/). Default is 
+#' NULL: takes all available cell types for targeted species and data type. Available for Bgee 15.0 and after
+#' 
+#' @param sex Filter allowing to specify one or more sexes. Default is 
+#' NULL: takes all available sexes for targeted species and data type. Available for Bgee 15.0 and after
+#' 
+#' @param strain Filter allowing to specify one or more strains. Default is 
+#' NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after
+#' 
 #' @return Return a dataframe containing all Bgee processed expression data from the selected species 
 #' and datatype using specified filters with operator AND.
 #'
@@ -28,56 +38,88 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-#'   dataMouse <- getData(bgee)
 #'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
 #'   dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), 
 #'                              anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
 #' }
 #'
 #' @import RSQLite
+#' @importFrom R.utils gunzip
 #' @export
 #' 
-getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
+getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   check_object(myBgeeObject)
-  import_data(myBgeeObject = myBgeeObject, experimentId = experimentId, sampleId = sampleId, anatEntityId = anatEntityId, stageId = stageId)
-  return(query_data(myBgeeObject, experimentId, sampleId, anatEntityId, stageId))
+  check_condition_parameters(myBgeeObject = myBgeeObject, anatEntityId = anatEntityId, 
+    stageId = stageId, cellTypeId = cellTypeId, sex = sex, strain = strain)
+  import_data(myBgeeObject = myBgeeObject, experimentId = experimentId, sampleId = sampleId, 
+    anatEntityId = anatEntityId, stageId = stageId, cellTypeId = cellTypeId, sex = sex, 
+    strain = strain)
+  return(query_data(myBgeeObject = myBgeeObject, experimentId = experimentId, sampleId = sampleId, 
+    anatEntityId = anatEntityId, stageId = stageId, cellTypeId = cellTypeId, sex = sex, 
+    strain = strain))
 }
 
 check_object = function(myBgeeObject, experimentId = NULL){
   ## check that the Bgee object is valid
   if (length(myBgeeObject$quantitativeData) == 0 ){
-    stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
+    stop("ERROR: there seems to be a problem with the input Bgee class object, some fields ", 
+         "are empty. Please check that the object was correctly built.")
   } else {
     ## Check that download of quantitative data is possible for targeted species and data type
     ## Try to output error message that helps a bit the user
     if (myBgeeObject$quantitativeData != TRUE){
       if (length(myBgeeObject$dataType) > 1){
-        stop("ERROR: downloading quantitative data is only possible if a single data type (\"rna_seq\" or \"affymetrix\") is specified in the input Bgee class object.")
+        stop("ERROR: downloading quantitative data is only possible if a single data ", 
+             "type (\"rna_seq\" or \"affymetrix\") is specified in the input Bgee class object.")
       } else if (length(myBgeeObject$dataType) == 1 & !(myBgeeObject$dataType %in% c('rna_seq','affymetrix'))){
-        stop("ERROR: downloading quantitative data is not possible for the species and data type specified in the input Bgee class object. Maybe the specified data type is not available for the targeted species in Bgee? See listBgeeSpecies() for details on data types availability for each species.")
+        stop("ERROR: downloading quantitative data is not possible for the species and data ", 
+        "type specified in the input Bgee class object. Maybe the specified data type is not available ", 
+        "for the targeted species in Bgee? See listBgeeSpecies() for details on data types availability for each species.")
       } else {
-        stop("ERROR: downloading quantitative data is not possible for the species and data type specified in the input Bgee class object.")
+        stop("ERROR: downloading quantitative data is not possible for the species and data type ", 
+             "specified in the input Bgee class object.")
       }
-    } else if (length(myBgeeObject$experimentUrl) == 0 | length(myBgeeObject$allExperimentsUrl) == 0 | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
-      stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are empty. Please check that the object was correctly built.")
+    } else if (length(myBgeeObject$experimentUrl) == 0 | length(myBgeeObject$allExperimentsUrl) == 0 
+        | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
+      stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are ", 
+      "empty. Please check that the object was correctly built.")
+    }
+  }
+}
+
+check_condition_parameters = function(myBgeeObject, anatEntityId, stageId, 
+    cellTypeId, sex, strain){
+  ## check that the condition parameters queried are compatible with Bgee release
+  ## selected
+  if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") < 0) {
+    if (!is.null(cellTypeId) | !is.null(sex) | !is.null(strain)) {
+      stop("ERROR: cellTypeId, sex, and strain can be filtered only for Bgee 15.0",
+      " release and after.")
     }
   }
 }
 
 ## extract the global path to the sqliteDB
 sqlitePath <- function(myBgeeObject){
-  sqlite_file <- file.path(myBgeeObject$pathToData, paste0(myBgeeObject$speciesName, myBgeeObject$sqlite_extension))
+  sqlite_file <- file.path(myBgeeObject$pathToData, paste0(myBgeeObject$speciesName, 
+    myBgeeObject$sqlite_extension))
   return(sqlite_file)
 }
 
-import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
-  user_experiments <- detect_experiments(myBgeeObject, experimentId, sampleId, anatEntityId, stageId)
-  missing_experiments <- experiments_to_download(myBgeeObject = myBgeeObject, experimentId = user_experiments, sqlite_file = sqlitePath(myBgeeObject))
-  integrate_experiments(myBgeeObject = myBgeeObject, experimentId = missing_experiments, sqlite_file = sqlitePath(myBgeeObject))
+import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
+  user_experiments <- detect_experiments(myBgeeObject, experimentId, sampleId, anatEntityId, 
+    stageId, cellTypeId, sex, strain)
+  missing_experiments <- experiments_to_download(myBgeeObject = myBgeeObject, 
+    experimentId = user_experiments, sqlite_file = sqlitePath(myBgeeObject))
+  integrate_experiments(myBgeeObject = myBgeeObject, experimentId = missing_experiments, 
+    sqlite_file = sqlitePath(myBgeeObject))
 } 
 
 # function using annotations to select which experiments the user needs to load all wanted data
-detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL) {
+detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   annotation <- getAnnotation(myBgeeObject)
   experiments <- annotation$sample.annotation
   # filter list of experiments to download
@@ -85,7 +127,7 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
     experiments <- experiments[experiments$Experiment.ID %in% experimentId,]
   } 
   if(!is.null(sampleId)) {
-    if(myBgeeObject$dataType == "rna_seq") {
+    if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length") {
       experiments <- experiments[experiments$Library.ID %in% sampleId,]
     } else if(myBgeeObject$dataType == "affymetrix") {
       experiments <- experiments[experiments$Chip.ID %in% sampleId,]
@@ -99,6 +141,19 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
   if(!is.null(stageId)) {
     experiments <- experiments[experiments$Stage.ID %in% stageId,]
   }
+  if(!is.null(sex)) {
+    experiments <- experiments[experiments$Sex %in% stageId,]
+  }
+  if(!is.null(strain)) {
+    experiments <- experiments[experiments$Strain %in% strain,]
+  }
+  if(!is.null(cellTypeId)) {
+    if (myBgeeObject$dataType == "sc_full_length") {
+      experiments <- experiments[experiments$Cell.type.ID %in% cellTypeId,]
+    } else {
+      stop("Can only filter on cell type ID when single cell datatype (sc_full_length) is selected.")
+    }
+  }
   return(unique(experiments$Experiment.ID))
 }
 
@@ -111,7 +166,6 @@ experiments_to_download = function(myBgeeObject, experimentId, sqlite_file) {
     if (isTRUE(myBgeeObject$dataType %in% tables)) {
       exp_queries <- paste0("Select distinct([Experiment.ID]) from ", myBgeeObject$dataType)
       existing_experiments <- dbGetQuery(conn, exp_queries)
-      dbDisconnect(conn)
       return(experimentId[(!experimentId %in% existing_experiments$Experiment.ID)])
     }
     dbDisconnect(conn)
@@ -126,22 +180,37 @@ experiments_to_download = function(myBgeeObject, experimentId, sqlite_file) {
 integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
   if (!length(experimentId) == 0) {
     message("downloading data from Bgee FTP...")
-    conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
     # If more than 15 experiments have to be downloaded then download all experiments of this 
     # species (in order not to download too many files from the Bgee FTP)
     if (length(experimentId) > 15) {
-      message("You tried to download more than 15 experiments, because of that all the Bgee data for this species will be downloaded.")
+      message("You tried to download more than 15 experiments, because of that all the ", 
+        "Bgee data for this species will be downloaded.")
       myData <- download_and_uncompress_species(myBgeeObject, experimentId)
     } else {
       myData <- download_and_uncompress_experiment(myBgeeObject, experimentId)
     }
     message("Save data in local sqlite database")
     for(i in seq(myData)) {
-      dbWriteTable(conn = conn, name = myBgeeObject$dataType, value = myData[i], header=TRUE, 
-        append=TRUE, sep="\t")
+      conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+      dbWriteTable(conn = conn, name = myBgeeObject$dataType, 
+        value = myData[i], header=TRUE, append=TRUE, sep="\t")
+      dbDisconnect(conn)
+      # those lines are mandatory as Rank and pValue can have NA values that
+      # are transformed to 0 by dbQuery() function.
+    }
+    if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
+      conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+      updatePvalues <- dbExecute(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
+        where [pValue] = \"NA\""))
+      dbDisconnect(conn)
+      if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length") {
+        conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+        updateRanks <- dbExecute(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
+          where [Rank] = \"NA\""))
+        dbDisconnect(conn)
+      }
     }
     unlink(myData)
-    dbDisconnect(conn)
   }
 }
 
@@ -151,38 +220,58 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
   message("Downloading all expression data for species ", myBgeeObject$speciesName)
   allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
   success <- bgee_download_file(url = myBgeeObject$allExperimentsUrl, 
-                                destfile = file.path(myBgeeObject$pathToData, allExpressionValues), mode = 'wb')
+    destfile = file.path(myBgeeObject$pathToData, allExpressionValues), mode = 'wb')
   if (success != 0){
     stop("ERROR: Download from FTP was not successful.")
   }
+  # compressed files for Bgee 13.2
   if (grepl(".zip$", allExpressionValues, perl = TRUE)) {
-    message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now unzip file...")
-    allExperiments <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
+    message("Saved expression data file in", myBgeeObject$pathToData, 
+      "folder. Now unzip file...")
+    allExperiments <- unzip(file.path(myBgeeObject$pathToData, allExpressionValues), 
+      exdir=myBgeeObject$pathToData)
     unlink(file.path(myBgeeObject$pathToData, allExpressionValues))
-    tempFiles <- grep(paste0(".*", paste(experimentId, collapse=".*|.*"), ".*"), allExperiments, value = TRUE)
+    tempFiles <- grep(paste0(".*", paste(experimentId, collapse=".*|.*"), ".*"), 
+      allExperiments, value = TRUE)
     myData <- unlist(lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData))
     file.remove(allExperiments)
+  # compressed tarball for bgee14.0 and after
   } else if (grepl(".tar.gz$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
     # When using untar it is only possible to untar OR list files/dir present in a tarball. 
     # It is not possible to do both actions in one line of code
-    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData)
-    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), exdir=myBgeeObject$pathToData, list = TRUE)
-    # keep only path to tarball to integrate to the local database. Other tarballs will not be  integrated
-    tempFilesAndDir <- grep(paste0(".*",paste(experimentId,collapse=".*|.*"),".*"), tempFilesAndDir, value = TRUE)
+    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
+      exdir=myBgeeObject$pathToData)
+    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
+      exdir=myBgeeObject$pathToData, list = TRUE)
+    # keep only path to tarball to integrate to the local database. Other tarballs will 
+    # not be  integrated
+    tempFilesAndDir <- grep(paste0(".*",paste(experimentId,collapse=".*|.*"),".*"), 
+      tempFilesAndDir, value = TRUE)
     tempFilesAndDir <- file.path(myBgeeObject$pathToData, tempFilesAndDir)
     tempFiles <- NULL
+    myData <- NULL
     for(i in seq(tempFilesAndDir)) {
-      # uncompress files and not directories (there was a bug when tar tried to uncompress GTeX experiment)
+      # uncompress files and not directories (there was a bug when tar tried to uncompress 
+      # GTeX experiment)
       # added this verification to be sure there will not be error with other experiments/species
       if (isTRUE(file_test("-f", tempFilesAndDir[i]))) {
-        # uncompress expression files
-        myData <-untar(tempFilesAndDir[i], exdir=myBgeeObject$pathToData)
+        # uncompress expression files for Bgee 14
+        if (grepl(".tar.gz$", tempFilesAndDir[i], perl = TRUE)) {
+          currentData <-untar(tempFilesAndDir[i], exdir=myBgeeObject$pathToData)
+          # list all expression files
+          currentData <- file.path(myBgeeObject$pathToData, untar(tempFilesAndDir[i], 
+            exdir=myBgeeObject$pathToData, list = TRUE))
+        # uncompress expression files for Bgee 15 and after
+        } else if (grepl(".tsv.gz$", tempFilesAndDir[i], perl = TRUE)) {
+          fileNameUncompressed <- gsub(".gz", "", basename(tempFilesAndDir[i]))
+          currentData <- unlist(gunzip(tempFilesAndDir[i], remove=FALSE, overwrite = TRUE,
+            destname = file.path(myBgeeObject$pathToData, fileNameUncompressed)))
+        }
         tempFiles <- c(tempFiles, tempFilesAndDir[i])
+        myData <- c(myData, currentData)
       } 
     }
-    # list all expression files
-    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
     # delete intermediary archives
     unlink(file.path(myBgeeObject$pathToData, allExpressionValues))
     unlink(dirname(tempFiles[1]), recursive = TRUE)
@@ -201,27 +290,35 @@ download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
     tempFile <- file.path(myBgeeObject$pathToData, basename(finalExperimentUrl))
     success <- bgee_download_file(url = finalExperimentUrl, destfile = tempFile, mode = 'wb')
     if (success != 0){
-      stop("ERROR: Download from FTP was not successful. Check the experiments present in Bgee with the getAnnotation() function.")
+      stop("ERROR: Download from FTP was not successful. Check the experiments present ", 
+      "in Bgee with the getAnnotation() function.")
     }
     tempFiles <- c(tempFiles, tempFile)
   }
   message("uncompress processed expression data...")
   if (grepl(".tar.gz$", tempFiles[1], perl = TRUE)) {
-    myData <- file.path(myBgeeObject$pathToData, lapply(tempFiles, untar, exdir=myBgeeObject$pathToData))
-    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
+    myData <- file.path(myBgeeObject$pathToData, lapply(tempFiles, untar, 
+      exdir=myBgeeObject$pathToData))
+    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, 
+      exdir=myBgeeObject$pathToData, list = TRUE)))
   } else if (grepl(".zip$", tempFiles[1], perl = TRUE)) {
     myData <- unlist(lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData))
+  } else if (grepl(".tsv.gz$", tempFiles[1], perl = TRUE)) {
+    myData <- unlist(lapply(tempFiles, gunzip, remove=FALSE, overwrite = TRUE))
   }
   unlink(tempFiles)
   return(myData)
 }
 
 # function that query the data in the local database
-query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, stageId = NULL, sqlite_file = sqlitePath(myBgeeObject)) {
+query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEntityId = NULL, 
+    stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
+    sqlite_file = sqlitePath(myBgeeObject)) {
   conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
   # generate query
   query <- paste0("SELECT * from ", myBgeeObject$dataType)
-  if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)) ) {
+  if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)
+        & is.null(sex) & is.null(strain) & is.null(cellTypeId)) ) {
     query <- paste0(query, " WHERE ")
     if (!is.null(experimentId)) {
       if(length(experimentId) == 1) {
@@ -265,7 +362,47 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
       if(length(stageId) == 1) {
         query <- paste0(query, "[Stage.ID] = \"", as.character(stageId), "\"")
       } else {
-        query <- paste0(query, "[Stage.ID] IN (\"",paste(as.character(stageId), collapse="\", \""), "\")")
+        query <- paste0(query, "[Stage.ID] IN (\"",paste(as.character(stageId), 
+          collapse="\", \""), "\")")
+      }
+    }
+    # All following filters are available for Bgee 15.0 and after
+    if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
+      if (!is.null(cellTypeId)) {
+        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
+            & is.null(stageId))) {
+          query <- paste0(query, " AND ")
+        }
+        if(length(cellTypeId) == 1) {
+          query <- paste0(query, "[Cell.type.ID] = \"", as.character(cellTypeId), "\"")
+        } else {
+          query <- paste0(query, "[Cell.type.ID] IN (\"",paste(as.character(cellTypeId), 
+            collapse="\", \""), "\")")
+        }
+      }
+      if (!is.null(sex)) {
+        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
+            & is.null(stageId) & is.null(cellTypeId))) {
+          query <- paste0(query, " AND ")
+        }
+        if(length(sex) == 1) {
+          query <- paste0(query, "[Sex] = \"", as.character(sex), "\"")
+        } else {
+          query <- paste0(query, "[Sex] IN (\"",paste(as.character(sex), 
+            collapse="\", \""), "\")")
+        }
+      }
+      if (!is.null(strain)) {
+        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
+              & is.null(stageId) & is.null(cellTypeId) & is.null(sex))) {
+          query <- paste0(query, " AND ")
+        }
+        if(length(strain) == 1) {
+          query <- paste0(query, "[Strain] = \"", as.character(strain), "\"")
+        } else {
+          query <- paste0(query, "[Strain] IN (\"",paste(as.character(strain), 
+            collapse="\", \""), "\")")
+        }
       }
     }
   }

@@ -9,7 +9,10 @@ getData(
   experimentId = NULL,
   sampleId = NULL,
   anatEntityId = NULL,
-  stageId = NULL
+  stageId = NULL,
+  cellTypeId = NULL,
+  sex = NULL,
+  strain = NULL
 )
 }
 \arguments{
@@ -30,6 +33,16 @@ targeted species and data type.}
 \item{stageId}{Filter allowing to specify one or more developmental stage IDs from Developmental 
 Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is 
 NULL: takes all available developmental stages for targeted species and data type.}
+
+\item{cellTypeId}{Filter specific to single cell datatype (sc_full_length) allowing to specify 
+one or more cell type IDs from the UBERON ontology (http://uberon.github.io/). Default is 
+NULL: takes all available cell types for targeted species and data type. Available for Bgee 15.0 and after}
+
+\item{sex}{Filter allowing to specify one or more sexes. Default is 
+NULL: takes all available sexes for targeted species and data type. Available for Bgee 15.0 and after}
+
+\item{strain}{Filter allowing to specify one or more strains. Default is 
+NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after}
 }
 \value{
 Return a dataframe containing all Bgee processed expression data from the selected species 
@@ -37,12 +50,11 @@ and datatype using specified filters with operator AND.
 }
 \description{
 This function loads the quantitative expression data and presence calls 
-for samples available from Bgee (rna_seq, affymetrix).
+for samples available from Bgee (rna_seq, affymetrix, sc_full_length).
 }
 \examples{
 {
   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-  dataMouse <- getData(bgee)
   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
   dataMouseVariousFilters <- getData(bgee, experimentId = c("GSE43721", "GSE36026"), 
                              anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
