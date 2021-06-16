@@ -10,14 +10,14 @@ Description: A package for the annotation and gene expression
     mapped to genes by expression patterns.
 Depends: R (>= 3.6.0), topGO, tidyr
 Imports: R.utils, data.table, curl, RCurl, digest, methods, stats, utils, dplyr, RSQLite,
-        graph, Biobase
+        graph, Biobase, 
 License: GPL-3 + file LICENSE
 URL: https://github.com/BgeeDB/BgeeDB_R
 BugReports: https://github.com/BgeeDB/BgeeDB_R/issues
 VignetteBuilder: knitr
 biocViews: Software, DataImport, Sequencing, GeneExpression,
         Microarray, GO, GeneSetEnrichment
-Suggests: knitr, BiocStyle, testthat, rmarkdown
+Suggests: knitr, BiocStyle, testthat, rmarkdown, markdown
 LazyLoad: yes
 RoxygenNote: 7.1.1
 NeedsCompilation: no
