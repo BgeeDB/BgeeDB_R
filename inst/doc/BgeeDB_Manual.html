@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Andrea Komljenovic, Julien Roux, Marc Robinson-Rechavi, Frederic Bastian" />
+
+<meta name="date" content="2021-06-15" />
+
+<title>BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests</h1>
+<h4 class="author">Andrea Komljenovic, Julien Roux, Marc Robinson-Rechavi, Frederic Bastian</h4>
+<h4 class="date">2021-06-15</h4>
+
+
+
+<p><code>BgeeDB</code> is a collection of functions to import data from the Bgee database (<a href="http://bgee.org/" class="uri">http://bgee.org/</a>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from human and many other animal species.</p>
+<p>The package retrieves the annotation of RNA-seq, single cell full length RNA-seq and Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the <code>topGO</code> package. This is the same as the TopAnat web-service available at (<a href="http://bgee.org/?page=top_anat#/" class="uri">http://bgee.org/?page=top_anat#/</a>), but with more flexibility in the choice of parameters and developmental stages.</p>
+<p>In summary, the BgeeDB package allows to: * 1. List annotation of RNA-seq, single cell full length RNA-seq and microarray data available the Bgee database * 2. Download the processed gene expression data available in the Bgee database * 3. Download the gene expression calls and use them to perform TopAnat analyses</p>
+<p>The pipeline used to generate Bgee expression data is documented and publicly available at (<a href="https://github.com/BgeeDB/bgee_pipeline" class="uri">https://github.com/BgeeDB/bgee_pipeline</a>)</p>
+<p>If you find a bug or have any issues to use <code>BgeeDB</code> please write a bug report in our own GitHub issues manager available at (<a href="https://github.com/BgeeDB/BgeeDB_R/issues" class="uri">https://github.com/BgeeDB/BgeeDB_R/issues</a>)</p>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>In R:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="co">#if (!requireNamespace(&quot;BiocManager&quot;, quietly=TRUE))</span></a>
+<a class="sourceLine" id="cb1-2" title="2">    <span class="co">#install.packages(&quot;BiocManager&quot;)</span></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="co">#BiocManager::install(&quot;BgeeDB&quot;)</span></a></code></pre></div>
+<p>In case BgeeDB is run on Windows please be sure your OS has curl installed. It is installed by default on Windows 10, version 1803 or later. If Git for Windows is installed on the OS then curl is already installed. If not installed please install it before running BgeeDB in order to avoid potential timeout errors when downloading files.</p>
+</div>
+<div id="how-to-use-bgeedb-package" class="section level2">
+<h2>How to use BgeeDB package</h2>
+<div id="load-the-package" class="section level3">
+<h3>Load the package</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(BgeeDB)</a></code></pre></div>
+</div>
+<div id="running-example-downloading-and-formatting-processed-rna-seq-data" class="section level3">
+<h3>Running example: downloading and formatting processed RNA-seq data</h3>
+<div id="list-available-species-in-bgee" class="section level4">
+<h4>List available species in Bgee</h4>
+<p>The <code>listBgeeSpecies()</code> function allows to retrieve available species in the Bgee database, and which data types are available for each species.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">listBgeeSpecies</span>()</a></code></pre></div>
+<pre><code>## 
+## Querying Bgee to get release information...
+## 
+## Building URL to query species in Bgee release 15...
+## 
+## Submitting URL to Bgee webservice... (https://bgee.org/bgee15_0/?page=r_package&amp;action=get_all_species&amp;display_type=tsv&amp;source=BgeeDB_R_package&amp;source_version=2.19.1)
+## 
+## Query to Bgee webservice successful!</code></pre>
+<pre><code>##        ID           GENUS     SPECIES_NAME               COMMON_NAME AFFYMETRIX
+## 1    6239  Caenorhabditis          elegans                  nematode       TRUE
+## 2    7227      Drosophila     melanogaster                 fruit fly       TRUE
+## 3    7237      Drosophila    pseudoobscura                                FALSE
+## 4    7240      Drosophila         simulans                                FALSE
+## 5    7740   Branchiostoma      lanceolatum           Common lancelet      FALSE
+## 6    7897       Latimeria        chalumnae                Coelacanth      FALSE
+## 7    7918     Lepisosteus         oculatus               Spotted gar      FALSE
+## 8    7936        Anguilla         anguilla   European freshwater eel      FALSE
+## 9    7955           Danio            rerio                 zebrafish       TRUE
+## 10   7994        Astyanax        mexicanus           Blind cave fish      FALSE
+## 11   8010            Esox           lucius             Northern pike      FALSE
+## 12   8030           Salmo            salar           Atlantic salmon      FALSE
+## 13   8049           Gadus           morhua              Atlantic cod      FALSE
+## 14   8081        Poecilia       reticulata                     Guppy      FALSE
+## 15   8090         Oryzias          latipes        Japanese rice fish      FALSE
+## 16   8154   Astatotilapia       calliptera             Eastern happy      FALSE
+## 17   8355         Xenopus           laevis       African clawed frog      FALSE
+## 18   8364         Xenopus       tropicalis       western clawed frog      FALSE
+## 19   9031          Gallus           gallus                   chicken      FALSE
+## 20   9103       Meleagris        gallopavo               Wild turkey      FALSE
+## 21   9258 Ornithorhynchus         anatinus                  platypus      FALSE
+## 22   9483      Callithrix          jacchus White-tufted-ear marmoset      FALSE
+## 23   9531      Cercocebus             atys            Sooty mangabey      FALSE
+## 24   9541          Macaca     fascicularis       Crab-eating macaque      FALSE
+## 25   9544          Macaca          mulatta                   macaque       TRUE
+## 26   9545          Macaca       nemestrina        Pig-tailed macaque      FALSE
+## 27   9555           Papio           anubis              Olive baboon      FALSE
+## 28   9593         Gorilla          gorilla                   gorilla      FALSE
+## 29   9597             Pan         paniscus                    bonobo      FALSE
+## 30   9598             Pan      troglodytes                chimpanzee      FALSE
+## 31   9606            Homo          sapiens                     human       TRUE
+## 32   9615           Canis lupus familiaris                       dog      FALSE
+## 33   9685           Felis            catus                       cat      FALSE
+## 34   9796           Equus         caballus                     horse      FALSE
+## 35   9823             Sus           scrofa                       pig      FALSE
+## 36   9913             Bos           taurus                    cattle      FALSE
+## 37   9925           Capra           hircus                      Goat      FALSE
+## 38   9940            Ovis            aries                     Sheep      FALSE
+## 39   9974           Manis         javanica          Malayan pangolin      FALSE
+## 40   9986     Oryctolagus        cuniculus                    rabbit      FALSE
+## 41  10090             Mus         musculus                     mouse       TRUE
+## 42  10116          Rattus       norvegicus                       rat       TRUE
+## 43  10141           Cavia        porcellus                guinea pig      FALSE
+## 44  10181  Heterocephalus           glaber            Naked mole rat      FALSE
+## 45  13616     Monodelphis        domestica                   opossum      FALSE
+## 46  28377          Anolis     carolinensis               green anole      FALSE
+## 47  30608      Microcebus          murinus          Gray mouse lemur      FALSE
+## 48  32507  Neolamprologus        brichardi             Fairy cichlid      FALSE
+## 49  52904    Scophthalmus          maximus                    Turbot      FALSE
+## 50  60711     Chlorocebus          sabaeus              Green monkey      FALSE
+## 51  69293    Gasterosteus        aculeatus  Three-spined stickleback      FALSE
+## 52 105023  Nothobranchius          furzeri       Turquoise killifish      FALSE
+##      EST IN_SITU RNA_SEQ FULL_LENGTH
+## 1  FALSE    TRUE    TRUE       FALSE
+## 2   TRUE    TRUE    TRUE       FALSE
+## 3  FALSE   FALSE    TRUE       FALSE
+## 4  FALSE   FALSE    TRUE       FALSE
+## 5  FALSE   FALSE    TRUE       FALSE
+## 6  FALSE   FALSE    TRUE       FALSE
+## 7  FALSE   FALSE    TRUE       FALSE
+## 8  FALSE   FALSE    TRUE       FALSE
+## 9   TRUE    TRUE    TRUE       FALSE
+## 10 FALSE   FALSE    TRUE       FALSE
+## 11 FALSE   FALSE    TRUE       FALSE
+## 12 FALSE   FALSE    TRUE       FALSE
+## 13 FALSE   FALSE    TRUE       FALSE
+## 14 FALSE   FALSE    TRUE       FALSE
+## 15 FALSE   FALSE    TRUE       FALSE
+## 16 FALSE   FALSE    TRUE       FALSE
+## 17 FALSE   FALSE    TRUE       FALSE
+## 18  TRUE    TRUE    TRUE       FALSE
+## 19 FALSE   FALSE    TRUE       FALSE
+## 20 FALSE   FALSE    TRUE       FALSE
+## 21 FALSE   FALSE    TRUE       FALSE
+## 22 FALSE   FALSE    TRUE       FALSE
+## 23 FALSE   FALSE    TRUE       FALSE
+## 24 FALSE   FALSE    TRUE       FALSE
+## 25 FALSE   FALSE    TRUE       FALSE
+## 26 FALSE   FALSE    TRUE       FALSE
+## 27 FALSE   FALSE    TRUE       FALSE
+## 28 FALSE   FALSE    TRUE       FALSE
+## 29 FALSE   FALSE    TRUE       FALSE
+## 30 FALSE   FALSE    TRUE       FALSE
+## 31  TRUE   FALSE    TRUE        TRUE
+## 32 FALSE   FALSE    TRUE       FALSE
+## 33 FALSE   FALSE    TRUE       FALSE
+## 34 FALSE   FALSE    TRUE       FALSE
+## 35 FALSE   FALSE    TRUE       FALSE
+## 36 FALSE   FALSE    TRUE       FALSE
+## 37 FALSE   FALSE    TRUE       FALSE
+## 38 FALSE   FALSE    TRUE       FALSE
+## 39 FALSE   FALSE    TRUE       FALSE
+## 40 FALSE   FALSE    TRUE       FALSE
+## 41  TRUE    TRUE    TRUE        TRUE
+## 42 FALSE   FALSE    TRUE       FALSE
+## 43 FALSE   FALSE    TRUE       FALSE
+## 44 FALSE   FALSE    TRUE       FALSE
+## 45 FALSE   FALSE    TRUE       FALSE
+## 46 FALSE   FALSE    TRUE       FALSE
+## 47 FALSE   FALSE    TRUE       FALSE
+## 48 FALSE   FALSE    TRUE       FALSE
+## 49 FALSE   FALSE    TRUE       FALSE
+## 50 FALSE   FALSE    TRUE       FALSE
+## 51 FALSE   FALSE    TRUE       FALSE
+## 52 FALSE   FALSE    TRUE       FALSE</code></pre>
+<p>It is possible to list all species from a specific release of Bgee with the <code>release</code> argument (see <code>listBgeeRelease()</code> function), and order the species according to a specific columns with the <code>ordering</code> argument. For example:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">listBgeeSpecies</span>(<span class="dt">release =</span> <span class="st">&quot;13.2&quot;</span>, <span class="dt">order =</span> <span class="dv">2</span>)</a></code></pre></div>
+<pre><code>## 
+## Querying Bgee to get release information...
+## 
+## Building URL to query species in Bgee release 13_2...
+## 
+## Submitting URL to Bgee webservice... (https://r.bgee.org/bgee13/?page=species&amp;display_type=tsv&amp;source=BgeeDB_R_package&amp;source_version=2.19.1)
+## 
+## Query to Bgee webservice successful!</code></pre>
+<pre><code>##       ID           GENUS SPECIES_NAME COMMON_NAME AFFYMETRIX   EST IN_SITU
+## 17 28377          Anolis carolinensis      anolis      FALSE FALSE   FALSE
+## 13  9913             Bos       taurus         cow      FALSE FALSE   FALSE
+## 1   6239  Caenorhabditis      elegans   c.elegans       TRUE FALSE    TRUE
+## 3   7955           Danio        rerio   zebrafish       TRUE  TRUE    TRUE
+## 2   7227      Drosophila melanogaster    fruitfly       TRUE  TRUE    TRUE
+## 5   9031          Gallus       gallus     chicken      FALSE FALSE   FALSE
+## 8   9593         Gorilla      gorilla     gorilla      FALSE FALSE   FALSE
+## 11  9606            Homo      sapiens       human       TRUE  TRUE   FALSE
+## 7   9544          Macaca      mulatta     macaque      FALSE FALSE   FALSE
+## 16 13616     Monodelphis    domestica     opossum      FALSE FALSE   FALSE
+## 14 10090             Mus     musculus       mouse       TRUE  TRUE    TRUE
+## 6   9258 Ornithorhynchus     anatinus    platypus      FALSE FALSE   FALSE
+## 9   9597             Pan     paniscus      bonobo      FALSE FALSE   FALSE
+## 10  9598             Pan  troglodytes  chimpanzee      FALSE FALSE   FALSE
+## 15 10116          Rattus   norvegicus         rat      FALSE FALSE   FALSE
+## 12  9823             Sus       scrofa         pig      FALSE FALSE   FALSE
+## 4   8364         Xenopus   tropicalis     xenopus      FALSE  TRUE    TRUE
+##    RNA_SEQ
+## 17    TRUE
+## 13    TRUE
+## 1     TRUE
+## 3    FALSE
+## 2    FALSE
+## 5     TRUE
+## 8     TRUE
+## 11    TRUE
+## 7     TRUE
+## 16    TRUE
+## 14    TRUE
+## 6     TRUE
+## 9     TRUE
+## 10    TRUE
+## 15    TRUE
+## 12    TRUE
+## 4     TRUE</code></pre>
+</div>
+<div id="create-a-new-bgee-object" class="section level4">
+<h4>Create a new Bgee object</h4>
+<p>In the following example we will choose to focus on mouse (“Mus_musculus”) RNA-seq. Species can be specified using their name or their NCBI taxonomic IDs. To specify that RNA-seq data want to be downloaded, the <code>dataType</code> argument is set to “rna_seq”. To download Affymetrix microarray data, set this argument to “affymetrix”. To download single cell full length RNA-seq data, set this argument to “sc_full_length”.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">bgee &lt;-<span class="st"> </span>Bgee<span class="op">$</span><span class="kw">new</span>(<span class="dt">species =</span> <span class="st">&quot;Mus_musculus&quot;</span>, <span class="dt">dataType =</span> <span class="st">&quot;rna_seq&quot;</span>)</a></code></pre></div>
+<pre><code>## 
+## Querying Bgee to get release information...
+## 
+## Building URL to query species in Bgee release 15_0...
+## 
+## Submitting URL to Bgee webservice... (https://bgee.org/bgee15_0/?page=r_package&amp;action=get_all_species&amp;display_type=tsv&amp;source=BgeeDB_R_package&amp;source_version=2.19.1)
+## 
+## Query to Bgee webservice successful!
+## 
+## API key built: 2df2f78e5cf6b2dd19fe08739eab9d92260d4ef18296fc4e785a6ae424aaa75f252d157c1cda8d8f371f3283a71b9b9db8ee597d2c178434498dd85b3075d5c9</code></pre>
+<p><em>Note 1</em>: It is possible to work with data from a specific release of Bgee by specifying the <code>release</code> argument, see <code>listBgeeRelease()</code> function.</p>
+<p><em>Note 2</em>: The functions of the package will store the downloaded files in a versioned folder created by default in the working directory. These cache files allow faster re-access to the data. The directory where data are stored can be changed with the <code>pathToData</code> argument.</p>
+</div>
+<div id="retrieve-the-annotation-of-mouse-rna-seq-datasets" class="section level4">
+<h4>Retrieve the annotation of mouse RNA-seq datasets</h4>
+<p>The <code>getAnnotation()</code> function will output the list of RNA-seq experiments and libraries available in Bgee for mouse.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">annotation_bgee_mouse &lt;-<span class="st"> </span><span class="kw">getAnnotation</span>(bgee)</a></code></pre></div>
+<pre><code>## 
+## Saved annotation files in /tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Mus_musculus_Bgee_15_0 folder.</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co"># list the first experiments and libraries</span></a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="kw">lapply</span>(annotation_bgee_mouse, head)</a></code></pre></div>
+<pre><code>## $sample.annotation
+##   Experiment.ID Library.ID Anatomical.entity.ID Anatomical.entity.name
+## 1     SRP013027 SRX1603101       UBERON:0000160              intestine
+## 2     SRP013027 SRX1603102       UBERON:0000160              intestine
+## 3     SRP013027 SRX1603271       UBERON:0000160              intestine
+## 4     SRP013027 SRX1603272       UBERON:0000160              intestine
+## 5     SRP013027 SRX1603302       UBERON:0000945                stomach
+## 6     SRP013027 SRX1603303       UBERON:0000945                stomach
+##         Stage.ID               Stage.name   Sex    Strain
+## 1 MmusDv:0000032 Theiler stage 23 (mouse) mixed C57BL/6Cr
+## 2 MmusDv:0000032 Theiler stage 23 (mouse) mixed C57BL/6Cr
+## 3 MmusDv:0000033 Theiler stage 24 (mouse) mixed C57BL/6Cr
+## 4 MmusDv:0000033 Theiler stage 24 (mouse) mixed C57BL/6Cr
+## 5 MmusDv:0000032 Theiler stage 23 (mouse) mixed C57BL/6Cr
+## 6 MmusDv:0000032 Theiler stage 23 (mouse) mixed C57BL/6Cr
+##   Expression.mapped.anatomical.entity.ID
+## 1                         UBERON:0000160
+## 2                         UBERON:0000160
+## 3                         UBERON:0000160
+## 4                         UBERON:0000160
+## 5                         UBERON:0000945
+## 6                         UBERON:0000945
+##   Expression.mapped.anatomical.entity.name Expression.mapped.stage.ID
+## 1                                intestine             MmusDv:0000032
+## 2                                intestine             MmusDv:0000032
+## 3                                intestine             MmusDv:0000033
+## 4                                intestine             MmusDv:0000033
+## 5                                  stomach             MmusDv:0000032
+## 6                                  stomach             MmusDv:0000032
+##   Expression.mapped.stage.name Expression.mapped.sex Expression.mapped.strain
+## 1     Theiler stage 23 (mouse)                 mixed                C57BL/6Cr
+## 2     Theiler stage 23 (mouse)                 mixed                C57BL/6Cr
+## 3     Theiler stage 24 (mouse)                 mixed                C57BL/6Cr
+## 4     Theiler stage 24 (mouse)                 mixed                C57BL/6Cr
+## 5     Theiler stage 23 (mouse)                 mixed                C57BL/6Cr
+## 6     Theiler stage 23 (mouse)                 mixed                C57BL/6Cr
+##           Platform.ID Protocol Library.type Library.orientation
+## 1 Illumina HiSeq 2500    polyA       single                  NA
+## 2 Illumina HiSeq 2500    polyA       single                  NA
+## 3 Illumina HiSeq 2500    polyA       single                  NA
+## 4 Illumina HiSeq 2500    polyA       single                  NA
+## 5 Illumina HiSeq 2500    polyA       single                  NA
+## 6 Illumina HiSeq 2500    polyA       single                  NA
+##   TMM.normalization.factor TPM.expression.threshold Read.count
+## 1                 1.044514                 0.152218   50765810
+## 2                 1.015358                 0.137860   60172356
+## 3                 0.937326                 0.117432   54500508
+## 4                 0.891839                 0.117303   53195360
+## 5                 1.121846                 0.185698  101346283
+## 6                 1.062458                 0.178238   66084918
+##   Mapped.read.count Min.read.length Max.read.length All.genes.percent.present
+## 1          40058638             100             100                     43.07
+## 2          48356326             100             100                     43.02
+## 3          46002531             100             100                     42.96
+## 4          45340369             100             100                     42.16
+## 5          54759626             100             100                     45.49
+## 6          51138301             100             100                     42.90
+##   Protein.coding.genes.percent.present Intergenic.regions.percent.present
+## 1                                73.52                               4.88
+## 2                                73.78                               4.83
+## 3                                74.11                               4.75
+## 4                                73.70                               4.67
+## 5                                74.12                               5.20
+## 6                                73.84                               4.89
+##   Distinct.rank.count Max.rank.in.the.expression.mapped.condition
+## 1               27230                                          NA
+## 2               27211                                          NA
+## 3               26810                                          NA
+## 4               26239                                          NA
+## 5               29490                                          NA
+## 6               27754                                          NA
+##                            Run.IDs Data.source
+## 1                       SRR3191967         SRA
+## 2                       SRR3191968         SRA
+## 3                       SRR3192253         SRA
+## 4                       SRR3192254         SRA
+## 5 SRR3192290|SRR3192291|SRR3192292         SRA
+## 6                       SRR3192293         SRA
+##                                                                               Data.source.URL
+## 1 https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&amp;m=data&amp;s=viewer&amp;run=SRX1603101
+## 2 https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&amp;m=data&amp;s=viewer&amp;run=SRX1603102
+## 3 https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&amp;m=data&amp;s=viewer&amp;run=SRX1603271
+## 4 https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&amp;m=data&amp;s=viewer&amp;run=SRX1603272
+## 5 https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&amp;m=data&amp;s=viewer&amp;run=SRX1603302
+## 6 https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?cmd=viewer&amp;m=data&amp;s=viewer&amp;run=SRX1603303
+##                                                                                                                       Bgee.normalized.data.URL
+## 1 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+## 2 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+## 3 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+## 4 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+## 5 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+## 6 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+##                                                  Raw.file.URL
+## 1 https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=SRX1603101
+## 2 https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=SRX1603102
+## 3 https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=SRX1603271
+## 4 https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=SRX1603272
+## 5 https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=SRX1603302
+## 6 https://trace.ncbi.nlm.nih.gov/Traces/study/?acc=SRX1603303
+## 
+## $experiment.annotation
+##   Experiment.ID
+## 1     SRP013027
+## 2     SRP020526
+## 3     ERP104395
+## 4      GSE30617
+## 5     SRP028336
+## 6      GSE41637
+##                                                             Experiment.name
+## 1                             GSE37909: RNA-seq from ENCODE/Caltech (Mouse)
+## 2   Mus musculus strain:black6 x castaneus Transcriptome or Gene expression
+## 3                           An RNASeq normal tissue atlas for mouse and rat
+## 4                                          [E-MTAB-599] Mouse Transcriptome
+## 5               Large-scale multi-species survey of metabolome and lipidome
+## 6 Evolutionary dynamics of gene and isoform regulation in mammalian tissues
+##   Library.count Condition.count Organ.stage.count Organ.count Stage.count
+## 1            97              47                47          12           6
+## 2            61              51                26          26           4
+## 3            38              13                13          13           1
+## 4            36               6                 6           6           1
+## 5            30              10                 5           5           1
+## 6            26              26                 9           9           1
+##   Sex.count Strain.count Data.source
+## 1         1            1         SRA
+## 2         2            2         SRA
+## 3         1            1         SRA
+## 4         1            1         GEO
+## 5         2            1         SRA
+## 6         2            3         GEO
+##                                               Data.source.URL
+## 1                  https://www.ncbi.nlm.nih.gov/sra/SRP013027
+## 2                  https://www.ncbi.nlm.nih.gov/sra/SRP020526
+## 3                  https://www.ncbi.nlm.nih.gov/sra/ERP104395
+## 4 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE30617
+## 5                  https://www.ncbi.nlm.nih.gov/sra/SRP028336
+## 6 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE41637
+##                                                                                                                       Bgee.normalized.data.URL
+## 1 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP013027.tsv.gz
+## 2 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP020526.tsv.gz
+## 3 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_ERP104395.tsv.gz
+## 4  ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_GSE30617.tsv.gz
+## 5 ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_SRP028336.tsv.gz
+## 6  ftp://ftp.bgee.org/bgee_v15_0/download/processed_expr_values/rna_seq/Mus_musculus/Mus_musculus_RNA-Seq_read_counts_TPM_FPKM_GSE41637.tsv.gz
+##                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              Experiment.description
+## 1 Overall Design: Cells were grown according to the approved ENCODE cell culture protocols (http://hgwdev.cse.ucsc.edu/ENCODE/protocols/cell/mouse). Cells were lysed in RLT buffer (Qiagen RNEasy kit), and processed on RNEasy midi columns according to the manufacturer&#39;s protocol, with the inclusion of the *on-column* DNAse digestion step to remove residual genomic DNA. A quantity of 75 µgs of total RNA was selected twice with oligo-dT beads (Dynal) according to the manufacturer&#39;s protocol to isolate mRNA from each of the preparations. A quantity of 100 ngs of mRNA was then processed according to the protocol in Mortazavi et al. (2008), and prepared for sequencing on the Illumina GAIIx or HiSeq platforms according to the protocol for the ChIP-Seq DNA genomic DNA kit (Illumina). Paired-end libraries were size-selected around 200 bp (fragment length). Libraries were sequenced with the Illumina HiSeq according to the manufacturer&#39;s recommendations. Paired-end reads of 100 bp length were obtained.Reads were mapped to the reference mouse genome (version mm9 with or without the Y chromosome, depending on the sex of the cell line, and without the random chromosomes in all cases) using TopHat (version 1.3.1) (http://tophat.cbcb.umd.edu/). TopHat was used with default settings with the exception of specifying an empirically determined mean inner-mate distance and supplying known ENSEMBL version 63 splice junctions.
+## 2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               RNA-Seq of reciprocally crossed Black6 x CAST hybrid mouse tissues.
+## 3                                                                                                                                                                                                                                                                                                                         The function of a gene is closely connected to its expression specificity across tissues and cell types. RNA-Seq is a powerful quantitative tool to explore genome wide expression. The aim of the present study is to provide a comprehensive RNA-Seq dataset across the same 13 tissues for mouse and rat, two of the most relevant species for biomedical research. The dataset provides the transcriptome across tissues from three male C57BL6 mice and three male Han Wistar rats. We also describe our bioinformatics pipeline to process and technically validate the data. Principal component analysis shows that tissue samples from both species cluster similarly. By comparative genomics we show that many genes with high sequence identity with respect to their human orthologues have also a highly correlated tissue distribution profile and are in agreement with manually curated literature data for human. These results make us confident that the present study provides a unique resource for comparative genomics and will facilitate the analysis of tissue specificity and cross-species conservation in higher organisms.
+## 4                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Sequencing the transcriptome of DBAxC57BL/6J mice. To study the regulation of transcription, splicing and RNA turnover we have sequenced the transcriptomes of tissues collected DBAxC57BL/6J mice.
+## 5                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  This dataset was generated with the goal of comparative study of gene expression in three brain regions and two non-neural tissues of humans, chimpanzees, macaque monkeys and mice. Using this dataset, we performed studies of gene expression and gene splicing evolution across species and search of tissue-specific gene expression and splicing patterns. We also used the gene expression information of genes encoding metabolic enzymes in this dataset to support a larger comparative study of metabolome evolution in the same set of tissues and species. Overall design: 120 tissue samples of prefrontal cortex (PFC), primary visual cortex (VC), cerebellar cortex (CBC), kidney and skeletal muscle of humans, chimpanzees, macaques and mice. The data accompanies a large set of metabolite measurements of the same tissue samples. Enzyme expression was used to validate metabolite measurement variation among species.
+## 6                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Most mammalian genes produce multiple distinct mRNAs through alternative splicing, but the extent of splicing conservation is not clear. To assess tissue-specific transcriptome variation across mammals, we sequenced cDNA from 9 tissues from 4 mammals and one bird in biological triplicate, at unprecedented depth. We find that while tissue-specific gene expression programs are largely conserved, alternative splicing is well conserved in only a subset of tissues and is frequently lineage-specific. Thousands of novel, lineage-specific and conserved alternative exons were identified; widely conserved alternative exons had signatures of binding by MBNL, PTB, RBFOX, STAR and TIA family splicing factors, implicating them as ancestral mammalian splicing regulators. Our data also indicates that alternative splicing is often used to alter protein phosphorylatability, delimiting the scope of kinase signaling.</code></pre>
+</div>
+<div id="download-the-processed-mouse-rna-seq-data" class="section level4">
+<h4>Download the processed mouse RNA-seq data</h4>
+<p>The <code>getData()</code> function will download processed RNA-seq data from all mouse experiments in Bgee as a data frame.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="co"># download all RNA-seq experiments from mouse</span></a>
+<a class="sourceLine" id="cb15-2" title="2">data_bgee_mouse &lt;-<span class="st"> </span><span class="kw">getData</span>(bgee)</a></code></pre></div>
+<pre><code>## 
+## NOTE: annotation files for this species were found in the download directory /tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Mus_musculus_Bgee_15_0. Data will not be redownloaded.</code></pre>
+<pre><code>## downloading data from Bgee FTP...</code></pre>
+<pre><code>## You tried to download more than 15 experiments, because of that all the Bgee data for this species will be downloaded.</code></pre>
+<pre><code>## Downloading all expression data for species Mus_musculus</code></pre>
+<pre><code>## Saved expression data file in/tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Mus_musculus_Bgee_15_0folder. Now untar file...</code></pre>
+<pre><code>## Finished uncompress tar files</code></pre>
+<pre><code>## Save data in local sqlite database</code></pre>
+<pre><code>## Load queried data. The query is : SELECT * from rna_seq</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="co"># number of experiments downloaded</span></a>
+<a class="sourceLine" id="cb24-2" title="2"><span class="kw">length</span>(data_bgee_mouse)</a></code></pre></div>
+<pre><code>## [1] 17</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="co"># check the downloaded data</span></a>
+<a class="sourceLine" id="cb26-2" title="2"><span class="kw">lapply</span>(data_bgee_mouse, head)</a></code></pre></div>
+<pre><code>## $Experiment.ID
+## [1] &quot;SRP092799&quot; &quot;SRP092799&quot; &quot;SRP092799&quot; &quot;SRP092799&quot; &quot;SRP092799&quot; &quot;SRP092799&quot;
+## 
+## $Library.ID
+## [1] &quot;SRX2334715&quot; &quot;SRX2334715&quot; &quot;SRX2334715&quot; &quot;SRX2334715&quot; &quot;SRX2334715&quot;
+## [6] &quot;SRX2334715&quot;
+## 
+## $Library.type
+## [1] &quot;paired&quot; &quot;paired&quot; &quot;paired&quot; &quot;paired&quot; &quot;paired&quot; &quot;paired&quot;
+## 
+## $Gene.ID
+## [1] &quot;ENSMUSG00000000001&quot; &quot;ENSMUSG00000000003&quot; &quot;ENSMUSG00000000028&quot;
+## [4] &quot;ENSMUSG00000000031&quot; &quot;ENSMUSG00000000037&quot; &quot;ENSMUSG00000000049&quot;
+## 
+## $Anatomical.entity.ID
+## [1] &quot;UBERON:0000160&quot; &quot;UBERON:0000160&quot; &quot;UBERON:0000160&quot; &quot;UBERON:0000160&quot;
+## [5] &quot;UBERON:0000160&quot; &quot;UBERON:0000160&quot;
+## 
+## $Anatomical.entity.name
+## [1] &quot;\&quot;intestine\&quot;&quot; &quot;\&quot;intestine\&quot;&quot; &quot;\&quot;intestine\&quot;&quot; &quot;\&quot;intestine\&quot;&quot;
+## [5] &quot;\&quot;intestine\&quot;&quot; &quot;\&quot;intestine\&quot;&quot;
+## 
+## $Stage.ID
+## [1] &quot;MmusDv:0000027&quot; &quot;MmusDv:0000027&quot; &quot;MmusDv:0000027&quot; &quot;MmusDv:0000027&quot;
+## [5] &quot;MmusDv:0000027&quot; &quot;MmusDv:0000027&quot;
+## 
+## $Stage.name
+## [1] &quot;\&quot;Theiler stage 20 (mouse)\&quot;&quot; &quot;\&quot;Theiler stage 20 (mouse)\&quot;&quot;
+## [3] &quot;\&quot;Theiler stage 20 (mouse)\&quot;&quot; &quot;\&quot;Theiler stage 20 (mouse)\&quot;&quot;
+## [5] &quot;\&quot;Theiler stage 20 (mouse)\&quot;&quot; &quot;\&quot;Theiler stage 20 (mouse)\&quot;&quot;
+## 
+## $Sex
+## [1] &quot;female&quot; &quot;female&quot; &quot;female&quot; &quot;female&quot; &quot;female&quot; &quot;female&quot;
+## 
+## $Strain
+## [1] &quot;\&quot;C57BL/6, 129/Sv and C3H\&quot;&quot; &quot;\&quot;C57BL/6, 129/Sv and C3H\&quot;&quot;
+## [3] &quot;\&quot;C57BL/6, 129/Sv and C3H\&quot;&quot; &quot;\&quot;C57BL/6, 129/Sv and C3H\&quot;&quot;
+## [5] &quot;\&quot;C57BL/6, 129/Sv and C3H\&quot;&quot; &quot;\&quot;C57BL/6, 129/Sv and C3H\&quot;&quot;
+## 
+## $Read.count
+## [1]  2917.0000     0.0000   539.0000 72138.9859   206.9999     0.0000
+## 
+## $TPM
+## [1]  136.27171    0.00000   33.82058 3754.63747   10.07783    0.00000
+## 
+## $FPKM
+## [1]   77.781987    0.000000   19.304317 2143.094611    5.752287    0.000000
+## 
+## $Rank
+## [1] &quot;1059.00&quot;  NA         &quot;5443.00&quot;  &quot;19.00&quot;    &quot;10378.00&quot; &quot;31923.00&quot;
+## 
+## $Detection.flag
+## [1] &quot;present&quot; &quot;absent&quot;  &quot;present&quot; &quot;present&quot; &quot;present&quot; &quot;absent&quot; 
+## 
+## $pValue
+## [1] &quot;0.000000000013086277949528600000&quot; NA                                
+## [3] &quot;0.000000018834246597381500000000&quot; &quot;0.000000000000000000001876715217&quot;
+## [5] &quot;0.000003575648035685280000000000&quot; &quot;1.000000000000000000000000000000&quot;
+## 
+## $State.in.Bgee
+## [1] &quot;Part of a call&quot;                        
+## [2] &quot;Result excluded, reason: pre-filtering&quot;
+## [3] &quot;Part of a call&quot;                        
+## [4] &quot;Part of a call&quot;                        
+## [5] &quot;Part of a call&quot;                        
+## [6] &quot;Part of a call&quot;</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="co"># isolate the first experiment</span></a>
+<a class="sourceLine" id="cb28-2" title="2">data_bgee_experiment1 &lt;-<span class="st"> </span>data_bgee_mouse[[<span class="dv">1</span>]]</a></code></pre></div>
+<p>The result of the <code>getData()</code> function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. From Bgee 15.0 a pValue allows to have a precise metric indicating how much the gene is significantly expressed above background level of expression (the detection flag is still available and a gene is considered as present if pValue &lt; 0.05).</p>
+<p><em>Note</em>: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.</p>
+<p>Alternatively, you can choose to download data from one RNA-seq experiment from Bgee with the <code>experimentId</code> parameter:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="co"># download data for GSE30617</span></a>
+<a class="sourceLine" id="cb29-2" title="2">data_bgee_mouse_gse30617 &lt;-<span class="st"> </span><span class="kw">getData</span>(bgee, <span class="dt">experimentId =</span> <span class="st">&quot;GSE30617&quot;</span>)</a></code></pre></div>
+<pre><code>## 
+## NOTE: annotation files for this species were found in the download directory /tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Mus_musculus_Bgee_15_0. Data will not be redownloaded.</code></pre>
+<pre><code>## Load queried data. The query is : SELECT * from rna_seq WHERE [Experiment.ID] = &quot;GSE30617&quot;</code></pre>
+<p>It is possible to download data by combining filters : * experimentId : one or more experimentId, * sampleId : one or more sampleId (i.e libraryId for RNA-Seq and ChipId for Affymetrix), * anatEntityId : one or more anatomical entity ID from the UBERON ontology (<a href="https://uberon.github.io/" class="uri">https://uberon.github.io/</a>), * stageId : one or more developmental stage ID from the developmental stage ontologies (<a href="https://github.com/obophenotype/developmental-stage-ontologies" class="uri">https://github.com/obophenotype/developmental-stage-ontologies</a>), * cellTypeId : one or more cell type, only for single cell datatype (from Bgee 15.0), * sex : one or more sex (from Bgee 15.0), * strain : one or more strain (from Bgee 15.0),</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="co"># Examples of data downloading using different filtering combination</span></a>
+<a class="sourceLine" id="cb32-2" title="2"><span class="co"># retrieve mouse RNA-Seq data for heart or brain</span></a>
+<a class="sourceLine" id="cb32-3" title="3">data_bgee_mouse_filters &lt;-<span class="st"> </span><span class="kw">getData</span>(bgee, <span class="dt">anatEntityId =</span> <span class="kw">c</span>(<span class="st">&quot;UBERON:0000955&quot;</span>,<span class="st">&quot;UBERON:0000948&quot;</span>))</a>
+<a class="sourceLine" id="cb32-4" title="4"><span class="co"># retrieve mouse RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) part of the experiment GSE30617</span></a>
+<a class="sourceLine" id="cb32-5" title="5">data_bgee_mouse_filters &lt;-<span class="st"> </span><span class="kw">getData</span>(bgee, <span class="dt">experimentId =</span> <span class="st">&quot;GSE30617&quot;</span>, <span class="dt">anatEntityId =</span> <span class="kw">c</span>(<span class="st">&quot;UBERON:0000955&quot;</span>,<span class="st">&quot;UBERON:0000948&quot;</span>))</a>
+<a class="sourceLine" id="cb32-6" title="6"><span class="co"># retrieve mouse RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) from post-embryonic stage (UBERON:0000092)</span></a>
+<a class="sourceLine" id="cb32-7" title="7">data_bgee_mouse_filters &lt;-<span class="st"> </span><span class="kw">getData</span>(bgee, <span class="dt">stageId =</span> <span class="st">&quot;UBERON:0000092&quot;</span>, <span class="dt">anatEntityId =</span> <span class="kw">c</span>(<span class="st">&quot;UBERON:0000955&quot;</span>,<span class="st">&quot;UBERON:0000948&quot;</span>))</a></code></pre></div>
+</div>
+<div id="format-the-rna-seq-data" class="section level4">
+<h4>Format the RNA-seq data</h4>
+<p>It is sometimes easier to work with data organized as a matrix, where rows represent genes or probesets and columns represent different samples. The <code>formatData()</code> function reformats the data into an ExpressionSet object including: * An expression data matrix, with genes or probesets as rows, and samples as columns (<code>assayData</code> slot). The <code>stats</code> argument allows to choose if the matrix should be filled with read counts, RPKMs (up to Bgee 13.2), FPKMs (from Bgee 14.0), or TPMs (from Bgee 14.0) for RNA-seq data. For microarray data the matrix is filled with log2 expression intensities. * A data frame listing the samples and their anatomical structure and developmental stage annotation (<code>phenoData</code> slot) * For microarray data, the mapping from probesets to Ensembl genes (<code>featureData</code> slot)</p>
+<p>The <code>callType</code> argument allows to retain only actively expressed genes or probesets, if set to “present” or “present high quality”. Genes or probesets that are absent in a given sample are given <code>NA</code> values.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1"><span class="co"># use only present calls and fill expression matric with FPKM values</span></a>
+<a class="sourceLine" id="cb33-2" title="2">gene.expression.mouse.fpkm &lt;-<span class="st"> </span><span class="kw">formatData</span>(bgee, data_bgee_mouse_gse30617, <span class="dt">callType =</span> <span class="st">&quot;present&quot;</span>, <span class="dt">stats =</span> <span class="st">&quot;fpkm&quot;</span>)</a></code></pre></div>
+<pre><code>## 
+## Extracting expression data matrix...
+##   Keeping only present genes.
+## 
+## Extracting features information...
+## 
+## Extracting samples information...</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">gene.expression.mouse.fpkm </a></code></pre></div>
+<pre><code>## ExpressionSet (storageMode: lockedEnvironment)
+## assayData: 55487 features, 36 samples 
+##   element names: exprs 
+## protocolData: none
+## phenoData
+##   sampleNames: ERX012344 ERX012345 ... ERX012379 (36 total)
+##   varLabels: Library.ID Anatomical.entity.ID ... Stage.name (5 total)
+##   varMetadata: labelDescription
+## featureData
+##   featureNames: ENSMUSG00000000001 ENSMUSG00000000003 ...
+##     ENSMUSG00000118659 (55487 total)
+##   fvarLabels: Gene.ID
+##   fvarMetadata: labelDescription
+## experimentData: use &#39;experimentData(object)&#39;
+## Annotation:</code></pre>
+</div>
+</div>
+<div id="running-example-topanat-gene-expression-enrichment-analysis" class="section level3">
+<h3>Running example: TopAnat gene expression enrichment analysis</h3>
+<p>For some documentation on the TopAnat analysis, please refer to our publications, or to the web-tool page (<a href="http://bgee.org/?page=top_anat#/" class="uri">http://bgee.org/?page=top_anat#/</a>).</p>
+<div id="create-a-new-bgee-object-1" class="section level4">
+<h4>Create a new Bgee object</h4>
+<p>Similarly to the quantitative data download example above, the first step of a topAnat analysis is to built an object from the Bgee class. For this example, we will focus on zebrafish:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1"><span class="co"># Creating new Bgee class object</span></a>
+<a class="sourceLine" id="cb37-2" title="2">bgee &lt;-<span class="st"> </span>Bgee<span class="op">$</span><span class="kw">new</span>(<span class="dt">species =</span> <span class="st">&quot;Danio_rerio&quot;</span>)</a></code></pre></div>
+<pre><code>## 
+## NOTE: You did not specify any data type. The argument dataType will be set to c(&quot;rna_seq&quot;,&quot;affymetrix&quot;,&quot;est&quot;,&quot;in_situ&quot;,&quot;sc_full_length&quot;) for the next steps.
+## 
+## Querying Bgee to get release information...
+## 
+## NOTE: the file describing Bgee species information for release 15_0 was found in the download directory /tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes. Data will not be redownloaded.
+## 
+## API key built: 2df2f78e5cf6b2dd19fe08739eab9d92260d4ef18296fc4e785a6ae424aaa75f252d157c1cda8d8f371f3283a71b9b9db8ee597d2c178434498dd85b3075d5c9</code></pre>
+<p><em>Note</em> : We are free to specify any data type of interest using the <code>dataType</code> argument among <code>rna_seq</code>, <code>affymetrix</code>, <code>est</code> or <code>in_situ</code>, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying <code>dataType=c(&quot;rna_seq&quot;,&quot;sc_full_length&quot;,&quot;affymetrix&quot;,&quot;est&quot;,&quot;in_situ&quot;)</code>.</p>
+</div>
+<div id="download-the-data-allowing-to-perform-topanat-analysis" class="section level4">
+<h4>Download the data allowing to perform TopAnat analysis</h4>
+<p>The <code>loadTopAnatData()</code> function loads a mapping from genes to anatomical structures based on calls of expression in anatomical structures. It also loads the structure of the anatomical ontology and the names of anatomical structures.</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="co"># Loading calls of expression</span></a>
+<a class="sourceLine" id="cb39-2" title="2">myTopAnatData &lt;-<span class="st"> </span><span class="kw">loadTopAnatData</span>(bgee)</a></code></pre></div>
+<pre><code>## 
+## Building URLs to retrieve organ relationships from Bgee.........
+##    URL successfully built (https://bgee.org/bgee15_0/?page=r_package&amp;action=get_anat_entity_relations&amp;display_type=tsv&amp;species_list=7955&amp;attr_list=SOURCE_ID&amp;attr_list=TARGET_ID&amp;api_key=2df2f78e5cf6b2dd19fe08739eab9d92260d4ef18296fc4e785a6ae424aaa75f252d157c1cda8d8f371f3283a71b9b9db8ee597d2c178434498dd85b3075d5c9&amp;source=BgeeDB_R_package&amp;source_version=2.19.1)
+##    Submitting URL to Bgee webservice (can be long)
+##    Got results from Bgee webservice. Files are written in &quot;/tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Danio_rerio_Bgee_15_0&quot;
+## 
+## Building URLs to retrieve organ names from Bgee.................
+##    URL successfully built (https://bgee.org/bgee15_0/?page=r_package&amp;action=get_anat_entities&amp;display_type=tsv&amp;species_list=7955&amp;attr_list=ID&amp;attr_list=NAME&amp;api_key=2df2f78e5cf6b2dd19fe08739eab9d92260d4ef18296fc4e785a6ae424aaa75f252d157c1cda8d8f371f3283a71b9b9db8ee597d2c178434498dd85b3075d5c9&amp;source=BgeeDB_R_package&amp;source_version=2.19.1)
+##    Submitting URL to Bgee webservice (can be long)
+##    Got results from Bgee webservice. Files are written in &quot;/tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Danio_rerio_Bgee_15_0&quot;
+## 
+## Building URLs to retrieve mapping of gene to organs from Bgee...
+##    URL successfully built (https://bgee.org/bgee15_0/?page=r_package&amp;action=get_expression_calls&amp;display_type=tsv&amp;species_list=7955&amp;attr_list=GENE_ID&amp;attr_list=ANAT_ENTITY_ID&amp;api_key=2df2f78e5cf6b2dd19fe08739eab9d92260d4ef18296fc4e785a6ae424aaa75f252d157c1cda8d8f371f3283a71b9b9db8ee597d2c178434498dd85b3075d5c9&amp;source=BgeeDB_R_package&amp;source_version=2.19.1&amp;data_qual=SILVER)
+##    Submitting URL to Bgee webservice (can be long)
+##    Got results from Bgee webservice. Files are written in &quot;/tmp/Rtmp5XLZbH/Rbuild19739531bebca1/BgeeDB/vignettes/Danio_rerio_Bgee_15_0&quot;
+## 
+## Parsing the results.............................................
+## 
+## Adding BGEE:0 as unique root of all terms of the ontology.......
+## 
+## Done.</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="co"># Look at the data</span></a>
+<a class="sourceLine" id="cb41-2" title="2"><span class="co">## str(myTopAnatData)</span></a></code></pre></div>
+<p>The strigency on the quality of expression calls can be changed with the <code>confidence</code> argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the a Uberon stage Id in the <code>stage</code> argument.</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1"><span class="co">## Loading silver and gold expression calls from affymetrix data made on embryonic samples only </span></a>
+<a class="sourceLine" id="cb42-2" title="2"><span class="co">## This is just given as an example, but is not run in this vignette because only few data are returned</span></a>
+<a class="sourceLine" id="cb42-3" title="3">bgee &lt;-<span class="st"> </span>Bgee<span class="op">$</span><span class="kw">new</span>(<span class="dt">species =</span> <span class="st">&quot;Danio_rerio&quot;</span>, <span class="dt">dataType=</span><span class="st">&quot;affymetrix&quot;</span>)</a>
+<a class="sourceLine" id="cb42-4" title="4">myTopAnatData &lt;-<span class="st"> </span><span class="kw">loadTopAnatData</span>(bgee, <span class="dt">stage=</span><span class="st">&quot;UBERON:0000068&quot;</span>, <span class="dt">confidence=</span><span class="st">&quot;silver&quot;</span>)</a></code></pre></div>
+<p><em>Note 1</em>: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the <code>pathToData</code> argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. <strong>It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.</strong> The cached files also give the possibility to repeat analyses offline.</p>
+<p><em>Note 2</em>: In releases up to Bgee 13.2 allowed <code>confidence`` values were `low_quality` or or `high_quality`. From Bgee 14.0</code>confidence``<code>values are</code>gold<code>or</code>silver`.</p>
+</div>
+<div id="prepare-a-topanatdata-object-allowing-to-perform-topanat-analysis-with-topgo" class="section level4">
+<h4>Prepare a topAnatData object allowing to perform TopAnat analysis with topGO</h4>
+<p>First we need to prepare a list of genes in the foreground and in the background. The input format is the same as the gene list required to build a <code>topGOdata</code> object in the <code>topGO</code> package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not. In this example we will look at genes with an annotated phenotype related to “pectoral fin” . We use the <code>biomaRt</code> package to retrieve this list of genes. We expect them to be enriched for expression in male tissues, notably the testes. The background list of genes is set to all genes annotated to at least one Gene Ontology term, allowing to account for biases in which types of genes are more likely to receive Gene Ontology annotation.</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="co"># if (!requireNamespace(&quot;BiocManager&quot;, quietly=TRUE))</span></a>
+<a class="sourceLine" id="cb43-2" title="2">    <span class="co"># install.packages(&quot;BiocManager&quot;)</span></a>
+<a class="sourceLine" id="cb43-3" title="3"><span class="co"># BiocManager::install(&quot;biomaRt&quot;)</span></a>
+<a class="sourceLine" id="cb43-4" title="4"><span class="kw">library</span>(biomaRt)</a>
+<a class="sourceLine" id="cb43-5" title="5">ensembl &lt;-<span class="st"> </span><span class="kw">useMart</span>(<span class="st">&quot;ENSEMBL_MART_ENSEMBL&quot;</span>, <span class="dt">dataset=</span><span class="st">&quot;drerio_gene_ensembl&quot;</span>, <span class="dt">host=</span><span class="st">&quot;mar2016.archive.ensembl.org&quot;</span>)</a>
+<a class="sourceLine" id="cb43-6" title="6"></a>
+<a class="sourceLine" id="cb43-7" title="7"><span class="co"># get the mapping of Ensembl genes to phenotypes. It will corresponds to the background genes</span></a>
+<a class="sourceLine" id="cb43-8" title="8">universe &lt;-<span class="st"> </span><span class="kw">getBM</span>(<span class="dt">filters=</span><span class="kw">c</span>(<span class="st">&quot;phenotype_source&quot;</span>), <span class="dt">value=</span><span class="kw">c</span>(<span class="st">&quot;ZFIN&quot;</span>), <span class="dt">attributes=</span><span class="kw">c</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>,<span class="st">&quot;phenotype_description&quot;</span>), <span class="dt">mart=</span>ensembl)</a>
+<a class="sourceLine" id="cb43-9" title="9"></a>
+<a class="sourceLine" id="cb43-10" title="10"><span class="co"># select phenotypes related to pectoral fin</span></a>
+<a class="sourceLine" id="cb43-11" title="11">phenotypes &lt;-<span class="st"> </span><span class="kw">grep</span>(<span class="st">&quot;pectoral fin&quot;</span>, <span class="kw">unique</span>(universe<span class="op">$</span>phenotype_description), <span class="dt">value=</span>T)</a>
+<a class="sourceLine" id="cb43-12" title="12"></a>
+<a class="sourceLine" id="cb43-13" title="13"><span class="co"># Foreground genes are those with an annotated phenotype related to &quot;pectoral fin&quot; </span></a>
+<a class="sourceLine" id="cb43-14" title="14">myGenes &lt;-<span class="st"> </span><span class="kw">unique</span>(universe<span class="op">$</span>ensembl_gene_id[universe<span class="op">$</span>phenotype_description <span class="op">%in%</span><span class="st"> </span>phenotypes])</a>
+<a class="sourceLine" id="cb43-15" title="15"></a>
+<a class="sourceLine" id="cb43-16" title="16"><span class="co"># Prepare the gene list vector </span></a>
+<a class="sourceLine" id="cb43-17" title="17">geneList &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">as.integer</span>(<span class="kw">unique</span>(universe<span class="op">$</span>ensembl_gene_id) <span class="op">%in%</span><span class="st"> </span>myGenes))</a>
+<a class="sourceLine" id="cb43-18" title="18"><span class="kw">names</span>(geneList) &lt;-<span class="st"> </span><span class="kw">unique</span>(universe<span class="op">$</span>ensembl_gene_id)</a>
+<a class="sourceLine" id="cb43-19" title="19"><span class="kw">summary</span>(geneList)</a>
+<a class="sourceLine" id="cb43-20" title="20"></a>
+<a class="sourceLine" id="cb43-21" title="21"><span class="co"># Prepare the topGO object</span></a>
+<a class="sourceLine" id="cb43-22" title="22">myTopAnatObject &lt;-<span class="st">  </span><span class="kw">topAnat</span>(myTopAnatData, geneList)</a></code></pre></div>
+<p>The above code using the <code>biomaRt</code> package is not executed in this vignette to prevent building issues of our package in case of biomaRt downtime. Instead we use a <code>geneList</code> object saved in the <code>data/</code> folder that we built using pre-downloaded data.</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="kw">data</span>(geneList)</a>
+<a class="sourceLine" id="cb44-2" title="2">myTopAnatObject &lt;-<span class="st">  </span><span class="kw">topAnat</span>(myTopAnatData, geneList)</a></code></pre></div>
+<pre><code>## 
+## Checking topAnatData object.............
+## 
+## Checking gene list......................
+## 
+## WARNING: Some genes in your gene list have no expression data in Bgee, and will not be included in the analysis. 2959 genes in background will be kept.
+## 
+## Building most specific Ontology terms...  (  1316  Ontology terms found. )
+## 
+## Building DAG topology...................  (  2263  Ontology terms and  4631  relations. )
+## 
+## Annotating nodes (Can be long)..........  (  2959  genes annotated to the Ontology terms. )</code></pre>
+<p><em>Warning</em>: This can be long, especially if the gene list is large, since the Uberon anatomical ontology is large and expression calls will be propagated through the whole ontology (e.g., expression in the forebrain will also be counted as expression in parent structures such as the brain, nervous system, etc). Consider running a script in batch mode if you have multiple analyses to do.</p>
+</div>
+<div id="launch-the-enrichment-test" class="section level4">
+<h4>Launch the enrichment test</h4>
+<p>For this step, see the vignette of the <code>topGO</code> package for more details, as you have to directly use the tests implemented in the <code>topGO</code> package, as shown in this example:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" title="1">results &lt;-<span class="st"> </span><span class="kw">runTest</span>(myTopAnatObject, <span class="dt">algorithm =</span> <span class="st">&#39;weight&#39;</span>, <span class="dt">statistic =</span> <span class="st">&#39;fisher&#39;</span>)</a></code></pre></div>
+<pre><code>## 
+##           -- Weight Algorithm -- 
+## 
+##       The algorithm is scoring 1020 nontrivial nodes
+##       parameters: 
+##           test statistic: fisher : ratio</code></pre>
+<pre><code>## 
+##   Level 29:  1 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 28:  1 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 27:  1 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 26:  3 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 25:  5 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 24:  6 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 23:  8 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 22:  22 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 21:  22 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 20:  29 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 19:  40 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 18:  71 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 17:  69 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 16:  88 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 15:  103 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 14:  115 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 13:  106 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 12:  91 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 11:  76 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 10:  55 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 9:   31 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 8:   26 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 7:   20 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 6:   17 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 5:   6 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 4:   4 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 3:   2 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 2:   1 nodes to be scored.</code></pre>
+<pre><code>## 
+##   Level 1:   1 nodes to be scored.</code></pre>
+<p><em>Warning</em>: This can be long because of the size of the ontology. Consider running scripts in batch mode if you have multiple analyses to do.</p>
+</div>
+<div id="format-the-table-of-results-after-an-enrichment-test-for-anatomical-terms" class="section level4">
+<h4>Format the table of results after an enrichment test for anatomical terms</h4>
+<p>The <code>makeTable</code> function allows to filter and format the test results, and calculate FDR values.</p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb77-1" title="1"><span class="co"># Display results sigificant at a 1% FDR threshold</span></a>
+<a class="sourceLine" id="cb77-2" title="2">tableOver &lt;-<span class="st"> </span><span class="kw">makeTable</span>(myTopAnatData, myTopAnatObject, results, <span class="dt">cutoff =</span> <span class="fl">0.01</span>)</a></code></pre></div>
+<pre><code>## 
+## Building the results table for the 9 significant terms at FDR threshold of 0.01...
+## Ordering results by pValue column in increasing order...
+## Done</code></pre>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb79-1" title="1"><span class="kw">head</span>(tableOver)</a></code></pre></div>
+<pre><code>##                       organId                organName annotated significant
+## UBERON:0000151 UBERON:0000151             pectoral fin       410          60
+## UBERON:0005419 UBERON:0005419   pectoral appendage bud       133          31
+## UBERON:2000040 UBERON:2000040          median fin fold        53          15
+## UBERON:0005729 UBERON:0005729 pectoral appendage field        14           8
+## UBERON:0006598 UBERON:0006598    presumptive structure      1803         122
+## UBERON:0004376 UBERON:0004376                 fin bone        27           9
+##                expected foldEnrichment       pValue          FDR
+## UBERON:0000151    20.23       2.965892 3.105066e-15 3.536670e-12
+## UBERON:0005419     6.56       4.725610 3.953367e-14 2.251443e-11
+## UBERON:2000040     2.62       5.725191 1.517744e-08 5.762367e-06
+## UBERON:0005729     0.69      11.594203 6.792283e-08 1.934103e-05
+## UBERON:0006598    88.96       1.371403 1.928360e-06 4.392804e-04
+## UBERON:0004376     1.33       6.766917 2.968197e-06 5.634627e-04</code></pre>
+<p>At the time of building this vignette (June 2018), there was 27 significant anatomical structures. The first term is “pectoral fin”, and the second “paired limb/fin bud”. Other terms in the list, especially those with high enrichment folds, are clearly related to pectoral fins or substructures of fins. This analysis shows that genes with phenotypic effects on pectoral fins are specifically expressed in or next to these structures</p>
+<p>By default results are sorted by p-value, but this can be changed with the <code>ordering</code> parameter by specifying which column should be used to order the results (preceded by a “-” sign to indicate that ordering should be made in decreasing order). For example, it is often convenient to sort significant structures by decreasing enrichment fold, using <code>ordering = -6</code>. The full table of results can be obtained using <code>cutoff = 1</code>.</p>
+<p>Of note, it is possible to retrieve for a particular tissue the significant genes that were mapped to it.</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb81-1" title="1"><span class="co"># In order to retrieve significant genes mapped to the term &quot; paired limb/fin bud&quot;</span></a>
+<a class="sourceLine" id="cb81-2" title="2">term &lt;-<span class="st"> &quot;UBERON:0004357&quot;</span></a>
+<a class="sourceLine" id="cb81-3" title="3"><span class="kw">termStat</span>(myTopAnatObject, term) </a></code></pre></div>
+<pre><code>##                Annotated Significant Expected
+## UBERON:0004357       172          37     8.49</code></pre>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb83-1" title="1"><span class="co"># 198 genes mapped to this term for Bgee 14.0 and Ensembl 84</span></a>
+<a class="sourceLine" id="cb83-2" title="2"><span class="kw">genesInTerm</span>(myTopAnatObject, term)</a></code></pre></div>
+<pre><code>## $`UBERON:0004357`
+##   [1] &quot;ENSDARG00000001057&quot; &quot;ENSDARG00000001785&quot; &quot;ENSDARG00000002445&quot;
+##   [4] &quot;ENSDARG00000002487&quot; &quot;ENSDARG00000002795&quot; &quot;ENSDARG00000002952&quot;
+##   [7] &quot;ENSDARG00000003293&quot; &quot;ENSDARG00000003399&quot; &quot;ENSDARG00000004954&quot;
+##  [10] &quot;ENSDARG00000005479&quot; &quot;ENSDARG00000005645&quot; &quot;ENSDARG00000005762&quot;
+##  [13] &quot;ENSDARG00000006921&quot; &quot;ENSDARG00000007407&quot; &quot;ENSDARG00000007438&quot;
+##  [16] &quot;ENSDARG00000007918&quot; &quot;ENSDARG00000008305&quot; &quot;ENSDARG00000008886&quot;
+##  [19] &quot;ENSDARG00000009438&quot; &quot;ENSDARG00000009534&quot; &quot;ENSDARG00000010192&quot;
+##  [22] &quot;ENSDARG00000011027&quot; &quot;ENSDARG00000011247&quot; &quot;ENSDARG00000011407&quot;
+##  [25] &quot;ENSDARG00000011618&quot; &quot;ENSDARG00000012078&quot; &quot;ENSDARG00000012422&quot;
+##  [28] &quot;ENSDARG00000012824&quot; &quot;ENSDARG00000013144&quot; &quot;ENSDARG00000013409&quot;
+##  [31] &quot;ENSDARG00000013881&quot; &quot;ENSDARG00000014091&quot; &quot;ENSDARG00000014626&quot;
+##  [34] &quot;ENSDARG00000014796&quot; &quot;ENSDARG00000015554&quot; &quot;ENSDARG00000015674&quot;
+##  [37] &quot;ENSDARG00000016022&quot; &quot;ENSDARG00000016454&quot; &quot;ENSDARG00000016858&quot;
+##  [40] &quot;ENSDARG00000017219&quot; &quot;ENSDARG00000017369&quot; &quot;ENSDARG00000018426&quot;
+##  [43] &quot;ENSDARG00000018460&quot; &quot;ENSDARG00000018492&quot; &quot;ENSDARG00000018902&quot;
+##  [46] &quot;ENSDARG00000019260&quot; &quot;ENSDARG00000019353&quot; &quot;ENSDARG00000019579&quot;
+##  [49] &quot;ENSDARG00000019995&quot; &quot;ENSDARG00000020143&quot; &quot;ENSDARG00000021442&quot;
+##  [52] &quot;ENSDARG00000021938&quot; &quot;ENSDARG00000022280&quot; &quot;ENSDARG00000024561&quot;
+##  [55] &quot;ENSDARG00000024894&quot; &quot;ENSDARG00000025081&quot; &quot;ENSDARG00000025641&quot;
+##  [58] &quot;ENSDARG00000025891&quot; &quot;ENSDARG00000028071&quot; &quot;ENSDARG00000029764&quot;
+##  [61] &quot;ENSDARG00000030110&quot; &quot;ENSDARG00000030756&quot; &quot;ENSDARG00000031222&quot;
+##  [64] &quot;ENSDARG00000031894&quot; &quot;ENSDARG00000031952&quot; &quot;ENSDARG00000033327&quot;
+##  [67] &quot;ENSDARG00000034375&quot; &quot;ENSDARG00000035648&quot; &quot;ENSDARG00000036254&quot;
+##  [70] &quot;ENSDARG00000036558&quot; &quot;ENSDARG00000037109&quot; &quot;ENSDARG00000037675&quot;
+##  [73] &quot;ENSDARG00000037677&quot; &quot;ENSDARG00000038006&quot; &quot;ENSDARG00000038428&quot;
+##  [76] &quot;ENSDARG00000038672&quot; &quot;ENSDARG00000038879&quot; &quot;ENSDARG00000040764&quot;
+##  [79] &quot;ENSDARG00000041609&quot; &quot;ENSDARG00000041706&quot; &quot;ENSDARG00000041799&quot;
+##  [82] &quot;ENSDARG00000042296&quot; &quot;ENSDARG00000043130&quot; &quot;ENSDARG00000043559&quot;
+##  [85] &quot;ENSDARG00000043923&quot; &quot;ENSDARG00000044574&quot; &quot;ENSDARG00000052131&quot;
+##  [88] &quot;ENSDARG00000052139&quot; &quot;ENSDARG00000052344&quot; &quot;ENSDARG00000052652&quot;
+##  [91] &quot;ENSDARG00000053479&quot; &quot;ENSDARG00000054026&quot; &quot;ENSDARG00000055026&quot;
+##  [94] &quot;ENSDARG00000055027&quot; &quot;ENSDARG00000055381&quot; &quot;ENSDARG00000055398&quot;
+##  [97] &quot;ENSDARG00000056427&quot; &quot;ENSDARG00000056995&quot; &quot;ENSDARG00000058115&quot;
+## [100] &quot;ENSDARG00000058543&quot; &quot;ENSDARG00000058822&quot; &quot;ENSDARG00000058996&quot;
+## [103] &quot;ENSDARG00000059233&quot; &quot;ENSDARG00000059276&quot; &quot;ENSDARG00000059279&quot;
+## [106] &quot;ENSDARG00000060808&quot; &quot;ENSDARG00000061328&quot; &quot;ENSDARG00000061345&quot;
+## [109] &quot;ENSDARG00000061600&quot; &quot;ENSDARG00000068365&quot; &quot;ENSDARG00000068732&quot;
+## [112] &quot;ENSDARG00000069105&quot; &quot;ENSDARG00000069473&quot; &quot;ENSDARG00000070069&quot;
+## [115] &quot;ENSDARG00000070670&quot; &quot;ENSDARG00000070903&quot; &quot;ENSDARG00000071336&quot;
+## [118] &quot;ENSDARG00000071560&quot; &quot;ENSDARG00000071699&quot; &quot;ENSDARG00000073814&quot;
+## [121] &quot;ENSDARG00000074378&quot; &quot;ENSDARG00000075559&quot; &quot;ENSDARG00000075713&quot;
+## [124] &quot;ENSDARG00000076010&quot; &quot;ENSDARG00000076554&quot; &quot;ENSDARG00000076566&quot;
+## [127] &quot;ENSDARG00000076856&quot; &quot;ENSDARG00000077121&quot; &quot;ENSDARG00000077353&quot;
+## [130] &quot;ENSDARG00000077473&quot; &quot;ENSDARG00000078696&quot; &quot;ENSDARG00000078784&quot;
+## [133] &quot;ENSDARG00000079027&quot; &quot;ENSDARG00000079201&quot; &quot;ENSDARG00000079922&quot;
+## [136] &quot;ENSDARG00000079964&quot; &quot;ENSDARG00000089805&quot; &quot;ENSDARG00000090820&quot;
+## [139] &quot;ENSDARG00000091161&quot; &quot;ENSDARG00000092136&quot; &quot;ENSDARG00000092809&quot;
+## [142] &quot;ENSDARG00000095743&quot; &quot;ENSDARG00000096546&quot; &quot;ENSDARG00000098359&quot;
+## [145] &quot;ENSDARG00000099088&quot; &quot;ENSDARG00000099458&quot; &quot;ENSDARG00000099996&quot;
+## [148] &quot;ENSDARG00000100236&quot; &quot;ENSDARG00000100252&quot; &quot;ENSDARG00000100312&quot;
+## [151] &quot;ENSDARG00000100558&quot; &quot;ENSDARG00000100725&quot; &quot;ENSDARG00000101076&quot;
+## [154] &quot;ENSDARG00000101199&quot; &quot;ENSDARG00000101209&quot; &quot;ENSDARG00000101244&quot;
+## [157] &quot;ENSDARG00000101701&quot; &quot;ENSDARG00000101766&quot; &quot;ENSDARG00000101831&quot;
+## [160] &quot;ENSDARG00000102153&quot; &quot;ENSDARG00000102470&quot; &quot;ENSDARG00000102750&quot;
+## [163] &quot;ENSDARG00000102824&quot; &quot;ENSDARG00000102995&quot; &quot;ENSDARG00000103432&quot;
+## [166] &quot;ENSDARG00000103515&quot; &quot;ENSDARG00000103754&quot; &quot;ENSDARG00000103799&quot;
+## [169] &quot;ENSDARG00000104353&quot; &quot;ENSDARG00000104808&quot; &quot;ENSDARG00000104815&quot;
+## [172] &quot;ENSDARG00000105230&quot;</code></pre>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb85-1" title="1"><span class="co"># 48 significant genes mapped to this term for Bgee 14.0 and Ensembl 84</span></a>
+<a class="sourceLine" id="cb85-2" title="2">annotated &lt;-<span class="st"> </span><span class="kw">genesInTerm</span>(myTopAnatObject, term)[[<span class="st">&quot;UBERON:0004357&quot;</span>]]</a>
+<a class="sourceLine" id="cb85-3" title="3">annotated[annotated <span class="op">%in%</span><span class="st"> </span><span class="kw">sigGenes</span>(myTopAnatObject)]</a></code></pre></div>
+<pre><code>##  [1] &quot;ENSDARG00000002445&quot; &quot;ENSDARG00000002952&quot; &quot;ENSDARG00000003293&quot;
+##  [4] &quot;ENSDARG00000008305&quot; &quot;ENSDARG00000011407&quot; &quot;ENSDARG00000012824&quot;
+##  [7] &quot;ENSDARG00000013881&quot; &quot;ENSDARG00000014091&quot; &quot;ENSDARG00000018426&quot;
+## [10] &quot;ENSDARG00000018902&quot; &quot;ENSDARG00000019260&quot; &quot;ENSDARG00000019353&quot;
+## [13] &quot;ENSDARG00000024894&quot; &quot;ENSDARG00000028071&quot; &quot;ENSDARG00000031894&quot;
+## [16] &quot;ENSDARG00000036254&quot; &quot;ENSDARG00000037677&quot; &quot;ENSDARG00000038006&quot;
+## [19] &quot;ENSDARG00000038672&quot; &quot;ENSDARG00000041799&quot; &quot;ENSDARG00000042296&quot;
+## [22] &quot;ENSDARG00000043559&quot; &quot;ENSDARG00000043923&quot; &quot;ENSDARG00000056427&quot;
+## [25] &quot;ENSDARG00000058543&quot; &quot;ENSDARG00000069473&quot; &quot;ENSDARG00000070903&quot;
+## [28] &quot;ENSDARG00000071336&quot; &quot;ENSDARG00000073814&quot; &quot;ENSDARG00000076856&quot;
+## [31] &quot;ENSDARG00000077121&quot; &quot;ENSDARG00000077353&quot; &quot;ENSDARG00000079027&quot;
+## [34] &quot;ENSDARG00000099088&quot; &quot;ENSDARG00000100252&quot; &quot;ENSDARG00000100312&quot;
+## [37] &quot;ENSDARG00000101831&quot;</code></pre>
+<p><em>Warning</em>: it is debated whether FDR correction is appropriate on enrichment test results, since tests on different terms of the ontologies are not independent. A nice discussion can be found in the vignette of the <code>topGO</code> package.</p>
+</div>
+<div id="store-expression-data-localy" class="section level4">
+<h4>Store expression data localy</h4>
+<p>Since version 2.14.0 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database. The advantages of this approach compared to the one used in the previous BgeeDB versions are: * do not anymore need a server with lot of memory to access to subset of huge dataset (e.g GTeX dataset) * more granular filtering using arguments in the getData() function * do not download twice the same data * fast access to data once integrated in the local database</p>
+<p>This approach comes with some drawbacks : * the SQLite local database use more disk space than the previously conpressed .rds approach * first access to a dataset takes more time (integration to SQLite local database is time consuming)</p>
+<p>It is possible to remove .rds files generated in previous versions of BgeeDB and not used anymore since version 2.14.0. The function below delete all .rds files for the selected species and for all datatype.</p>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb87-1" title="1">bgee &lt;-<span class="st"> </span>Bgee<span class="op">$</span><span class="kw">new</span>(<span class="dt">species=</span><span class="st">&quot;Mus_musculus&quot;</span>, <span class="dt">release =</span> <span class="st">&quot;14.1&quot;</span>)</a>
+<a class="sourceLine" id="cb87-2" title="2"><span class="co"># delete all old .rds files of species Mus musculus</span></a>
+<a class="sourceLine" id="cb87-3" title="3"><span class="kw">deleteOldData</span>(bgee)</a></code></pre></div>
+<p>As the new SQLite approach use more disk space it is now possible to delete all local data of one species from one release of Bgee.</p>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb88-1" title="1">bgee &lt;-<span class="st"> </span>Bgee<span class="op">$</span><span class="kw">new</span>(<span class="dt">species=</span><span class="st">&quot;Mus_musculus&quot;</span>, <span class="dt">release =</span> <span class="st">&quot;14.1&quot;</span>)</a>
+<a class="sourceLine" id="cb88-2" title="2"><span class="co"># delete local SQLite database of species Mus musculus from Bgee 14.1</span></a>
+<a class="sourceLine" id="cb88-3" title="3"><span class="kw">deleteLocalData</span>(bgee)</a></code></pre></div>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
