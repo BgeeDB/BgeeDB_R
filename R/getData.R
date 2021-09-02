@@ -48,8 +48,19 @@
 #' @export
 #' 
 getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
-    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
+    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
+    withDescendantAnatEntities = FALSE, withDescendantStages = FALSE, 
+    withDescendantCellTypes = FALSE) {
   check_object(myBgeeObject)
+  if (withDescendantAnatEntities) {
+    anatEntityId <- c(anatEntityId, getDescendantAnatEntities(bgee = myBgeeObject, ids = anatEntityId))
+  }
+  if (withDescendantStages) {
+    stageId <- c(stageId, getDescendantStages(bgee = myBgeeObject, ids = stageId))
+  }
+  if (withDescendantCellTypes) {
+    cellTypeId <- c(cellTypeId, getDescendantCellTypes(bgee = myBgeeObject, ids = cellTypeId))
+  }
   check_condition_parameters(myBgeeObject = myBgeeObject, anatEntityId = anatEntityId, 
     stageId = stageId, cellTypeId = cellTypeId, sex = sex, strain = strain)
   import_data(myBgeeObject = myBgeeObject, experimentId = experimentId, sampleId = sampleId, 
@@ -410,4 +421,45 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   result <- dbGetQuery(conn, query)
   dbDisconnect(conn)
   return(result)
+}
+
+getDescendantAnatEntities <- function (bgee, ids) {
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "anatEntities"))
+}
+
+getDescendantCellTypes <- function (bgee, ids) {
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "anatEntities"))
+}
+
+getDescendantStages <- function (bgee, ids) {
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "stages"))
+}
+
+getDescendant <- function (bgee, ids, conditionParam) {
+  myUrl <- paste0("http://localhost:8080/bgee-webapp/",
+  "?page=r_package&action=COND_PARAM&attr_list=ATTRIBUTS&species_id=SPECIES&",
+  "propagation=DESCENDANTS&display_type=tsv")
+  myUrl <- gsub("SPECIES", bgee$speciesId, myUrl, perl = FALSE)
+  myUrl <- gsub("ATTRIBUTS", paste(ids,collapse = ","), myUrl, perl = TRUE)
+  if (conditionParam == "anatEntities") {
+    myUrl <- gsub("COND_PARAM", "get_propagation_anat_entity", myUrl, perl = TRUE)
+  } else if (conditionParam == "stages") {
+    myUrl <- gsub("COND_PARAM", "get_propagation_dev_stage", myUrl, perl = TRUE)
+  }
+  cat(myUrl)
+  message(myUrl)
+  destFile <- file.path(bgee$pathToData, "descendants.tsv")
+  success <- bgee_download_file(url = myUrl, destfile = destFile)
+  descendants <- read.table(destFile, header = TRUE, sep = "\t")
+  # retrieve annotation in order to keep only descendants present in the annotation
+  annotation <- getAnnotation(bgee)$sample.annotation
+  if (conditionParam == "anatEntities") {
+    present <- unique(annotation$Anatomical.entity.ID)
+  } else if (conditionParam == "stages") {
+    present <- unique(annotation$Stage.ID)
+  }
+  # Do not use column name because it is not the same depending on the
+  # queried condition parameter
+  wanted_descendants <- descendants[descendants[,1] %in% present,][,1]
+  return(wanted_descendants)
 }
