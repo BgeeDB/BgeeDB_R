@@ -131,7 +131,7 @@ import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL,
 # function using annotations to select which experiments the user needs to load all wanted data
 detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
-  annotation <- getAnnotation(myBgeeObject)
+  annotation <- suppressMessages(getAnnotation(myBgeeObject))
   experiments <- annotation$sample.annotation
   # filter list of experiments to download
   if(!is.null(experimentId)) {
@@ -446,13 +446,11 @@ getDescendant <- function (bgee, ids, conditionParam) {
   } else if (conditionParam == "stages") {
     myUrl <- gsub("COND_PARAM", "get_propagation_dev_stage", myUrl, perl = TRUE)
   }
-  cat(myUrl)
-  message(myUrl)
   destFile <- file.path(bgee$pathToData, "descendants.tsv")
   success <- bgee_download_file(url = myUrl, destfile = destFile)
   descendants <- read.table(destFile, header = TRUE, sep = "\t")
   # retrieve annotation in order to keep only descendants present in the annotation
-  annotation <- getAnnotation(bgee)$sample.annotation
+  annotation <- suppressMessages(getAnnotation(bgee)$sample.annotation)
   if (conditionParam == "anatEntities") {
     present <- unique(annotation$Anatomical.entity.ID)
   } else if (conditionParam == "stages") {
