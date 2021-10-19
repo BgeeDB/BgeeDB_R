@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.12688/f1000research.9973.2.svg)](https://doi.org/10.12688/f1000research.9973.2)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.163768.svg)](https://doi.org/10.5281/zenodo.163768)
 [![Bioc](http://www.bioconductor.org/shields/years-in-bioc/BgeeDB.svg)](https://www.bioconductor.org/packages/devel/bioc/html/BgeeDB.html#since)
 [![Twitter](https://img.shields.io/twitter/follow/Bgeedb?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=Bgeedb)
