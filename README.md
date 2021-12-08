@@ -4,8 +4,6 @@
 [![Twitter](https://img.shields.io/twitter/follow/Bgeedb?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=Bgeedb)
 
 ---
-output: html_document
----
 # BgeeDB, an R package for retrieval of curated expression datasets and for gene list enrichment tests
 ##### Andrea Komljenović, Julien Roux, Marc Robinson-Rechavi, Frédéric Bastian
 
