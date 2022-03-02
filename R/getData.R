@@ -162,6 +162,10 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
     tempFiles <- grep(paste0(".*", paste(experimentId, collapse=".*|.*"), ".*"), allExperiments, value = TRUE)
     myData <- unlist(lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData))
     file.remove(allExperiments)
+    # at this point remaining .zip files correspond to archive downloaded but not
+    # asked by the user. They have to to be removed
+    unlink(file.path(myBgeeObject$pathToData, "*.zip"))
+
   } else if (grepl(".tar.gz$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
     # When using untar it is only possible to untar OR list files/dir present in a tarball. 
@@ -182,11 +186,15 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
       } 
     }
     # list all expression files
-    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar, exdir=myBgeeObject$pathToData, list = TRUE)))
+    myData <- file.path(myBgeeObject$pathToData, unlist(lapply(tempFiles, untar,
+      exdir=myBgeeObject$pathToData, list = TRUE)))
     # delete intermediary archives
     unlink(file.path(myBgeeObject$pathToData, allExpressionValues))
-    unlink(dirname(tempFiles[1]), recursive = TRUE)
+    unlink(tempFiles)
     message("Finished uncompress tar files")
+    # at this point remaining tar.gz files correspond to tarball downloaded but not
+    # asked by the user. They have to to be removed
+    unlink(file.path(myBgeeObject$pathToData, "*.tar.gz"))
   }
   return(myData)
 }

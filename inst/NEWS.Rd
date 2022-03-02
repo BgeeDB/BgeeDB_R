@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.14.2 (2022-02)}{
+  \itemize{
+    \item Solve issue when downloading all data from one species
+  }
+}
+
 \section{Version 2.14.1 (2020-05)}{
   \itemize{
     \item Solve download timeout with Windows
