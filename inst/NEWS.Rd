@@ -1,14 +1,19 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+
+\section{Version 2.18.2 (2022-02)}{
+  \itemize{
+    \item Solve issue when downloading all data from one species
+  }
+}
+
 \section{Version 2.18.1 (2021-05)}{
   \itemize{
     \item Possibility to retrieve single cell full length RNA-Seq from Bgee 15.0 and after
     \item Possibility to filter data based on sex and strain for Bgee 15.0 and after
     \item Possibility to filter on cellTypeId for single cell full length RNA-Seq for Bgee 15.0 and after
     \item Added pValue in the download files
-  }
-}
 
 \section{Version 2.14.1 (2020-05)}{
   \itemize{
