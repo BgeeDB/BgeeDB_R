@@ -214,6 +214,11 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
 # return the name of all uncompressed files
 download_and_uncompress_species = function(myBgeeObject, experimentId) {
   message("Downloading all expression data for species ", myBgeeObject$speciesName)
+  
+  #temporarily update timeout option
+  op <- options(timeout = 1800)
+  on.exit(options(op))
+  
   allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
   success <- bgee_download_file(url = myBgeeObject$allExperimentsUrl, 
     destfile = file.path(myBgeeObject$pathToData, allExpressionValues), mode = 'wb')
@@ -288,6 +293,9 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
 # uncompressed files
 download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
   message("download experiments")
+  #temporarily update timeout option
+  op <- options(timeout = 1800)
+  # on.exit(options(op))
   tempFiles <- NULL
   for (i in seq(experimentId)) {
     finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId[i], myBgeeObject$experimentUrl)
