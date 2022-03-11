@@ -162,13 +162,13 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
 experiments_to_download = function(myBgeeObject, experimentId, sqlite_file) {
   if (file.exists(sqlite_file)) {
     conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+    on.exit(dbDisconnect(conn))
     tables <- dbListTables(conn)
     if (isTRUE(myBgeeObject$dataType %in% tables)) {
       exp_queries <- paste0("Select distinct([Experiment.ID]) from ", myBgeeObject$dataType)
       existing_experiments <- dbGetQuery(conn, exp_queries)
       return(experimentId[(!experimentId %in% existing_experiments$Experiment.ID)])
     }
-    dbDisconnect(conn)
   }
   # if local database does not exist return all experiments
   return(experimentId)
@@ -190,24 +190,20 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
       myData <- download_and_uncompress_experiment(myBgeeObject, experimentId)
     }
     message("Save data in local sqlite database")
+    conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+    on.exit(dbDisconnect(conn))
     for(i in seq(myData)) {
-      conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
       dbWriteTable(conn = conn, name = myBgeeObject$dataType, 
         value = myData[i], header=TRUE, append=TRUE, sep="\t")
-      dbDisconnect(conn)
-      # those lines are mandatory as Rank and pValue can have NA values that
-      # are transformed to 0 by dbQuery() function.
     }
+    # those lines are mandatory as Rank and pValue can have NA values that
+    # are transformed to 0 by dbQuery() function.
     if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
-      conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
       updatePvalues <- dbExecute(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
         where [pValue] = \"NA\""))
-      dbDisconnect(conn)
       if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length") {
-        conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
         updateRanks <- dbExecute(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
           where [Rank] = \"NA\""))
-        dbDisconnect(conn)
       }
     }
     unlink(myData)
@@ -218,6 +214,11 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
 # return the name of all uncompressed files
 download_and_uncompress_species = function(myBgeeObject, experimentId) {
   message("Downloading all expression data for species ", myBgeeObject$speciesName)
+  
+  #temporarily update timeout option
+  op <- options(timeout = 1800)
+  on.exit(options(op))
+  
   allExpressionValues <- basename(myBgeeObject$allExperimentsUrl)
   success <- bgee_download_file(url = myBgeeObject$allExperimentsUrl, 
     destfile = file.path(myBgeeObject$pathToData, allExpressionValues), mode = 'wb')
@@ -235,6 +236,10 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
       allExperiments, value = TRUE)
     myData <- unlist(lapply(tempFiles, unzip, exdir=myBgeeObject$pathToData))
     file.remove(allExperiments)
+    # at this point remaining .zip files correspond to archive downloaded but not
+    # asked by the user. They have to to be removed
+    unlink(file.path(myBgeeObject$pathToData, "*.zip"))
+
   # compressed tarball for bgee14.0 and after
   } else if (grepl(".tar.gz$", allExpressionValues, perl = TRUE)) {
     message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
@@ -272,10 +277,14 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
         myData <- c(myData, currentData)
       } 
     }
+
     # delete intermediary archives
     unlink(file.path(myBgeeObject$pathToData, allExpressionValues))
-    unlink(dirname(tempFiles[1]), recursive = TRUE)
+    unlink(tempFiles)
     message("Finished uncompress tar files")
+    # at this point remaining tar.gz files correspond to tarball downloaded but not
+    # asked by the user. They have to to be removed
+    unlink(file.path(myBgeeObject$pathToData, "*.tar.gz"))
   }
   return(myData)
 }
@@ -284,6 +293,9 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
 # uncompressed files
 download_and_uncompress_experiment = function(myBgeeObject, experimentId) {
   message("download experiments")
+  #temporarily update timeout option
+  op <- options(timeout = 1800)
+  # on.exit(options(op))
   tempFiles <- NULL
   for (i in seq(experimentId)) {
     finalExperimentUrl <- gsub("EXPIDPATTERN", experimentId[i], myBgeeObject$experimentUrl)
@@ -315,6 +327,7 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
     stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
     sqlite_file = sqlitePath(myBgeeObject)) {
   conn <- dbConnect(RSQLite::SQLite(), sqlite_file)
+  on.exit(dbDisconnect(conn))
   # generate query
   query <- paste0("SELECT * from ", myBgeeObject$dataType)
   if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)
@@ -408,6 +421,5 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   }
   message("Load queried data. The query is : ", query)
   result <- dbGetQuery(conn, query)
-  dbDisconnect(conn)
   return(result)
 }

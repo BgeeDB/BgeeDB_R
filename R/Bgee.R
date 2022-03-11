@@ -154,7 +154,9 @@ Bgee <- setRefClass(
           speciesName <<- gsub(" ", "_", paste(allSpecies[allSpecies$ID == species, 2:3], collapse = "_"))
         }
       } else {
-        speciesSplitted <- unlist(strsplit(species, split = "_"))
+        speciesSplitted <- unlist(regmatches(species, regexpr("_", species), invert = TRUE))
+        # update species name in case it is composed of more than one word (e.g lupus familiaris)
+        speciesSplitted[2] <- gsub("_", " ", speciesSplitted[2])
         if (sum(allSpecies$GENUS == speciesSplitted[1] &
                 allSpecies$SPECIES_NAME == speciesSplitted[2]) != 1) {
           stop(paste0("ERROR: The specified species name is invalid, or not available in Bgee release ",
