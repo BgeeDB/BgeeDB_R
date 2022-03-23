@@ -436,15 +436,18 @@ getDescendantStages <- function (bgee, ids) {
 }
 
 getDescendant <- function (bgee, ids, conditionParam) {
-  myUrl <- paste0("http://localhost:8080/bgee-webapp/",
-  "?page=r_package&action=COND_PARAM&attr_list=ATTRIBUTS&species_id=SPECIES&",
+  myUrl <- paste0(bgee$topAnatUrl,
+  "?page=r_package&action=COND_PARAM&ENTITIES&species_id=SPECIES&",
   "propagation=DESCENDANTS&display_type=tsv")
   myUrl <- gsub("SPECIES", bgee$speciesId, myUrl, perl = FALSE)
-  myUrl <- gsub("ATTRIBUTS", paste(ids,collapse = ","), myUrl, perl = TRUE)
   if (conditionParam == "anatEntities") {
     myUrl <- gsub("COND_PARAM", "get_propagation_anat_entity", myUrl, perl = TRUE)
+    myUrl <- gsub("ENTITIES", paste0("anat_entity_id=",
+      paste(ids, collapse = "&anat_entity_id=")), myUrl, perl = TRUE)
   } else if (conditionParam == "stages") {
     myUrl <- gsub("COND_PARAM", "get_propagation_dev_stage", myUrl, perl = TRUE)
+    myUrl <- gsub("ENTITIES", paste0("stage_id=",
+      paste(ids, collapse = "&stage_id=")), myUrl, perl = TRUE)
   }
   destFile <- file.path(bgee$pathToData, "descendants.tsv")
   success <- bgee_download_file(url = myUrl, destfile = destFile)
