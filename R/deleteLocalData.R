@@ -4,6 +4,7 @@
 #' rather from one datatype or all datatypes of one species.
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species
+#' 
 #' @param allDataTypes A boolean defining rather data of all datatypes from the selected species
 #'  should be deleted. If TRUE, the local sqlite database file is deleted. If FALSE, data
 #'  corresponding to the datatype of the `myBgeeObject` object will be deleted from the local
@@ -13,7 +14,8 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-#'   deleteLocalData(bgee)
+#'   data <- getData(bgee, experimentId = "SRP007359")
+#'   deleteLocalData(bgee, allDataTypes = TRUE)
 #' }
 #'
 #' @export
@@ -22,7 +24,6 @@ deleteLocalData <- function(myBgeeObject, allDataTypes = FALSE) {
   database_path <- sqlitePath(myBgeeObject = myBgeeObject)
   if(allDataTypes) {
     file.remove(database_path)
-    file.create(database_path)
     message("Local database deleted successfully for ",
       myBgeeObject$speciesName, " [speciesId:", myBgeeObject$speciesId, "]")
   } else {
