@@ -31,6 +31,15 @@
 #' @param strain Filter allowing to specify one or more strains. Default is 
 #' NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after
 #' 
+#' @param withDescendantAnatEntities Allows to filter on the selected anatEntityId and all its descendants.
+#' This functionality is available for Bgee 15.0 release and after
+#'
+#' @param withDescendantStages Allows to filter on the selected stageId and all its descendants.
+#' This functionality is available for Bgee 15.0 release and after
+#'
+#' @param withDescendantCellTypes Allows to filter on the selected cellTypeId and all its descendants.
+#' This functionality is available for Bgee 15.0 release and after
+#'
 #' @return Return a dataframe containing all Bgee processed expression data from the selected species 
 #' and datatype using specified filters with operator AND.
 #'
@@ -52,13 +61,21 @@ getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL,
     withDescendantAnatEntities = FALSE, withDescendantStages = FALSE, 
     withDescendantCellTypes = FALSE) {
   check_object(myBgeeObject)
-  if (withDescendantAnatEntities) {
+  # write a warning message if user tried to retrieve ontology terms with descendants for
+  # a bgee release where this functionality was not yet implemented
+  compare_version_number <- gsub("_", ".", myBgeeObject$release)
+  if ((withDescendantAnatEntities | withDescendantStages | withDescendantCellTypes) &
+      compareVersion(a = compare_version_number , b = "15.0") < 0) {
+    warning("withDescendant functionalities are available only for Bgee 15.0",
+            " release and after.")
+  }
+  if (withDescendantAnatEntities & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     anatEntityId <- c(anatEntityId, getDescendantAnatEntities(bgee = myBgeeObject, ids = anatEntityId))
   }
-  if (withDescendantStages) {
+  if (withDescendantStages & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     stageId <- c(stageId, getDescendantStages(bgee = myBgeeObject, ids = stageId))
   }
-  if (withDescendantCellTypes) {
+  if (withDescendantCellTypes & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     cellTypeId <- c(cellTypeId, getDescendantCellTypes(bgee = myBgeeObject, ids = cellTypeId))
   }
   check_condition_parameters(myBgeeObject = myBgeeObject, anatEntityId = anatEntityId, 
@@ -438,7 +455,7 @@ getDescendantStages <- function (bgee, ids) {
 getDescendant <- function (bgee, ids, conditionParam) {
   myUrl <- paste0(bgee$topAnatUrl,
   "?page=r_package&action=COND_PARAM&ENTITIES&species_id=SPECIES&",
-  "propagation=DESCENDANTS&display_type=tsv")
+  "propagation=DESCENDANTS&attr_list=ID&display_type=tsv")
   myUrl <- gsub("SPECIES", bgee$speciesId, myUrl, perl = FALSE)
   if (conditionParam == "anatEntities") {
     myUrl <- gsub("COND_PARAM", "get_propagation_anat_entity", myUrl, perl = TRUE)
@@ -462,5 +479,6 @@ getDescendant <- function (bgee, ids, conditionParam) {
   # Do not use column name because it is not the same depending on the
   # queried condition parameter
   wanted_descendants <- descendants[descendants[,1] %in% present,][,1]
+  unlink(destFile)
   return(wanted_descendants)
 }
