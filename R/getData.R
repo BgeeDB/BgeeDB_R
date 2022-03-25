@@ -66,8 +66,8 @@ getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL,
   compare_version_number <- gsub("_", ".", myBgeeObject$release)
   if ((withDescendantAnatEntities | withDescendantStages | withDescendantCellTypes) &
       compareVersion(a = compare_version_number , b = "15.0") < 0) {
-    warning("withDescendant functionalities are available only for Bgee 15.0",
-            " release and after.")
+    message("withDescendant functionality is available only for Bgee 15.0",
+            " release and after. Will not retrieved descendant of selected parameters.")
   }
   if (withDescendantAnatEntities & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     anatEntityId <- c(anatEntityId, getDescendantAnatEntities(bgee = myBgeeObject, ids = anatEntityId))
@@ -139,6 +139,11 @@ import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL,
     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   user_experiments <- detect_experiments(myBgeeObject, experimentId, sampleId, anatEntityId, 
     stageId, cellTypeId, sex, strain)
+  # stop code if no experiments correspond to user criteria
+  if(length(user_experiments) == 0) {
+    stop("No data correspond to selected parameters. Please look at the annotation to ",
+         "select available data.")
+  }
   missing_experiments <- experiments_to_download(myBgeeObject = myBgeeObject, 
     experimentId = user_experiments, sqlite_file = sqlitePath(myBgeeObject))
   integrate_experiments(myBgeeObject = myBgeeObject, experimentId = missing_experiments, 
@@ -478,7 +483,10 @@ getDescendant <- function (bgee, ids, conditionParam) {
   }
   # Do not use column name because it is not the same depending on the
   # queried condition parameter
-  wanted_descendants <- descendants[descendants[,1] %in% present,][,1]
+  wanted_descendants <- descendants[descendants[,1] %in% present,]
+  if(length(wanted_descendants) > 0) {
+    wanted_descendants <- wanted_descendants[,1]
+  }
   unlink(destFile)
   return(wanted_descendants)
 }
