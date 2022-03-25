@@ -484,9 +484,6 @@ getDescendant <- function (bgee, ids, conditionParam) {
   # Do not use column name because it is not the same depending on the
   # queried condition parameter
   wanted_descendants <- descendants[descendants[,1] %in% present,]
-  if(length(wanted_descendants) > 0) {
-    wanted_descendants <- wanted_descendants[,1]
-  }
   unlink(destFile)
   return(wanted_descendants)
 }
