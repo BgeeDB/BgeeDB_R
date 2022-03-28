@@ -4,7 +4,7 @@
 \name{geneList}
 \alias{geneList}
 \title{Example of gene list object used to run a topAnat enrichment test, created on June 2018.
-The format of the gene list is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not.
+The format of the gene list is the same as the gene list required to build a \code{topGOdata} object in the \code{topGO} package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not.
 In this example the foreground genes are zebrafish genes with an annotated phenotype related to "pectoral fin", and the background is composed of all zebrafish Ensembl genes with an annotated phenotype from ZFIN.
 The gene list was built using the biomaRt package, and the code used can be found in the vignette of the package.}
 \format{
@@ -15,7 +15,7 @@ data(geneList)
 }
 \description{
 Example of gene list object used to run a topAnat enrichment test, created on June 2018.
-The format of the gene list is the same as the gene list required to build a ```topGOdata``` object in the ```topGO``` package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not.
+The format of the gene list is the same as the gene list required to build a \code{topGOdata} object in the \code{topGO} package: a vector with background genes as names, and 0 or 1 values depending if a gene is in the foreground or not.
 In this example the foreground genes are zebrafish genes with an annotated phenotype related to "pectoral fin", and the background is composed of all zebrafish Ensembl genes with an annotated phenotype from ZFIN.
 The gene list was built using the biomaRt package, and the code used can be found in the vignette of the package.
 }

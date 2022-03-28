@@ -21,32 +21,32 @@ loadTopAnatData(
 \item{stage}{A character indicating the targeted developmental stages for the analysis. Developmental stages can be chosen from the developmental stage ontology used in Bgee (available at \url{https://github.com/obophenotype/developmental-stage-ontologies}). If a stage is specified, the expression pattern mapped to this stage and all children developmental stages (substages) will be retrieved. Default is NULL, meaning that expression patterns of genes are retrieved regardless of the developmental stage displaying expression; this is equivalent to specifying stage="UBERON:0000104" (life cycle, the root of the stage ontology).
 For information, the most useful stages (going no deeper than level 3 of the ontology) include:
 \itemize{
-  \item{UBERON:0000068 (embryo stage)}
-  \itemize{
-    \item{UBERON:0000106 (zygote stage)}
-    \item{UBERON:0000107 (cleavage stage)}
-    \item{UBERON:0000108 (blastula stage)}
-    \item{UBERON:0000109 (gastrula stage)}
-    \item{UBERON:0000110 (neurula stage)}
-    \item{UBERON:0000111 (organogenesis stage)}
-    \item{UBERON:0007220 (late embryonic stage)}
-    \item{UBERON:0004707 (pharyngula stage)}
-  }
-  \item{UBERON:0000092 (post-embryonic stage)}
-  \itemize{
-    \item{UBERON:0000069 (larval stage)}
-    \item{UBERON:0000070 (pupal stage)}
-    \item{UBERON:0000066 (fully formed stage)}
-  }
+\item{UBERON:0000068 (embryo stage)}
+\itemize{
+\item{UBERON:0000106 (zygote stage)}
+\item{UBERON:0000107 (cleavage stage)}
+\item{UBERON:0000108 (blastula stage)}
+\item{UBERON:0000109 (gastrula stage)}
+\item{UBERON:0000110 (neurula stage)}
+\item{UBERON:0000111 (organogenesis stage)}
+\item{UBERON:0007220 (late embryonic stage)}
+\item{UBERON:0004707 (pharyngula stage)}
+}
+\item{UBERON:0000092 (post-embryonic stage)}
+\itemize{
+\item{UBERON:0000069 (larval stage)}
+\item{UBERON:0000070 (pupal stage)}
+\item{UBERON:0000066 (fully formed stage)}
+}
 }}
 }
 \value{
 A list of 4 elements:
 \itemize{
-  \item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
-  \item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
-  \item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
-  \item{The Bgee class object thta was used to retrieve the data.}
+\item{A \code{gene2anatomy} list, mapping genes to anatomical structures based on expression calls.}
+\item{A \code{organ.names} data frame, with the name corresponding to UBERON IDs.}
+\item{A \code{organ.relationships} list, giving the relationships between anatomical structures in the UBERON ontology (based on parent-child "is_a" and "part_of" relationships).}
+\item{The Bgee class object thta was used to retrieve the data.}
 }
 }
 \description{
