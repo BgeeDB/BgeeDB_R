@@ -441,11 +441,16 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
               & is.null(stageId) & is.null(cellTypeId) & is.null(sex))) {
           query <- paste0(query, " AND ")
         }
+        # rsqlite does not allow to remove double quotes when inserting data in the local database.
+        # strain data are surrounded by " in the tsv files. These quotes allows to have
+        # strain with a name containing special characters.
+        # Following the SQL syntax, it is mandatory to provide 2 double quotes in order
+        # escape existing double quotes in the database.
         if(length(strain) == 1) {
-          query <- paste0(query, "[Strain] = \"", as.character(strain), "\"")
+          query <- paste0(query, "[Strain] = \"\"\"", as.character(strain), "\"\"\"")
         } else {
-          query <- paste0(query, "[Strain] IN (\"",paste(as.character(strain), 
-            collapse="\", \""), "\")")
+          query <- paste0(query, "[Strain] IN (\"\"\"",paste(as.character(strain), 
+            collapse="\"\"\", \"\"\""), "\"\"\")")
         }
       }
     }
