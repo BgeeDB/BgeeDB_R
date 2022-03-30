@@ -184,7 +184,9 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
     experiments <- experiments[experiments$Stage.ID %in% stageId,]
   }
   if(!is.null(sex)) {
-    experiments <- experiments[experiments$Sex %in% stageId,]
+    # annotation files contain NA values. dplyr:na_if(sex, "NA") function allows to change
+    # queried "NA" values to NA values
+    experiments <- experiments[experiments$Sex %in% na_if(sex, "NA"),]
   }
   if(!is.null(strain)) {
     experiments <- experiments[experiments$Strain %in% strain,]
