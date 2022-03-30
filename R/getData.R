@@ -70,12 +70,21 @@ getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL,
             " release and after. Will not retrieved descendant of selected parameters.")
   }
   if (withDescendantAnatEntities & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+    if(is.null(anatEntityId)) {
+      warning("No anatomical entity was provided. Not possible to filter on descendant anatomical entities.")
+    }
     anatEntityId <- c(anatEntityId, getDescendantAnatEntities(bgee = myBgeeObject, ids = anatEntityId))
   }
   if (withDescendantStages & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+    if(is.null(stageId)) {
+      warning("No developmental stage was provided. Not possible to filter on descendant developmental stages.")
+    }
     stageId <- c(stageId, getDescendantStages(bgee = myBgeeObject, ids = stageId))
   }
   if (withDescendantCellTypes & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+    if(is.null(cellTypeId)) {
+      warning("No cell type was provided. Not possible to filter on descendant cell types.")
+    }
     cellTypeId <- c(cellTypeId, getDescendantCellTypes(bgee = myBgeeObject, ids = cellTypeId))
   }
   check_condition_parameters(myBgeeObject = myBgeeObject, anatEntityId = anatEntityId, 
