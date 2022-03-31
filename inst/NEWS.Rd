@@ -14,6 +14,8 @@
     \item Possibility to filter data based on sex and strain for Bgee 15.0 and after
     \item Possibility to filter on cellTypeId for single cell full length RNA-Seq for Bgee 15.0 and after
     \item Added pValue in the download files
+  }
+}
 
 \section{Version 2.14.1 (2020-05)}{
   \itemize{
