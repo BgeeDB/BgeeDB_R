@@ -56,8 +56,8 @@ getAnnotation = function(myBgeeObject){
   }
   ## Check if file is already in cache. If so, skip download step
   if (file.exists(file.path(myBgeeObject$pathToData, annotationExperiments)) && file.exists(file.path(myBgeeObject$pathToData, annotationSamples))){
-    cat(paste0("\nNOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
-               ". Data will not be redownloaded.\n"))
+    message("\nNOTE: annotation files for this species were found in the download directory ", myBgeeObject$pathToData,
+               ". Data will not be redownloaded.\n")
   } else {
     success <- bgee_download_file(url = myBgeeObject$annotationUrl,
                              destfile = file.path(myBgeeObject$pathToData, annotationFile), mode='wb')

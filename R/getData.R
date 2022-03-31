@@ -31,6 +31,15 @@
 #' @param strain Filter allowing to specify one or more strains. Default is 
 #' NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after
 #' 
+#' @param withDescendantAnatEntities Allows to filter on the selected anatEntityId and all its descendants.
+#' This functionality is available for Bgee 15.0 release and after
+#'
+#' @param withDescendantStages Allows to filter on the selected stageId and all its descendants.
+#' This functionality is available for Bgee 15.0 release and after
+#'
+#' @param withDescendantCellTypes Allows to filter on the selected cellTypeId and all its descendants.
+#' This functionality is available for Bgee 15.0 release and after
+#'
 #' @return Return a dataframe containing all Bgee processed expression data from the selected species 
 #' and datatype using specified filters with operator AND.
 #'
@@ -48,8 +57,36 @@
 #' @export
 #' 
 getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
-    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
+    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
+    withDescendantAnatEntities = FALSE, withDescendantStages = FALSE, 
+    withDescendantCellTypes = FALSE) {
   check_object(myBgeeObject)
+  # write a warning message if user tried to retrieve ontology terms with descendants for
+  # a bgee release where this functionality was not yet implemented
+  compare_version_number <- gsub("_", ".", myBgeeObject$release)
+  if ((withDescendantAnatEntities | withDescendantStages | withDescendantCellTypes) &
+      compareVersion(a = compare_version_number , b = "15.0") < 0) {
+    message("withDescendant functionality is available only for Bgee 15.0",
+            " release and after. Will not retrieved descendant of selected parameters.")
+  }
+  if (withDescendantAnatEntities & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+    if(is.null(anatEntityId)) {
+      warning("No anatomical entity was provided. Not possible to filter on descendant anatomical entities.")
+    }
+    anatEntityId <- c(anatEntityId, getDescendantAnatEntities(bgee = myBgeeObject, ids = anatEntityId))
+  }
+  if (withDescendantStages & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+    if(is.null(stageId)) {
+      warning("No developmental stage was provided. Not possible to filter on descendant developmental stages.")
+    }
+    stageId <- c(stageId, getDescendantStages(bgee = myBgeeObject, ids = stageId))
+  }
+  if (withDescendantCellTypes & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+    if(is.null(cellTypeId)) {
+      warning("No cell type was provided. Not possible to filter on descendant cell types.")
+    }
+    cellTypeId <- c(cellTypeId, getDescendantCellTypes(bgee = myBgeeObject, ids = cellTypeId))
+  }
   check_condition_parameters(myBgeeObject = myBgeeObject, anatEntityId = anatEntityId, 
     stageId = stageId, cellTypeId = cellTypeId, sex = sex, strain = strain)
   import_data(myBgeeObject = myBgeeObject, experimentId = experimentId, sampleId = sampleId, 
@@ -111,6 +148,11 @@ import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL,
     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
   user_experiments <- detect_experiments(myBgeeObject, experimentId, sampleId, anatEntityId, 
     stageId, cellTypeId, sex, strain)
+  # stop code if no experiments correspond to user criteria
+  if(length(user_experiments) == 0) {
+    stop("No data correspond to selected parameters. Please look at the annotation to ",
+         "select available data.")
+  }
   missing_experiments <- experiments_to_download(myBgeeObject = myBgeeObject, 
     experimentId = user_experiments, sqlite_file = sqlitePath(myBgeeObject))
   integrate_experiments(myBgeeObject = myBgeeObject, experimentId = missing_experiments, 
@@ -120,7 +162,7 @@ import_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL,
 # function using annotations to select which experiments the user needs to load all wanted data
 detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL) {
-  annotation <- getAnnotation(myBgeeObject)
+  annotation <- suppressMessages(getAnnotation(myBgeeObject))
   experiments <- annotation$sample.annotation
   # filter list of experiments to download
   if(!is.null(experimentId)) {
@@ -142,7 +184,9 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
     experiments <- experiments[experiments$Stage.ID %in% stageId,]
   }
   if(!is.null(sex)) {
-    experiments <- experiments[experiments$Sex %in% stageId,]
+    # annotation files contain NA values. dplyr:na_if(sex, "NA") function allows to change
+    # queried "NA" values to NA values
+    experiments <- experiments[experiments$Sex %in% dplyr::na_if(sex, "NA"),]
   }
   if(!is.null(strain)) {
     experiments <- experiments[experiments$Strain %in% strain,]
@@ -410,11 +454,16 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
               & is.null(stageId) & is.null(cellTypeId) & is.null(sex))) {
           query <- paste0(query, " AND ")
         }
+        # rsqlite does not allow to remove double quotes when inserting data in the local database.
+        # strain data are surrounded by " in the tsv files. These quotes allows to have
+        # strain with a name containing special characters.
+        # Following the SQL syntax, it is mandatory to provide 2 double quotes in order
+        # escape existing double quotes in the database.
         if(length(strain) == 1) {
-          query <- paste0(query, "[Strain] = \"", as.character(strain), "\"")
+          query <- paste0(query, "[Strain] = \"\"\"", as.character(strain), "\"\"\"")
         } else {
-          query <- paste0(query, "[Strain] IN (\"",paste(as.character(strain), 
-            collapse="\", \""), "\")")
+          query <- paste0(query, "[Strain] IN (\"\"\"",paste(as.character(strain), 
+            collapse="\"\"\", \"\"\""), "\"\"\")")
         }
       }
     }
@@ -422,4 +471,47 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   message("Load queried data. The query is : ", query)
   result <- dbGetQuery(conn, query)
   return(result)
+}
+
+getDescendantAnatEntities <- function (bgee, ids) {
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "anatEntities"))
+}
+
+getDescendantCellTypes <- function (bgee, ids) {
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "anatEntities"))
+}
+
+getDescendantStages <- function (bgee, ids) {
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "stages"))
+}
+
+getDescendant <- function (bgee, ids, conditionParam) {
+  myUrl <- paste0(bgee$topAnatUrl,
+  "?page=r_package&action=COND_PARAM&ENTITIES&species_id=SPECIES&",
+  "propagation=DESCENDANTS&attr_list=ID&display_type=tsv")
+  myUrl <- gsub("SPECIES", bgee$speciesId, myUrl, perl = FALSE)
+  if (conditionParam == "anatEntities") {
+    myUrl <- gsub("COND_PARAM", "get_propagation_anat_entity", myUrl, perl = TRUE)
+    myUrl <- gsub("ENTITIES", paste0("anat_entity_id=",
+      paste(ids, collapse = "&anat_entity_id=")), myUrl, perl = TRUE)
+  } else if (conditionParam == "stages") {
+    myUrl <- gsub("COND_PARAM", "get_propagation_dev_stage", myUrl, perl = TRUE)
+    myUrl <- gsub("ENTITIES", paste0("stage_id=",
+      paste(ids, collapse = "&stage_id=")), myUrl, perl = TRUE)
+  }
+  destFile <- file.path(bgee$pathToData, "descendants.tsv")
+  success <- bgee_download_file(url = myUrl, destfile = destFile)
+  descendants <- read.table(destFile, header = TRUE, sep = "\t")
+  # retrieve annotation in order to keep only descendants present in the annotation
+  annotation <- suppressMessages(getAnnotation(bgee)$sample.annotation)
+  if (conditionParam == "anatEntities") {
+    present <- unique(annotation$Anatomical.entity.ID)
+  } else if (conditionParam == "stages") {
+    present <- unique(annotation$Stage.ID)
+  }
+  # Do not use column name because it is not the same depending on the
+  # queried condition parameter
+  wanted_descendants <- descendants[descendants[,1] %in% present,]
+  unlink(destFile)
+  return(wanted_descendants)
 }
