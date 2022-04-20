@@ -12,7 +12,10 @@ getData(
   stageId = NULL,
   cellTypeId = NULL,
   sex = NULL,
-  strain = NULL
+  strain = NULL,
+  withDescendantAnatEntities = FALSE,
+  withDescendantStages = FALSE,
+  withDescendantCellTypes = FALSE
 )
 }
 \arguments{
@@ -43,6 +46,15 @@ NULL: takes all available sexes for targeted species and data type. Available fo
 
 \item{strain}{Filter allowing to specify one or more strains. Default is
 NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after}
+
+\item{withDescendantAnatEntities}{Allows to filter on the selected anatEntityId and all its descendants.
+This functionality is available for Bgee 15.0 release and after}
+
+\item{withDescendantStages}{Allows to filter on the selected stageId and all its descendants.
+This functionality is available for Bgee 15.0 release and after}
+
+\item{withDescendantCellTypes}{Allows to filter on the selected cellTypeId and all its descendants.
+This functionality is available for Bgee 15.0 release and after}
 }
 \value{
 Return a dataframe containing all Bgee processed expression data from the selected species
