@@ -43,7 +43,7 @@
 #' @author Julien Roux, Julien Wollbrett
 #'
 #' @examples{
-#'   bgee <- Bgee$new(species = "Bos_taurus", dataType = "rna_seq")
+#'   bgee <- Bgee$new(species = "Danio_rerio", dataType = "rna_seq")
 #'   myTopAnatData <- loadTopAnatData(bgee)
 #' }
 #'
@@ -77,10 +77,11 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   }
 
   ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
-  options(internet.info = 2)
-  ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
-  options(timeout = 1200)
-
+  op <- options(internet.info = 2)
+  ## Set the timeout option to 1800 seconds to let some time to the server to send data (default is 60s)
+  options(timeout = 1800)
+  ## on exit change back options to initial values
+  on.exit(options(op))
 
   ## First query: organ relationships
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", myBgeeObject$speciesId, ".tsv")
