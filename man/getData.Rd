@@ -12,44 +12,56 @@ getData(
   stageId = NULL,
   cellTypeId = NULL,
   sex = NULL,
-  strain = NULL
+  strain = NULL,
+  withDescendantAnatEntities = FALSE,
+  withDescendantStages = FALSE,
+  withDescendantCellTypes = FALSE
 )
 }
 \arguments{
-\item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species 
+\item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species
 and data type.}
 
-\item{experimentId}{Filter allowing to specify one or more ArrayExpress or GEO accession, e.g., 
+\item{experimentId}{Filter allowing to specify one or more ArrayExpress or GEO accession, e.g.,
 GSE43721. Default is NULL: takes all available experiments for targeted species and data type.}
 
-\item{sampleId}{Filter allowing to specify one or more sample ID. Depending on the selected 
-datatype this sample IDs can correspond to Chip IDs (affymetrix) or RNA-Seq library IDs (rna_seq). 
+\item{sampleId}{Filter allowing to specify one or more sample ID. Depending on the selected
+datatype this sample IDs can correspond to Chip IDs (affymetrix) or RNA-Seq library IDs (rna_seq).
 Default is NULL: takes all available samples for targeted species and data type.}
 
-\item{anatEntityId}{Filter allowing to specify one or more anatomical entity IDs from the UBERON 
-ontology (http://uberon.github.io/). Default is NULL: takes all available anatomical entities for 
+\item{anatEntityId}{Filter allowing to specify one or more anatomical entity IDs from the UBERON
+ontology (http://uberon.github.io/). Default is NULL: takes all available anatomical entities for
 targeted species and data type.}
 
-\item{stageId}{Filter allowing to specify one or more developmental stage IDs from Developmental 
-Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is 
+\item{stageId}{Filter allowing to specify one or more developmental stage IDs from Developmental
+Stage Ontology (https://github.com/obophenotype/developmental-stage-ontologies). Default is
 NULL: takes all available developmental stages for targeted species and data type.}
 
-\item{cellTypeId}{Filter specific to single cell datatype (sc_full_length) allowing to specify 
-one or more cell type IDs from the UBERON ontology (http://uberon.github.io/). Default is 
+\item{cellTypeId}{Filter specific to single cell datatype (sc_full_length) allowing to specify
+one or more cell type IDs from the UBERON ontology (http://uberon.github.io/). Default is
 NULL: takes all available cell types for targeted species and data type. Available for Bgee 15.0 and after}
 
-\item{sex}{Filter allowing to specify one or more sexes. Default is 
+\item{sex}{Filter allowing to specify one or more sexes. Default is
 NULL: takes all available sexes for targeted species and data type. Available for Bgee 15.0 and after}
 
-\item{strain}{Filter allowing to specify one or more strains. Default is 
+\item{strain}{Filter allowing to specify one or more strains. Default is
 NULL: takes all available strains for targeted species and data type. Available for Bgee 15.0 and after}
+
+\item{withDescendantAnatEntities}{Allows to filter on the selected anatEntityId and all its descendants.
+This functionality is available for Bgee 15.0 release and after}
+
+\item{withDescendantStages}{Allows to filter on the selected stageId and all its descendants.
+This functionality is available for Bgee 15.0 release and after}
+
+\item{withDescendantCellTypes}{Allows to filter on the selected cellTypeId and all its descendants.
+This functionality is available for Bgee 15.0 release and after}
 }
 \value{
-Return a dataframe containing all Bgee processed expression data from the selected species 
+Return a dataframe containing all Bgee processed expression data from the selected species
 and datatype using specified filters with operator AND.
 }
 \description{
-This function loads the quantitative expression data and presence calls 
+This function loads the quantitative expression data and presence calls
 for samples available from Bgee (rna_seq, affymetrix, sc_full_length).
 }
 \examples{
