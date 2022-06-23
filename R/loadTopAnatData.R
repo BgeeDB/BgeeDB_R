@@ -30,7 +30,14 @@
 #'   }
 #' }
 #'
-#' @param confidence A character indicating if only high quality present calls should be retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality". For Bgee release 14 and above, options are "silver" (default) and "gold".
+#' @param confidence A character indicating if only high quality present calls should be
+#' retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality".
+#' For Bgee release 14 and above, options are "silver" (default) and "gold".
+#'
+#' @param timeout local timeout used when the function is run. It allows to modify the
+#' timeout used by default in R to download files. If not provided the timeout will be
+#' fixed at 1800 secondes. When the functions exits (either naturally or as the result
+#' of an error) the download timeout go back to the original one used in the R session.
 #'
 #' @return A list of 4 elements:
 #' \itemize{
@@ -50,7 +57,7 @@
 #' @import utils digest
 #' @export
 
-loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL){
+loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL, timeout = 1800){
   OLD_WEBSERVICE_VERSION = '13.2'
 
   ## check that fields of Bgee object are not empty
@@ -76,10 +83,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
   }
 
-  ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
-  op <- options(internet.info = 2)
-  ## Set the timeout option to 1800 seconds to let some time to the server to send data (default is 60s)
-  options(timeout = 1800)
+  ## Set the timeout option to timeout value to let some time to the server to send data (default is 1800 sec.)
+  op <- options(timeout = timeout)
   ## on exit change back options to initial values
   on.exit(options(op))
 
