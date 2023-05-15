@@ -18,11 +18,11 @@ Bgee (\url{http://bgee.org}) integrates different expression data types (RNA-seq
 
 \item{\code{dataType}}{A vector of characters indicating data type(s) to be used. To be chosen among:
 \itemize{
-  \item{"rna_seq"}
-  \item{"sc_full_length"}
-  \item{"affymetrix"}
-  \item{"est"}
-  \item{"in_situ"}
+\item{"rna_seq"}
+\item{"sc_full_length"}
+\item{"affymetrix"}
+\item{"est"}
+\item{"in_situ"}
 }
 By default all data type are included: \code{c("rna_seq","sc_rna_seq","affymetrix","est","in_situ")}. For download of quantitative expression data, a single data type should be chosen among "rna_seq", "sc_rna_seq" or "affymetrix".}
 

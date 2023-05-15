@@ -13,18 +13,18 @@ formatData(myBgeeObject, data, stats = NULL, callType = "all")
 
 \item{stats}{A character indicating what expression values should be used in the formatted data expressionSet object matrix.
 \itemize{
-  \item{"rpkm" for RNA-seq (Bgee release 13.2 and before)}
-  \item{"fpkm" for RNA-seq (Bgee release 14 and above)}
-  \item{"counts" for RNA-seq}
-  \item{"tpm" for RNA-seq (Bgee release 14 and above)}
-  \item{"intensities" for Affymetrix microarrays}
+\item{"rpkm" for RNA-seq (Bgee release 13.2 and before)}
+\item{"fpkm" for RNA-seq (Bgee release 14 and above)}
+\item{"counts" for RNA-seq}
+\item{"tpm" for RNA-seq (Bgee release 14 and above)}
+\item{"intensities" for Affymetrix microarrays}
 }}
 
 \item{callType}{A character indicating whether intensities should be displayed only for present (i.e., expressed) genes, present high quality genes, or all genes (default).
 \itemize{
-  \item{"present"}
-  \item{"present high quality"}
-  \item{"all"}
+\item{"present"}
+\item{"present high quality"}
+\item{"all"}
 }}
 }
 \value{
