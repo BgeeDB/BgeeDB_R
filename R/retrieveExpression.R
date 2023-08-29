@@ -1,7 +1,7 @@
-#' @title Retrieve expression of 1-to-1 orthologous genes from different species but one single experiment using BgeeDB R package.
+#' @title Retrieve expression of orthologous genes from different species but one single experiment using BgeeDB R package.
 #'
 #' @description This function allows to load bulk RNA-Seq processed expression values from one experiment with libraries coming
-#' from different species. Each row corresponds to a group of 1-to-1 orthologs and each column corresponds to one organ from one species.
+#' from different species. Orthologous genes have the same ``Gene.Family`` identifier
 #' 
 #' @param bgeeRelease (default current)
 #'
