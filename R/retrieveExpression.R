@@ -253,3 +253,63 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
     return(all_orthologs)
   }
 }
+
+#' @title Format data.frame for 1-to-N orthologs
+#'
+#' @description This function take as input the output of the listOrthologs() function and format it to have one line
+#' per gene family (i.e one line per gene from the reference species having orthologs in all other species). The resulting
+#' dataframe has 1 + (referenceSpeciesId * n) columns. column names correspond to the the speciesId followed by a suffix. For
+#' instance for 1-to-2 orthologs where the reference species is the gar and the other species is D. rerio, then columns will be
+#' 7918 (gar species ID), 7955_1 (first ortholog in D. rerio), 7955_2 (2nd ortholog in D. rerio) 
+#'
+#' @param orthologs the output of the listOrthologs() function
+#'
+#' @param n the exact number of times the gene is duplicated in geneDuplicatedSpecies species. Correspond to the n
+#' in 1-to-n orthologs
+#' 
+#' @param referenceSpecies the species for which orthologs have to be retrieved. correspond to the 1 in 1-to-n orthologs
+#'
+#' @param geneDuplicatedSpecies Correspond to a list of speciesId for which duplicated orthologs have been retrieved
+#' 
+#' @author Julien Wollbrett
+#'
+#' @examples{
+#'   # 1-to-many orthologs in Gar and zebrafish with gar being the reference species
+#    orthologs_one_to_many <- listOrthologs(referenceSpecies = 7918, mandatorySpecies = c(7955), onlyOneToMany  = TRUE)
+#'   # reformat and only keep 1-to-2 orthologs
+#'   one_to_two_ortholgos <- reformat_orthologs_one_to_n(orthologs = orthologs_one_to_many, n = 2, referenceSpecies = 7918,
+#'   geneDuplicateSpecies = 7955)
+#' }
+#' 
+
+formatOrthologsOneToN <- function(orthologs = NULL, n = 2, referenceSpecies = NULL,
+                                        geneDuplicatedSpecies = NULL) {
+  one_to_n_orhtologs <- as.data.frame(matrix(nrow = 0, ncol = 1+(n * length(geneDuplicatedSpecies))))
+  header <- referenceSpecies
+  for(speciesId in geneDuplicatedSpecies) {
+    for (i in seq_len(n)) {
+      header <- c(header, paste0(speciesId, "_", i))
+    }
+  }
+  colnames(one_to_n_orhtologs) <- header
+  for(reference_geneId in unique(orthologs[,c(as.character(referenceSpecies))])) {
+    current_one_to_n_geneIds <- reference_geneId
+    for(speciesId in geneDuplicatedSpecies) {
+      gene_n_species <- orthologs[orthologs[,c(as.character(referenceSpecies))] == reference_geneId,]
+      gene_n_species <- unique(gene_n_species[,c(as.character(referenceSpecies), as.character(speciesId))])
+      if(nrow(gene_n_species) == n) {
+        merged_gene_n_species <- NULL
+        for (i in seq_len(n)) {
+          current_one_to_n_geneIds <- c(current_one_to_n_geneIds, gene_n_species[i,2])
+        }
+      }
+    }
+    current_one_to_n_geneIds <- as.data.frame(t(current_one_to_n_geneIds))
+    rownames(current_one_to_n_geneIds) <- NULL
+    if(ncol(current_one_to_n_geneIds) == length(header)) {
+      colnames(current_one_to_n_geneIds) <- header
+      one_to_n_orhtologs <- rbind(one_to_n_orhtologs, current_one_to_n_geneIds)
+    }
+  }
+  return(one_to_n_orhtologs)
+}
