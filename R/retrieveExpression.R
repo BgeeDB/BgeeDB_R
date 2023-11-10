@@ -48,12 +48,14 @@
 #' 
 retrieveOrthologsExpression <- function(bgeeRelease = "current", downloadPath = getwd(),
     experimentId = NULL, referenceSpeciesId = NULL, speciesIds = NULL, anatEntityIds = NULL, removeDownloadFiles = FALSE,
-    onlyOneToOneOrthologs = FALSE, onlyOneToManyOrthologs = FALSE, createFile = FALSE) {
+    onlyOneToOneOrthologs = FALSE, onlyOneToManyOrthologs = FALSE, createFile = FALSE, orthologs = NULL) {
   # we consider that BgeeDB package is already installed... lazy
 
-  # first retrieve 1-to-1 ortholog genes for the specified species
-  orthologs <- listOrthologs(mandatorySpecies = speciesIds, referenceSpecies = referenceSpeciesId, onlyOneToOne = onlyOneToOneOrthologs,
+  # first retrieve ortholog genes for the specified species if not provided
+  if (is.null(orthologs)) {
+    orthologs <- listOrthologs(mandatorySpecies = speciesIds, referenceSpecies = referenceSpeciesId, onlyOneToOne = onlyOneToOneOrthologs,
                              onlyOneToMany = onlyOneToManyOrthologs, bgeeRelease = bgeeRelease)
+  }
   
   # ugly quick and dirty implementation
   gene_families <- unique(orthologs[1])
