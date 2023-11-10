@@ -121,7 +121,7 @@ expression_gar_zebrafish_dataset <- expression_gar_zebrafish_bgee_transformed %>
 #filter on organ names
 expression_gar_zebrafish_filtered <- expression_gar_zebrafish_dataset[expression_gar_zebrafish_dataset$Anatomical.entity.name %in% c("\"brain\"", "\"testis\"", "\"heart\"", "\"intestine\""),]
 # update type of Species.ID column from numeric to character
-expression_gar_zebrafish_filtered$Species.ID <- as.character(expression_filtered$Species.ID)
+expression_gar_zebrafish_filtered$Species.ID <- as.character(expression_gar_zebrafish_filtered$Species.ID)
 
 # generate PCA
 pca_gar_zebrafish_res <- prcomp(expression_gar_zebrafish_filtered[5:length(expression_gar_zebrafish_filtered)], scale. = TRUE)
