@@ -68,10 +68,21 @@ retrieveOrthologsExpression <- function(bgeeRelease = "current", downloadPath = 
   all_expression <- NULL
   allSpeciesIds <- c(referenceSpeciesId, speciesIds)
   for (speciesId in allSpeciesIds) {
+    # if 1-to-N gene family have to be considered we need to retrieve all genes corresponding to this
+    # species. They are in different columns in the orthologs data.frame. We first merge those columns in one
+    # single list called species_orthologous_genes
+    species_orthologous_genes <- as.data.frame(matrix(nrow = 0, ncol = 2, dimnames = list(NULL, c("geneId", "geneFamily"))))
+    for (i in grep(paste0(speciesId, "|", speciesId, "_\\d+"), as.character(colnames(orthologs)))) {
+      column_orthologous_genes <- as.data.frame(list(orthologs[,i], seq_len(nrow(orthologs))))
+      colnames(column_orthologous_genes) <- c("geneId", "geneFamily")
+      species_orthologous_genes <- rbind(species_orthologous_genes, column_orthologous_genes)
+    }
     bgee_object <- Bgee$new(species = as.character(speciesId), dataType = "rna_seq")
     library_metadata <- getAnnotation(bgee_object)[[1]]
     #only keep metadata from provided experiment
-    library_metadata <- library_metadata[library_metadata$Experiment.ID == experimentId,]
+    if (! is.null(experimentId)) {
+      library_metadata <- library_metadata[library_metadata$Experiment.ID == experimentId,]
+    }
     # now filter on anatomical entities
     if (!is.null(anatEntityIds)) {
       library_metadata <- library_metadata[library_metadata$Anatomical.entity.ID %in% anatEntityIds,]
@@ -82,17 +93,15 @@ retrieveOrthologsExpression <- function(bgeeRelease = "current", downloadPath = 
     }
     expression_data <- getData(sampleId = unique(library_metadata$Library.ID), myBgeeObject = bgee_object)
     expression_data$Species.ID <- speciesId
-    orthologs_expression_data <- expression_data[expression_data$Gene.ID %in% orthologs[,as.character(speciesId)],]
+    orthologs_expression_data <- expression_data[expression_data$Gene.ID %in% species_orthologous_genes$geneId,]
     #implementation with lapply (slow so commented it)
     # which_f <- function(x, orthologs, speciesId, gene_families) {return(which(gene_families == orthologs[which(orthologs[,as.character(speciesId)] == x),1]))}
     # orthologs_expression_data$Gene.Family <- lapply(X = orthologs_expression_data$Gene.ID, FUN = which_f, orthologs = orthologs, speciesId = speciesId, gene_families = gene_families)
     # naive implementation with for loop... faster than using lapply
     orthologs_expression_data$Gene.Family <- NA
-    for (row_number in seq(nrow(orthologs_expression_data))) {
-      geneId <- orthologs_expression_data$Gene.ID[row_number]
-      orthologs_row_indice <- min(which(orthologs[,as.character(speciesId)] == geneId))
-      gene_family_row_indice <- which(gene_families == orthologs[orthologs_row_indice,1])
-      orthologs_expression_data$Gene.Family[row_number] <- gene_family_row_indice
+    for (row_number in seq_len(nrow(orthologs_expression_data))) {
+      orthologs_expression_data$Gene.Family[row_number] <- species_orthologous_genes$geneFamily[species_orthologous_genes$geneId == orthologs_expression_data$Gene.ID[row_number]]
+
     }
     all_expression <- rbind(all_expression, orthologs_expression_data)
   }
@@ -106,6 +115,7 @@ retrieveOrthologsExpression <- function(bgeeRelease = "current", downloadPath = 
     message("properly retrieved Bgee expression data")
     return(all_expression)
   }
+
 }
 
 #' @title Retrieve orthologs from Bgee
@@ -172,7 +182,6 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
   orthologs_dir <- "bgeeOrthologs"
   archive_file <- basename(ftp_url)
   download_dir <- file.path(downloadPath, orthologs_dir)
-  unzipped_files <- NULL
   if (!dir.exists(download_dir)) {
     message("dir does not exist")
     dir.create(download_dir)
@@ -180,14 +189,10 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
     ftp_url <- gsub(pattern = "RELEASE_VERSION", replacement = bgeeRelease, x = ftp_url)
     # for now we only provide one zip archive containing all orthologs files
     file_path <- download.file(url = ftp_url, destfile = downloaded_archive)
-    unzipped_files <- unzip(zipfile = downloaded_archive, exdir = download_dir)
-    unzipped_files <- list.files(path = download_dir, include.dirs = FALSE, full.names = TRUE, recursive = TRUE,
-                                 pattern = "orthologs_.*.csv")
-  } else {
-    message("Bgee orthologs already downloaded")
-    unzipped_files <- list.files(path = download_dir, include.dirs = FALSE, full.names = TRUE, recursive = TRUE,
-                                 pattern = "orthologs_.*.csv")
+    unzip_files <- unzip(zipfile = downloaded_archive, exdir = download_dir)
   }
+  unzipped_files <- list.files(path = download_dir, include.dirs = FALSE, full.names = TRUE, recursive = TRUE,
+                                 pattern = "orthologs_.*.csv")
   
   # now files are downloaded and orthologs retrieval can starts
   #for now we consider retrieval of all orthologs from mandatory species
