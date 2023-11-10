@@ -31,6 +31,10 @@
 #' @param createFile By default the function return the data.frame with expression for all orthologous genes. If ``createFile`` is TRUE then
 #' expression data are saved in a file and no data is returned from this function
 #' 
+#' @param orthologs a list of orthologs to use to retrieve expression. If NULL the list of orthologs is generated using
+#' the union of species present in `speciesIds` and `referenceSpeciesId`. It also reuse values of `onlyOneToOneOrthologs`
+#' and `onlyOneToManyOrthologs`
+#' 
 #' @author Julien Wollbrett
 #' 
 #' @import BgeeDB
@@ -47,14 +51,14 @@
 #' }
 #' 
 retrieveOrthologsExpression <- function(bgeeRelease = "current", downloadPath = getwd(),
-    experimentId = NULL, referenceSpeciesId = NULL, speciesIds = NULL, anatEntityIds = NULL, removeDownloadFiles = FALSE,
-    onlyOneToOneOrthologs = FALSE, onlyOneToManyOrthologs = FALSE, createFile = FALSE, orthologs = NULL) {
+                                        experimentId = NULL, referenceSpeciesId = NULL, speciesIds = NULL, anatEntityIds = NULL, removeDownloadFiles = FALSE,
+                                        onlyOneToOneOrthologs = FALSE, onlyOneToManyOrthologs = FALSE, createFile = FALSE, orthologs = NULL) {
   # we consider that BgeeDB package is already installed... lazy
 
   # first retrieve ortholog genes for the specified species if not provided
   if (is.null(orthologs)) {
     orthologs <- listOrthologs(mandatorySpecies = speciesIds, referenceSpecies = referenceSpeciesId, onlyOneToOne = onlyOneToOneOrthologs,
-                             onlyOneToMany = onlyOneToManyOrthologs, bgeeRelease = bgeeRelease)
+                               onlyOneToMany = onlyOneToManyOrthologs, bgeeRelease = bgeeRelease)
   }
   
   # ugly quick and dirty implementation
@@ -102,7 +106,6 @@ retrieveOrthologsExpression <- function(bgeeRelease = "current", downloadPath = 
     message("properly retrieved Bgee expression data")
     return(all_expression)
   }
-
 }
 
 #' @title Retrieve orthologs from Bgee
@@ -164,7 +167,7 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
   
   # first draft of the implementation lots of future functionalities to implement....
   if (!is.null(optionalSpecies)) {stop("optionalSpecies not yet implemented")}
-
+  
   ftp_url <- "https://www.bgee.org/ftp/RELEASE_VERSION/homologous_genes/OMA_orthologs.zip"
   orthologs_dir <- "bgeeOrthologs"
   archive_file <- basename(ftp_url)
@@ -178,10 +181,12 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
     # for now we only provide one zip archive containing all orthologs files
     file_path <- download.file(url = ftp_url, destfile = downloaded_archive)
     unzipped_files <- unzip(zipfile = downloaded_archive, exdir = download_dir)
+    unzipped_files <- list.files(path = download_dir, include.dirs = FALSE, full.names = TRUE, recursive = TRUE,
+                                 pattern = "orthologs_.*.csv")
   } else {
     message("Bgee orthologs already downloaded")
     unzipped_files <- list.files(path = download_dir, include.dirs = FALSE, full.names = TRUE, recursive = TRUE,
-      pattern = "orthologs_.*.csv")
+                                 pattern = "orthologs_.*.csv")
   }
   
   # now files are downloaded and orthologs retrieval can starts
@@ -192,7 +197,7 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
   for (file_path in unzipped_files) {
     speciesIds <- unlist(regmatches(x = basename(file_path), m = gregexpr(pattern = "[0-9]+", basename(file_path))))
     if (!is.null(referenceSpecies) && referenceSpecies %in% as.numeric(speciesIds) && 
-       (as.numeric(speciesIds[1]) %in% mandatorySpecies || as.numeric(speciesIds[2]) %in% mandatorySpecies)) {
+        (as.numeric(speciesIds[1]) %in% mandatorySpecies || as.numeric(speciesIds[2]) %in% mandatorySpecies)) {
       orthologs <- read.table(file = file_path, header = TRUE, sep = ",", quote = "")
       if (speciesIds[1] == as.character(referenceSpecies)) {
         orthologs <- orthologs[,c(1,2)]
@@ -214,7 +219,7 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
       }
       retrieved_species <- unique(c(retrieved_species, speciesIds))
     } else if (is.null(referenceSpecies) && as.numeric(speciesIds[1]) %in% mandatorySpecies &&
-          as.numeric(speciesIds[2] %in% mandatorySpecies)) {
+               as.numeric(speciesIds[2] %in% mandatorySpecies)) {
       retrieved_orthologs_files <- c(retrieved_orthologs_files, file_path)
       orthologs <- read.table(file = file_path, header = TRUE, sep = ",", quote = "")[,1:2]
       # only one-to-one requested so we remove all duplicated genes
@@ -242,7 +247,7 @@ listOrthologs <- function(bgeeRelease = "current", downloadPath = getwd(),
     output_file <- file.path(downloadPath, paste0("orthologs_", paste(retrieved_species, collapse = "_"), ".tsv"))
     message("writing orthologous genes in the file ", output_file)
     write.table(x = all_orthologs, file = output_file,
-              sep = "\t", quote = F, row.names = F, col.names = T)
+                sep = "\t", quote = F, row.names = F, col.names = T)
   } else {
     message("properly retrieved Bgee orthologs")
     return(all_orthologs)
