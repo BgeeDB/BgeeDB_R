@@ -24,8 +24,9 @@
 #' @export
 
 listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, removeFile=TRUE){
-
+  
   OLD_WEBSERVICE_VERSION = '13.2'
+  NEW_VERSION_FROM_FTP_FILE = '15.2'
 
   if (length(allReleases)==0) {
     cat("\nQuerying Bgee to get release information...\n")
@@ -44,12 +45,19 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   } else {
     stop("ERROR: The specified release number is invalid.")
   }
-
+  
+  speciesFilePath <- paste0(getwd(), "/species_Bgee_", release, ".tsv")
   cat(paste0("\nBuilding URL to query species in Bgee release ", release, "...\n"))
+  
   myUrl <- allReleases$TopAnat.URL[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))]
-  #create the url of the webservice depending on selected release of Bgee
+  
+  #create the url depending on selected release of Bgee. It uses a webservice for releases before 15.2 and a file starting from 15.2
   if(compareVersion(gsub("_", ".",release), OLD_WEBSERVICE_VERSION) > 0){
-    myUrl <- paste0(myUrl, "?page=r_package&action=get_all_species&display_type=tsv&source=BgeeDB_R_package&source_version=", packageVersion("BgeeDB"))
+    if (compareVersion(gsub("_", ".",release), NEW_VERSION_FROM_FTP_FILE) >= 0){
+      myUrl <- file.path(paste0("https://www.bgee.org/ftp/bgee_v", release), "rPackageSpeciesInfo.tsv")
+    } else {
+      myUrl <- paste0(myUrl, "?page=r_package&action=get_all_species&display_type=tsv&source=BgeeDB_R_package&source_version=", packageVersion("BgeeDB"))
+    }
   } else {
     myUrl <- paste0(myUrl, "?page=species&display_type=tsv&source=BgeeDB_R_package&source_version=", packageVersion("BgeeDB"))
   }
@@ -60,12 +68,11 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
   options(timeout = 600)
 
   ## Query webservice
-  cat(paste0("\nSubmitting URL to Bgee webservice... (", myUrl,")\n"))
-  filePath <- paste0(getwd(), "/species_Bgee_", release, ".tsv")
-  bgee_download_file(url = myUrl, destfile = filePath)
+  cat(paste0("\ndownloading Bgee species info... (", myUrl,")\n"))
+  bgee_download_file(url = myUrl, destfile = speciesFilePath)
   ## Read 5 last lines of file: should be empty indicating success of data transmission
   ## We cannot use a system call to UNIX command since some user might be on Windows
-  tmp <- tail(read.table(filePath,
+  tmp <- tail(read.table(speciesFilePath,
                          header=TRUE,
                          sep="\t",
                          comment.char="",
@@ -74,19 +81,19 @@ listBgeeSpecies <- function(release=NULL, ordering=NULL, allReleases=NULL, remov
               n=5)
   if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
     ## The file transfer was successful!
-    cat(paste0("\nQuery to Bgee webservice successful!\n"))
-    allSpecies <- read.table(filePath,
+    cat(paste0("\nDownload of species information successful!\n"))
+    allSpecies <- read.table(speciesFilePath,
                              header=TRUE,
                              sep="\t",
                              blank.lines.skip=TRUE,
                              as.is=TRUE)
     if (removeFile == TRUE){
       ## Remove temporary file
-      file.remove(filePath)
+      file.remove(speciesFilePath)
     }
   } else {
     ## delete the temporary file
-    file.remove(filePath)
+    file.remove(speciesFilePath)
     stop(paste0("ERROR: The queried file is truncated, ",
                 "there may be a temporary problem with the Bgee webservice."))
   }
