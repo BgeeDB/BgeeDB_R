@@ -11,7 +11,7 @@ Description: A package for the annotation and gene expression
 Encoding: UTF-8
 Depends: R (>= 3.6.0), topGO, tidyr
 Imports: R.utils, data.table, curl, RCurl, digest, methods, stats, utils, dplyr, RSQLite,
-        graph, Biobase
+        graph, Biobase, zellkonverter, anndata
 License: GPL-3 + file LICENSE
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/BgeeDB/BgeeDB_R
@@ -21,5 +21,5 @@ biocViews: Software, DataImport, Sequencing, GeneExpression,
         Microarray, GO, GeneSetEnrichment
 Suggests: knitr, BiocStyle, testthat, rmarkdown, markdown
 LazyLoad: yes
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.1
 NeedsCompilation: no
