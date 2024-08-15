@@ -4,7 +4,7 @@
 \alias{getCellRawData}
 \title{Retrieve Bgee processed expression values at cell level for single cell data in Bgee.}
 \usage{
-getCellRawData(myBgeeObject, experimentId, package = "anndata")
+getCellRawData(myBgeeObject, experimentId, package = "zellkonverter")
 }
 \arguments{
 \item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species

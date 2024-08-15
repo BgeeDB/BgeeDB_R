@@ -14,7 +14,7 @@ formatData(myBgeeObject, data, stats = NULL, callType = "all")
 \item{stats}{A character indicating what expression values should be used in the formatted data expressionSet object matrix.
 \itemize{
 \item{"rpkm" for bulk RNA-seq (Bgee release 13.2 and before)}
-\item{"fpkm" for bulk RNA-seq (Bgee release 14 and above)}
+\item{"fpkm" for bulk RNA-seq (Bgee release 14.0 to 14.2)}
 \item{"counts" for RNA-seq}
 \item{"tpm" for bulk RNA-seq or full length single cell RNA-seq (Bgee release 14 and above)}
 \item{"cpm" for droplet based single cell RNA-seq (Bgee release 15.2 and above)}

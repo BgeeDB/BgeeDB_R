@@ -57,50 +57,50 @@ listBgeeSpecies(release = "13.2", order = 2)
 
 #### Create a new Bgee object
 
-In the following example we will choose to focus on mouse ("Mus\_musculus") RNA-seq. Species can be specified using their name or their NCBI taxonomic IDs. To specify that RNA-seq data want to be downloaded, the ```dataType``` argument is set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". To download single cell full length RNA-seq data, set this argument to "sc_full_length". 
+In the following example we will choose to focus on zebrafish ("Danio\_rerio") RNA-seq. Species can be specified using their name or their NCBI taxonomic IDs. To specify that RNA-seq data want to be downloaded, the ```dataType``` argument is set to "rna\_seq". To download Affymetrix microarray data, set this argument to "affymetrix". To download single cell full length RNA-seq data, set this argument to "sc_full_length". To download droplet based single cell RNA-seq data, set this argument to "sc_droplet_based".   
 
 ``` {r}
-bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
+bgee <- Bgee$new(species = "Danio_rerio", dataType = "rna_seq")
 ```
 
-*Note 1*: It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listBgeeRelease()``` function. 
+*Note 1*: It is possible to work with data from a specific release of Bgee by specifying the ```release``` argument, see ```listBgeeRelease()``` function for available releases. 
 
 *Note 2*: The functions of the package will store the downloaded files in a versioned folder created by default in the working directory. These cache files allow faster re-access to the data. The directory where data are stored can be changed with the ```pathToData``` argument.
 
-#### Retrieve the annotation of mouse RNA-seq datasets
+#### Retrieve the annotation of zebrafish RNA-seq datasets
 
-The ```getAnnotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for mouse. 
+The ```getAnnotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for zebrafish. 
 
 ``` {r}
-annotation_bgee_mouse <- getAnnotation(bgee)
+annotation_bgee_zebrafish <- getAnnotation(bgee)
 # list the first experiments and libraries
-lapply(annotation_bgee_mouse, head)
+lapply(annotation_bgee_zebrafish, head)
 ```
 
-#### Download the processed mouse RNA-seq data
+#### Download the processed zebrafish RNA-seq data
 
-The ```getData()``` function will download processed RNA-seq data from all mouse experiments in Bgee as a data frame.
+The ```getSampleRawData()``` function will download processed bulk RNA-seq data from all zebrafish experiments in Bgee as a data frame.
 
 ``` {r}
-# download all RNA-seq experiments from mouse
-data_bgee_mouse <- getData(bgee)
+# download all RNA-seq experiments from zebrafish
+data_bgee_zebrafish <- getSampleRawData(bgee)
 # number of experiments downloaded
-length(data_bgee_mouse)
+length(data_bgee_zebrafish)
 # check the downloaded data
-lapply(data_bgee_mouse, head)
+lapply(data_bgee_zebrafish, head)
 # isolate the first experiment
-data_bgee_experiment1 <- data_bgee_mouse[[1]]
+data_bgee_experiment1 <- data_bgee_zebrafish[[1]]
 ```
 
-The result of the ```getData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0). A detection flag indicates if the gene is significantly expressed above background level of expression. From Bgee 15.0 a pValue allows to have a precise metric indicating how much the gene is significantly expressed above background level of expression (the detection flag is still available and a gene is considered as present if pValue < 0.05).
+The result of the ```getSampleRawData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0 to Bgee 14.2). A detection flag indicates if the gene is significantly expressed above background level of expression. From Bgee 15.0 a pValue allows to have a precise metric indicating how much the gene is significantly expressed above background level of expression (the detection flag is still available and a gene is considered as present if pValue < 0.05).
 
 *Note*: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.
 
 Alternatively, you can choose to download data from one RNA-seq experiment from Bgee with the `experimentId` parameter:
 
 ``` {r}
-# download data for GSE30617
-data_bgee_mouse_gse30617 <- getData(bgee, experimentId = "GSE30617")
+# download data for GSE68666
+data_bgee_zebrafish_gse68666 <- getSampleRawData(bgee, experimentId = "GSE68666")
 ```
 
 It is possible to download data by combining filters : 
@@ -113,12 +113,12 @@ It is possible to download data by combining filters :
 * strain : one or more strain (from Bgee 15.0),
 ``` {r eval=FALSE}
 # Examples of data downloading using different filtering combination
-# retrieve mouse RNA-Seq data for heart or brain
-data_bgee_mouse_filters <- getData(bgee, anatEntityId = c("UBERON:0000955","UBERON:0000948"))
-# retrieve mouse RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) part of the experiment GSE30617
-data_bgee_mouse_filters <- getData(bgee, experimentId = "GSE30617", anatEntityId = c("UBERON:0000955","UBERON:0000948"))
-# retrieve mouse RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) from post-embryonic stage (UBERON:0000092)
-data_bgee_mouse_filters <- getData(bgee, stageId = "UBERON:0000092", anatEntityId = c("UBERON:0000955","UBERON:0000948"))
+# retrieve zebrafish RNA-Seq data for heart or brain
+data_bgee_zebrafish_filters <- getSampleRawData(bgee, anatEntityId = c("UBERON:0000955","UBERON:0000948"))
+# retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) part of the experiment GSE30617
+data_bgee_zebrafish_filters <- getSampleRawData(bgee, experimentId = "GSE68666", anatEntityId = "UBERON:0000922")
+# retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) from post-embryonic stage (UBERON:0000092)
+data_bgee_zebrafish_filters <- getSampleRawData(bgee, stageId = "UBERON:0000113", anatEntityId = c("UBERON:0007132","UBERON:0006860"))
 ```
 
 #### Format the RNA-seq data
@@ -131,9 +131,9 @@ It is sometimes easier to work with data organized as a matrix, where rows repre
 The ```callType``` argument allows to retain only actively expressed genes or probesets, if set to "present" or "present high quality". Genes or probesets that are absent in a given sample are given ```NA``` values.
 
 ```{r}
-# use only present calls and fill expression matric with FPKM values
-gene.expression.mouse.fpkm <- formatData(bgee, data_bgee_mouse_gse30617, callType = "present", stats = "fpkm")
-gene.expression.mouse.fpkm 
+# use only present calls and fill expression matric with TPM values
+gene.expression.zebrafish.tpm <- formatData(bgee, data_bgee_zebrafish_gse68666, callType = "present", stats = "tpm")
+gene.expression.zebrafish.tpm 
 ```
 
 ### Running example: TopAnat gene expression enrichment analysis
@@ -257,7 +257,7 @@ annotated[annotated %in% sigGenes(myTopAnatObject)]
 Since version 2.14.0 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database.
 The advantages of this approach compared to the one used in the previous BgeeDB versions are:
 * do not anymore need a server with lot of memory to access to subset of huge dataset (e.g GTeX dataset)
-* more granular filtering using arguments in the getData() function
+* more granular filtering using arguments in the getSampleRawData() function
 * do not download twice the same data
 * fast access to data once integrated in the local database
 
