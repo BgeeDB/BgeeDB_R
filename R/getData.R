@@ -286,49 +286,59 @@ download_and_uncompress_species = function(myBgeeObject, experimentId) {
 
   # compressed tarball for bgee14.0 and after
   } else if (grepl(".tar.gz$", allExpressionValues, perl = TRUE)) {
-    message("Saved expression data file in", myBgeeObject$pathToData, "folder. Now untar file...")
+    message("Saved expression data file in ", myBgeeObject$pathToData, " folder. Now untar file...")
     # When using untar it is only possible to untar OR list files/dir present in a tarball. 
     # It is not possible to do both actions in one line of code
-    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
+    allFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
       exdir=myBgeeObject$pathToData)
-    tempFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
+    
+    # list all files present in the tarball in order to be able to remove them all
+    allFilesAndDir <- untar(file.path(myBgeeObject$pathToData, allExpressionValues), 
       exdir=myBgeeObject$pathToData, list = TRUE)
-    # keep only path to tarball to integrate to the local database. Other tarballs will 
-    # not be  integrated
-    tempFilesAndDir <- grep(paste0(".*",paste(experimentId,collapse=".*|.*"),".*"), 
-      tempFilesAndDir, value = TRUE)
-    tempFilesAndDir <- file.path(myBgeeObject$pathToData, tempFilesAndDir)
-    tempFiles <- NULL
+    
+    # keep only path to files to integrate to the local database. 
+    toIntegrateFilesAndDir <- grep(paste0(".*",paste(experimentId,collapse=".*|.*"),".*"), 
+      allFilesAndDir, value = TRUE)
+
+    # retrieve absolute path to files
+    toIntegrateFilesAndDir <- file.path(myBgeeObject$pathToData, toIntegrateFilesAndDir)
+
     myData <- NULL
-    for(i in seq(tempFilesAndDir)) {
+    for(i in seq(toIntegrateFilesAndDir)) {
       # uncompress files and not directories (there was a bug when tar tried to uncompress 
       # GTeX experiment)
       # added this verification to be sure there will not be error with other experiments/species
-      if (isTRUE(file_test("-f", tempFilesAndDir[i]))) {
+      if (isTRUE(file_test("-f", toIntegrateFilesAndDir[i]))) {
         # uncompress expression files for Bgee 14
-        if (grepl(".tar.gz$", tempFilesAndDir[i], perl = TRUE)) {
-          currentData <-untar(tempFilesAndDir[i], exdir=myBgeeObject$pathToData)
+        if (grepl(".tar.gz$", toIntegrateFilesAndDir[i], perl = TRUE)) {
+          currentData <-untar(toIntegrateFilesAndDir[i], exdir=myBgeeObject$pathToData)
           # list all expression files
-          currentData <- file.path(myBgeeObject$pathToData, untar(tempFilesAndDir[i], 
+          currentData <- file.path(myBgeeObject$pathToData, untar(toIntegrateFilesAndDir[i], 
             exdir=myBgeeObject$pathToData, list = TRUE))
         # uncompress expression files for Bgee 15 and after
-        } else if (grepl(".tsv.gz$", tempFilesAndDir[i], perl = TRUE)) {
-          fileNameUncompressed <- gsub(".gz", "", basename(tempFilesAndDir[i]))
-          currentData <- unlist(gunzip(tempFilesAndDir[i], remove=FALSE, overwrite = TRUE,
+        } else if (grepl(".tsv.gz$", toIntegrateFilesAndDir[i], perl = TRUE)) {
+          fileNameUncompressed <- gsub(".gz", "", basename(toIntegrateFilesAndDir[i]))
+          currentData <- unlist(gunzip(toIntegrateFilesAndDir[i], remove=FALSE, overwrite = TRUE,
             destname = file.path(myBgeeObject$pathToData, fileNameUncompressed)))
         }
-        tempFiles <- c(tempFiles, tempFilesAndDir[i])
         myData <- c(myData, currentData)
       } 
     }
 
     # delete intermediary archives
     unlink(file.path(myBgeeObject$pathToData, allExpressionValues))
-    unlink(tempFiles)
+    unlink(file.path(myBgeeObject$pathToData, allFilesAndDir))
+    
+    # Until Bgee 15.0 rna_seq species tarball contained a directory containing all
+    # experiment files. This directory had to be deleted. We use this trick to delete
+    # a potential directory because we are not 100% sure that a directory was always 
+    # present for rna_seq data of Bgee 13.2 and 14.0
+    parentDirUncompressedFiles <- dirname(toIntegrateFilesAndDir[1])
+    if(parentDirUncompressedFiles != myBgeeObject$pathToData) {
+      unlink(parentDirUncompressedFiles, recursive = TRUE)
+    }
+    
     message("Finished uncompress tar files")
-    # at this point remaining tar.gz files correspond to tarball downloaded but not
-    # asked by the user. They have to to be removed
-    unlink(file.path(myBgeeObject$pathToData, "*.tar.gz"))
   }
   return(myData)
 }
