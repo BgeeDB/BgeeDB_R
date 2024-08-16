@@ -71,6 +71,7 @@ Bgee <- setRefClass(
 
 
       ## check path of folder to store cached files
+      pathToData <<- path.expand(pathToData)
       if (length(pathToData) == 0) {
         pathToData <<- getwd()
       } else if (length(pathToData) == 1) {
