@@ -72,8 +72,6 @@ getAnnotation = function(myBgeeObject){
       myData <- file.path(myBgeeObject$pathToData, myData)
       # move annotation files from "experiments repository" to pathToData repository in order to be consistent with zip uncompression
       file.rename(from = myData,  to = file.path(myBgeeObject$pathToData, basename(myData)))
-      # delete the "experiment repository" folder
-      unlink(dirname(myData), recursive = TRUE)
     }else{
       stop("\nThe annotation file can not be uncompressed because it is not a zip nor a tar.gz file\n")
     }
