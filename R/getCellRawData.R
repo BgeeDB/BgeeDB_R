@@ -26,7 +26,10 @@
 #' @export
 #' 
 getCellRawData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
-  if(! length(package) == 1 | ! package %in% c("anndata", "zellkonverter")) {
+  if (length(experimentId) != 1) {
+    stop("One experimentId has to be provided.")
+  }
+  if(length(package) != 1 | ! package %in% c("anndata", "zellkonverter")) {
     stop("the R package used to load H5AD cell data should either be anndata or zellkonverter.")
   }
   if (length(myBgeeObject$dataType) != 1 | ! myBgeeObject$dataType %in% c("sc_droplet_based", "sc_full_length")) {
