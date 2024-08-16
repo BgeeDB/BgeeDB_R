@@ -10,9 +10,10 @@ deleteOldData(myBgeeObject)
 \item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species}
 }
 \description{
-Since Bioconductor 3.11 BgeeDB store local data in an SQLite database. This allows to only load wanted data in memory.
-This function allows to delete .rds files used to store local data in previous versions of the package and not used anymore. This
-function delete all .rds files for the species selected in the reference class Bgee object.
+Since Bioconductor 3.11 BgeeDB store data in a local SQLite database allowing
+to optimize memory usage.
+This function allows to delete .rds files used to store local data from BgeeDB versions older
+than Bioconductor 3.11, for the species selected in the reference class Bgee object.
 }
 \examples{
 {

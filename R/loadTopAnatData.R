@@ -30,7 +30,14 @@
 #'   }
 #' }
 #'
-#' @param confidence A character indicating if only high quality present calls should be retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality". For Bgee release 14 and above, options are "silver" (default) and "gold".
+#' @param confidence A character indicating if only high quality present calls should be
+#' retrieved. For Bgee releases prior to 14, options are "all" (default) or "high_quality".
+#' For Bgee release 14 and above, options are "silver" (default) and "gold".
+#'
+#' @param timeout local timeout used when the function is run. It allows to modify the
+#' timeout used by default in R to download files. If not provided the timeout will be
+#' fixed at 1800 secondes. When the functions exits (either naturally or as the result
+#' of an error) the download timeout go back to the original one used in the R session.
 #'
 #' @return A list of 4 elements:
 #' \itemize{
@@ -43,14 +50,13 @@
 #' @author Julien Roux, Julien Wollbrett
 #'
 #' @examples{
-#'   bgee <- Bgee$new(species = "Bos_taurus", dataType = "rna_seq")
+#'   bgee <- Bgee$new(species = "Danio_rerio", dataType = "rna_seq")
 #'   myTopAnatData <- loadTopAnatData(bgee)
 #' }
 #'
 #' @import utils digest
 #' @export
-
-loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL){
+loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL, timeout = 1800){
   OLD_WEBSERVICE_VERSION = '13.2'
 
   ## check that fields of Bgee object are not empty
@@ -76,11 +82,10 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
   }
 
-  ## Set the internet.info to 2 to have less verbose output (only reports critical warnings)
-  options(internet.info = 2)
-  ## Set the timeout option to 600 seconds to let some time to the server to send data (default is 60s)
-  options(timeout = 1200)
-
+  ## Set the timeout option to timeout value to let some time to the server to send data (default is 1800 sec.)
+  op <- options(timeout = timeout)
+  ## on exit change back options to initial values
+  on.exit(options(op))
 
   ## First query: organ relationships
   organRelationshipsFileName <- paste0("topAnat_AnatEntitiesRelationships_", myBgeeObject$speciesId, ".tsv")
@@ -167,18 +172,41 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   }
 
   ## Third query: gene to organs mapping
+  
+  # The Java API does not distinguish between full length and droplet based single cell. A topAnat analysis can be run
+  # on all single cell data but not on data coming from a subset of single cell technologies.
+  # Bgee objects have been designed to allow the download of expression files for any datatype and then distinguish between
+  # full length and droplet based single cell.
+  # In order to solve that mismatch we update the type used to run topAnat analysis. If either sc_full_length or sc_droplet_based
+  # datatype is selected, we run a topAnat analysis including all single cell technologies (full length AND droplet based)
+
+  # First write a warning if only one single cell technology is selected
+  if ("sc_full_length" %in% myBgeeObject$dataType & ! "sc_droplet_based" %in% myBgeeObject$dataType | 
+    "sc_droplet_based" %in% myBgeeObject$dataType & ! "sc_full_length" %in% myBgeeObject$dataType) {
+    message("WARNING: TopAnat can not be run on one single cell technology. Both full length and droplet based single cell data will",
+      " be queried for this topAnat analysis. If you do not want to query single cell data please remove \"sc_full_length\" or \"sc_droplet_based\"",
+      " from the list of datatypes of your Bgee object.")
+  }
+
+  # Then update the list of datatypes used to run topAnat
+  topAnat_dataType <- myBgeeObject$dataType
+  if ("sc_full_length" %in% topAnat_dataType | "sc_droplet_based" %in% topAnat_dataType) {
+    topAnat_dataType <- topAnat_dataType[! topAnat_dataType %in% c("sc_full_length", "sc_droplet_based")]
+    topAnat_dataType <- append(topAnat_dataType, "sc_rna_seq")
+  }
+
   gene2anatomyFileName <- paste0("topAnat_GeneToAnatEntities_", myBgeeObject$speciesId, "_", toupper(callType))
   ## If a stage is specified, add it to file name
   if ( !is.null(stage) ){
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", gsub(":", "_", stage))
   }
   ## If all data types specified, no need to add anything to file name. Otherwise, specify data types in file name
-  if ( sum(myBgeeObject$dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
-    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(myBgeeObject$dataType), collapse="_")))
+  if ( sum(topAnat_dataType %in% c("rna_seq","affymetrix","est","in_situ", "sc_rna_seq")) < 5 ){
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(topAnat_dataType), collapse="_")))
   }
   ## If high quality data needed, specify in file name. Otherwise not specified
   if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
-    gene2anatomyFileName <- paste0(gene2anatomyFileName, toupper(confidence))
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(confidence))
   } else {
     if ( confidence == "high_quality" ){
       gene2anatomyFileName <- paste0(gene2anatomyFileName, "_HIGH")
@@ -201,12 +229,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
 
     ## Add data type to file name: only if not all data types asked
-    if ( sum(myBgeeObject$dataType %in% c("rna_seq","sc_full_length","affymetrix","est","in_situ")) < 5 ){
-      for (type in toupper(sort(myBgeeObject$dataType))){
-        # solve mismatch between R package and Java API
-        if (type == "SC_FULL_LENGTH") {
-          type = "FULL_LENGTH"
-        }
+    if ( sum(topAnat_dataType %in% c("rna_seq","sc_rna_seq","affymetrix","est","in_situ")) < 5 ){
+      for (type in toupper(sort(topAnat_dataType))){
         myUrl <- paste0(myUrl, "&data_type=", type)
       }
     }
