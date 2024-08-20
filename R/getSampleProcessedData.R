@@ -55,8 +55,8 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-#'   dataMouseGSE43721 <- getSampleRawData(bgee, experimentId = "GSE43721")
-#'   dataMouseVariousFilters <- getSampleRawData(bgee, experimentId = c("GSE43721", "GSE36026"), 
+#'   dataMouseGSE43721 <- getSampleProcessedData(bgee, experimentId = "GSE43721")
+#'   dataMouseVariousFilters <- getSampleProcessedData(bgee, experimentId = c("GSE43721", "GSE36026"), 
 #'                              anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
 #' }
 #'
@@ -64,7 +64,7 @@
 #' @importFrom R.utils gunzip
 #' @export
 #' 
-getSampleRawData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
+getSampleProcessedData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
                     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
                     withDescendantAnatEntities = FALSE, withDescendantStages = FALSE, 
                     withDescendantCellTypes = FALSE) {

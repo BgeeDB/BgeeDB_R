@@ -17,7 +17,7 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Drosophila_melanogaster", dataType = "sc_droplet_based")
-#'   flyCellAtlasH5AD <- getCellRawData(bgee, experimentId = "ERP129698")
+#'   flyCellAtlasH5AD <- getCellProcessedData(bgee, experimentId = "ERP129698")
 #'   
 #' }
 #'
@@ -25,7 +25,7 @@
 #' @import anndata
 #' @export
 #' 
-getCellRawData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
+getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
   if (length(experimentId) != 1) {
     stop("One experimentId has to be provided.")
   }
