@@ -79,11 +79,11 @@ lapply(annotation_bgee_zebrafish, head)
 
 #### Download the processed zebrafish bulk RNA-seq data
 
-The ```getSampleRawData()``` function will download processed bulk RNA-seq data from all zebrafish experiments in Bgee as a data frame.
+The ```getSampleProcessedData()``` function will download processed bulk RNA-seq data from all zebrafish experiments in Bgee as a data frame.
 
 ``` {r}
 # download all RNA-seq experiments from zebrafish
-data_bgee_zebrafish <- getSampleRawData(bgee)
+data_bgee_zebrafish <- getSampleProcessedData(bgee)
 # number of experiments downloaded
 length(data_bgee_zebrafish)
 # check the downloaded data
@@ -92,7 +92,7 @@ lapply(data_bgee_zebrafish, head)
 data_bgee_experiment1 <- data_bgee_zebrafish[[1]]
 ```
 
-The result of the ```getSampleRawData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0 to Bgee 14.2). A detection flag indicates if the gene is significantly expressed above background level of expression. From Bgee 15.0 a pValue allows to have a precise metric indicating how much the gene is significantly expressed above background level of expression (the detection flag is still available and a gene is considered as present if pValue < 0.05).
+The result of the ```getSampleProcessedData()``` function is a data frame. Each row is a gene and the expression levels are displayed as raw read counts, RPKMs (up to Bgee 13.2), TPMs (from Bgee 14.0), or FPKMs (from Bgee 14.0 to Bgee 14.2). A detection flag indicates if the gene is significantly expressed above background level of expression. From Bgee 15.0 a pValue allows to have a precise metric indicating how much the gene is significantly expressed above background level of expression (the detection flag is still available and a gene is considered as present if pValue < 0.05).
 
 *Note*: If microarray data are downloaded, rows corresponding to probesets and log2 of expression intensities are available instead of read counts/RPKMs/TPMs/FPKMs.
 
@@ -100,7 +100,7 @@ Alternatively, you can choose to download data from one RNA-seq experiment from 
 
 ``` {r}
 # download data for GSE68666
-data_bgee_zebrafish_gse68666 <- getSampleRawData(bgee, experimentId = "GSE68666")
+data_bgee_zebrafish_gse68666 <- getSampleProcessedData(bgee, experimentId = "GSE68666")
 ```
 
 It is possible to download data by combining filters : 
@@ -114,11 +114,11 @@ It is possible to download data by combining filters :
 ``` {r eval=FALSE}
 # Examples of data downloading using different filtering combination
 # retrieve zebrafish RNA-Seq data for heart or brain
-data_bgee_zebrafish_filters <- getSampleRawData(bgee, anatEntityId = c("UBERON:0000955","UBERON:0000948"))
+data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, anatEntityId = c("UBERON:0000955","UBERON:0000948"))
 # retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) part of the experiment GSE30617
-data_bgee_zebrafish_filters <- getSampleRawData(bgee, experimentId = "GSE68666", anatEntityId = "UBERON:0000922")
+data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, experimentId = "GSE68666", anatEntityId = "UBERON:0000922")
 # retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) from post-embryonic stage (UBERON:0000092)
-data_bgee_zebrafish_filters <- getSampleRawData(bgee, stageId = "UBERON:0000113", anatEntityId = c("UBERON:0007132","UBERON:0006860"))
+data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, stageId = "UBERON:0000113", anatEntityId = c("UBERON:0007132","UBERON:0006860"))
 ```
 
 #### Format the sample level bulk RNA-seq data
@@ -137,16 +137,16 @@ gene.expression.zebrafish.tpm
 ```
 #### Download cell level single-cell RNA-seq data
 
-The ```getCellRawData()``` function will download processed single-cell RNA-seq data at the cell level. In the following example we will focus on downloading UMI counts at cell level for the Gallus gallus experiment ERP132576. The data are stored as h5ad files and can be opened using either the package \"zellkonverter\" (default) or the package \"anndata\" with the attribute ```package = "anndata```. Both \"zellkonverter\" and \"anndata\" packages require a configuration step when used the first time.
+The ```getCellProcessedData()``` function will download processed single-cell RNA-seq data at the cell level. In the following example we will focus on downloading UMI counts at cell level for the Gallus gallus experiment ERP132576. The data are stored as h5ad files and can be opened using either the package \"zellkonverter\" (default) or the package \"anndata\" with the attribute ```package = "anndata```. Both \"zellkonverter\" and \"anndata\" packages require a configuration step when used the first time.
 
 ``` {r}
 #create a bgee object to download droplet based data from Gallus gallus
 bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
 # download cell data for one RNA-seq experiment
-cell_data_bgee_gallus_gallus <- getCellRawData(bgee, experimentId = "ERP132576")
+cell_data_bgee_gallus_gallus <- getCellProcessedData(bgee, experimentId = "ERP132576")
 ```
 
-The result of the ```getCellRawData()``` depends on the package used to load the data. With \"zellkonverter\" it is an object of the class SingleCellExperiment. With \"anndata\" it is an object of the class AnnData. The expression levels are displayed as raw UMI counts.
+The result of the ```getCellProcessedData()``` depends on the package used to load the data. With \"zellkonverter\" it is an object of the class SingleCellExperiment. With \"anndata\" it is an object of the class AnnData. The expression levels are displayed as raw UMI counts.
 
 ### Running example: TopAnat gene expression enrichment analysis
 
@@ -269,7 +269,7 @@ annotated[annotated %in% sigGenes(myTopAnatObject)]
 Since version 2.14.0 (Bioconductor 3.11) BgeeDB store downloaded expression data in a local RSQLite database.
 The advantages of this approach compared to the one used in the previous BgeeDB versions are:
 * do not anymore need a server with lot of memory to access to subset of huge dataset (e.g GTeX dataset)
-* more granular filtering using arguments in the getSampleRawData() function
+* more granular filtering using arguments in the getSampleProcessedData() function
 * do not download twice the same data
 * fast access to data once integrated in the local database
 
