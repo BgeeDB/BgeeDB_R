@@ -259,7 +259,7 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
       startTime <- Sys.time()
       tryCatch(
         {
-          bgee_download_file(url = "https://www.bgee.org/api/?page=r_package&action=get_expression_calls&display_type=tsv&species_list=9823&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=5b532f8e11257f55562baa95540f9c0349ee81e044528b9a80e265080f9d75fbe5ff057cb3d3b953ecb1f51b49db18971c19b955ca0de2865317469be0a74358&source=BgeeDB_R_package&source_version=2.31.2&data_qual=SILVER", destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+          bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
           catchedError <- 0
         },
         error = function(x) {
