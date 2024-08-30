@@ -249,29 +249,43 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
-
-    if (success == 0){
-      ## Read 5 last lines of file: should be empty indicating success of data transmission
-      ## We cannot use a system call to UNIX command since some user might be on Windows
-      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
-      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
-        ## The file transfer was successful, we rename the temporary file
-        file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
-      } else {
-        ## delete the temporary file
-        file.remove(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
-        stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
-      }
-      cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
-    } else {
-      serverAnswer = try(getURL(myUrl))
-      if (class(serverAnswer) == "try-error"){
-        stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
-      } else {
-        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
-      }
+    ## this download correspond to a file that can either be 1) generated on the fly if it is the first time this combination of conditions
+    ## is queried or 2) stored on our server otherwise.
+    ## If the file has to be generated it can take a lot of time (sometimes more than one hour if single cell data exist). In order to solve
+    ## download errors due to apache connection stopping while the file is still generating and then throw an error 502, we decided to check
+    ## the error retrieved by that download and restart the download if a specific error was retrieved.
+    catchedError <- 1
+    while (catchedError) {
+      startTime <- Sys.time()
+      tryCatch(
+        {
+          bgee_download_file(url = "https://www.bgee.org/api/?page=r_package&action=get_expression_calls&display_type=tsv&species_list=9823&attr_list=GENE_ID&attr_list=ANAT_ENTITY_ID&api_key=5b532f8e11257f55562baa95540f9c0349ee81e044528b9a80e265080f9d75fbe5ff057cb3d3b953ecb1f51b49db18971c19b955ca0de2865317469be0a74358&source=BgeeDB_R_package&source_version=2.31.2&data_qual=SILVER", destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+          catchedError <- 0
+        },
+        error = function(x) {
+          #If it took a lot of time to throw an error there is a high probability that the file is currently generated.
+          # In that case we just wait one minute and try to download the file again
+          # by default the timeout is 60 seconds. In order to be safe we check that the error took more than 50
+          # 40 sec to be thrown
+          stopTime <- Sys.time()
+          if (as.numeric(difftime(time1 = stopTime, time2 = startTime, units = "sec")) <= 40) {
+            stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", x))
+          }
+        },
+        warning = function(x) {}
+      )
     }
+
+    tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
+    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+      ## The file transfer was successful, we rename the temporary file
+      file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
+    } else {
+      ## delete the temporary file
+      file.remove(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+      stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
+    cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
   ## Process the data and build the final list to return
