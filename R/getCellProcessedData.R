@@ -17,7 +17,7 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Drosophila_melanogaster", dataType = "sc_droplet_based")
-#'   flyCellAtlasH5AD <- getCellProcessedData(bgee, experimentId = "ERP129698")
+#'   cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132579")
 #'   
 #' }
 #'
