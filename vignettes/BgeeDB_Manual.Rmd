@@ -9,12 +9,12 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```BgeeDB``` is a collection of functions to import data from the Bgee database (<http://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from human and many other animal species.
+```BgeeDB``` is a collection of functions to import data from the Bgee database (<https://bgee.org/>) directly into R, and to facilitate downstream analyses, such as gene set enrichment test based on expression of genes in anatomical structures. Bgee provides annotated and processed expression data and expression calls from curated wild-type healthy samples, from human and many other animal species.
  
-The package retrieves the annotation of RNA-seq, single cell full length RNA-seq and Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<http://bgee.org/?page=top_anat#/>), but with more flexibility in the choice of parameters and developmental stages.
+The package retrieves the annotation of RNA-seq, single cell full length RNA-seq and Affymetrix experiments integrated into the Bgee database, and downloads into R the quantitative data and expression calls produced by the Bgee pipeline. The package also allows to run GO-like enrichment analyses based on anatomical terms, where genes are mapped to anatomical terms by expression patterns, based on the ```topGO``` package. This is the same as the TopAnat web-service available at (<https://www.bgee.org/analysis/top-anat/>), but with more flexibility in the choice of parameters and developmental stages.
 
 In summary, the BgeeDB package allows to: 
-* 1. List annotation of RNA-seq, single cell full length RNA-seq and microarray data available the Bgee database
+* 1. List annotation of bulk RNA-seq, single cell RNA-seq and microarray data available the Bgee database
 * 2. Download the processed gene expression data available in the Bgee database
 * 3. Download the gene expression calls and use them to perform TopAnat analyses 
 
@@ -69,7 +69,7 @@ bgee <- Bgee$new(species = "Danio_rerio", dataType = "rna_seq")
 
 #### Retrieve the annotation of zebrafish RNA-seq datasets
 
-The ```getAnnotation()``` function will output the list of RNA-seq experiments and libraries available in Bgee for zebrafish. 
+The ```getAnnotation()``` function will output the list of bulk RNA-seq experiments and libraries available in Bgee for zebrafish. 
 
 ``` {r}
 annotation_bgee_zebrafish <- getAnnotation(bgee)
@@ -107,31 +107,36 @@ It is possible to download data by combining filters :
 * experimentId : one or more experimentId,
 * sampleId : one or more sampleId (i.e libraryId for RNA-Seq and ChipId for Affymetrix),
 * anatEntityId : one or more anatomical entity ID from the UBERON ontology (https://uberon.github.io/),
+* withDescendantAnatEntities : filter on the selected anatEntityId and all its descendants (from Bgee 15.0),
 * stageId : one or more developmental stage ID from the developmental stage ontologies (https://github.com/obophenotype/developmental-stage-ontologies),
+* withDescendantStages : filter on the selected stageId and all its descendants (from Bgee 15.0)
 * cellTypeId : one or more cell type, only for single cell datatype (from Bgee 15.0),
+* withDescendantCellTypes : filter on the selected cellTypeId and all its descendants (from Bgee 15.0)
 * sex : one or more sex (from Bgee 15.0),
 * strain : one or more strain (from Bgee 15.0),
 ``` {r eval=FALSE}
 # Examples of data downloading using different filtering combination
-# retrieve zebrafish RNA-Seq data for heart or brain
+# retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948)
 data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, anatEntityId = c("UBERON:0000955","UBERON:0000948"))
-# retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) part of the experiment GSE30617
+# retrieve zebrafish RNA-Seq data for embryo (UBERON:0000922) part of the experiment GSE68666
 data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, experimentId = "GSE68666", anatEntityId = "UBERON:0000922")
-# retrieve zebrafish RNA-Seq data for heart (UBERON:0000955) or brain (UBERON:0000948) from post-embryonic stage (UBERON:0000092)
+# retrieve zebrafish RNA-Seq data for head kidney (UBERON:0007132) or swim bladder (UBERON:0006860) from post-juvenile adult stage (UBERON:0000113)
 data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, stageId = "UBERON:0000113", anatEntityId = c("UBERON:0007132","UBERON:0006860"))
+# retrieve zebrafish RNA-Seq data for brain (UBERON:0000948) and all substructures of brain from post-juvenile adult stage (UBERON:0000113)
+data_bgee_zebrafish_filters <- getSampleProcessedData(bgee, stageId = "UBERON:0000113", anatEntityId = "UBERON:0000948", withDescendantAnatEntities = TRUE)
 ```
 
 #### Format the sample level bulk RNA-seq data
 
 It is sometimes easier to work with data organized as a matrix, where rows represent genes or probesets and columns represent different samples. The ```formatData()``` function reformats the data into an ExpressionSet object including:
-* An expression data matrix, with genes or probesets as rows, and samples as columns (```assayData``` slot). The ```stats``` argument allows to choose if the matrix should be filled with read counts, RPKMs (up to Bgee 13.2), FPKMs (from Bgee 14.0), or TPMs (from Bgee 14.0) for RNA-seq data. For microarray data the matrix is filled with log2 expression intensities.
+* An expression data matrix, with genes or probesets as rows, and samples as columns (```assayData``` slot). The ```stats``` argument allows to choose if the matrix should be filled with read counts, RPKMs (up to Bgee 13.2), FPKMs (from Bgee 14.0 to Bgee 14.2), or TPMs (from Bgee 14.0) for RNA-seq data. For microarray data the matrix is filled with log2 expression intensities.
 * A data frame listing the samples and their anatomical structure and developmental stage annotation (```phenoData``` slot)
 * For microarray data, the mapping from probesets to Ensembl genes (```featureData``` slot)
 
 The ```callType``` argument allows to retain only actively expressed genes or probesets, if set to "present" or "present high quality". Genes or probesets that are absent in a given sample are given ```NA``` values.
 
 ```{r}
-# use only present calls and fill expression matric with TPM values
+# use only present calls and fill expression matrix with TPM values
 gene.expression.zebrafish.tpm <- formatData(bgee, data_bgee_zebrafish_gse68666, callType = "present", stats = "tpm")
 gene.expression.zebrafish.tpm 
 ```
@@ -150,17 +155,17 @@ The result of the ```getCellProcessedData()``` depends on the package used to lo
 
 ### Running example: TopAnat gene expression enrichment analysis
 
-For some documentation on the TopAnat analysis, please refer to our publications, or to the web-tool page (<http://bgee.org/?page=top_anat#/>).
+For some documentation on the TopAnat analysis, please refer to our publications, or to the web-tool page (<https://www.bgee.org/analysis/top-anat/>).
 
 #### Create a new Bgee object
 Similarly to the quantitative data download example above, the first step of a topAnat analysis is to built an object from the Bgee class. For this example, we will focus on zebrafish:
 
 ```{r}
 # Creating new Bgee class object
-bgee <- Bgee$new(species = "Danio_rerio")
+bgee <- Bgee$new(species = "Danio_rerio", release = "15.2")
 ```
 
-*Note* : We are free to specify any data type of interest using the ```dataType``` argument among `rna_seq`, `affymetrix`, `est` or `in_situ`, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying `dataType=c("rna_seq","sc_full_length","affymetrix","est","in_situ")`.
+*Note* : We are free to specify any data type of interest using the ```dataType``` argument among `rna_seq`, `sc_full_length`, `sc_droplet_based`, `affymetrix`, `est` or `in_situ`, or even a combination of data types. If nothing is specified, as in the above example, all data types available for the targeted species are used. This equivalent to specifying `dataType=c("rna_seq","sc_full_length","sc_droplet_based","affymetrix","est","in_situ")`.
 
 #### Download the data allowing to perform TopAnat analysis
 
@@ -173,18 +178,18 @@ myTopAnatData <- loadTopAnatData(bgee)
 ## str(myTopAnatData)
 ```
 
-The strigency on the quality of expression calls can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the a Uberon stage Id in the ```stage``` argument. 
+The stringency on the quality of expression calls can be changed with the ```confidence``` argument. Finally, if you are interested in expression data coming from a particular developmental stage or a group of stages, please specify the a Uberon stage Id in the ```stage``` argument. 
 
 ```{r, eval=FALSE}
 ## Loading silver and gold expression calls from affymetrix data made on embryonic samples only 
 ## This is just given as an example, but is not run in this vignette because only few data are returned
-bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix")
+bgee <- Bgee$new(species = "Danio_rerio", dataType="affymetrix", release = "15.2")
 myTopAnatData <- loadTopAnatData(bgee, stage="UBERON:0000068", confidence="silver")
 ```
 
 *Note 1*: As mentioned above, the downloaded data files are stored in a versioned folder that can be set with the ```pathToData``` argument when creating the Bgee class object (default is the working directory). If you query again Bgee with the exact same parameters, these cached files will be read instead of querying the web-service again. **It is thus important, if you plan to reuse the same data for multiple parallel topAnat analyses, to plan to make use of these cached files instead of redownloading them for each analysis.** The cached files also give the possibility to repeat analyses offline.
 
-*Note 2*: In releases up to Bgee 13.2 allowed ```confidence`` values were `low_quality` or or `high_quality`. From Bgee 14.0 ```confidence``` values are `gold` or `silver`.
+*Note 2*: In releases up to Bgee 13.2 allowed ```confidence`` values were `low_quality` or or `high_quality`. Starting from Bgee 14.0 ```confidence``` values are `gold` or `silver`.
 
 #### Prepare a topAnatData object allowing to perform TopAnat analysis with topGO
 
@@ -244,7 +249,7 @@ tableOver <- makeTable(myTopAnatData, myTopAnatObject, results, cutoff = 0.01)
 head(tableOver)
 ```
 
-At the time of building this vignette (June 2018), there was 27 significant anatomical structures. The first term is “pectoral fin”, and the second “paired limb/fin bud”. Other terms in the list, especially those with high enrichment folds, are clearly related to pectoral fins or substructures of fins. This analysis shows that genes with phenotypic effects on pectoral fins are specifically expressed in or next to these structures
+At the time of building this vignette (Sept. 2024), there was 9 significant anatomical structures. The first term is “pectoral fin”, and the second “pectoral appendage bud”. Other terms in the list, especially those with high enrichment folds, are clearly related to pectoral fins or substructures of fins. This analysis shows that genes with phenotypic effects on pectoral fins are specifically expressed in or next to these structures
 
 By default results are sorted by p-value, but this can be changed with the ```ordering``` parameter by specifying which column should be used to order the results (preceded by a "-" sign to indicate that ordering should be made in decreasing order). For example, it is often convenient to sort  significant structures by decreasing enrichment fold, using `ordering = -6`. The full table of results can be obtained using `cutoff = 1`.
 
@@ -255,9 +260,9 @@ Of note, it is possible to retrieve for a particular tissue the significant gene
 term <- "UBERON:0004357"
 termStat(myTopAnatObject, term) 
 
-# 198 genes mapped to this term for Bgee 14.0 and Ensembl 84
+# 172 genes mapped to this term for Bgee 15.2
 genesInTerm(myTopAnatObject, term)
-# 48 significant genes mapped to this term for Bgee 14.0 and Ensembl 84
+# 37 significant genes mapped to this term for Bgee 15.2
 annotated <- genesInTerm(myTopAnatObject, term)[["UBERON:0004357"]]
 annotated[annotated %in% sigGenes(myTopAnatObject)]
 ```
