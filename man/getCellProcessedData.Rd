@@ -23,7 +23,7 @@ These files are stored in the H5AD format.
 }
 \examples{
 {
-  bgee <- Bgee$new(species = "Drosophila_melanogaster", dataType = "sc_droplet_based")
+  bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
   cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132579")
   
 }
