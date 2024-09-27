@@ -41,11 +41,13 @@ Bgee <- setRefClass(
     speciesId = "numeric",
     dataType = "character",
     pathToData = "character",
+    pathToCalls = "character",
     release = "character",
     annotationUrl = "character",
     experimentUrl = "character",
     allExperimentsUrl = "character",
     experimentH5adUrl = "character",
+    callsUrl = "character",
     topAnatUrl = "character",
     sendStats = "logical",
     quantitativeData = "logical",
@@ -117,7 +119,8 @@ Bgee <- setRefClass(
         stop("ERROR: The specified release number is invalid.")
       }
 
-
+      ## Specify URL to use to download expression calls. Can be done for any species
+      callsUrl <<- as.character(allReleases$Calls.URL[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
       ## Specify URL to be used for topAnat. Can be done for any species and data type
       topAnatUrl <<-  as.character(allReleases$TopAnat.URL[as.numeric(allReleases$release) == as.numeric(gsub("_", ".", release))])
       if ( !grepl("/$", topAnatUrl) ){
