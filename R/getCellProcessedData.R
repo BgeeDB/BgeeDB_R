@@ -21,7 +21,7 @@
 #'   
 #' }
 #'
-#' @import zellkonverter anndata rhdf5 HDF5Array
+#' @import zellkonverter anndata HDF5Array
 #' @export
 #' 
 getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
