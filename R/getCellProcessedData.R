@@ -17,8 +17,7 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
-#'   cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132579")
-#'   
+#'   cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132576")
 #' }
 #'
 #' @import zellkonverter anndata HDF5Array
@@ -37,7 +36,7 @@ getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonv
   }
   experimentAnnotation <- getAnnotation(myBgeeObject)$experiment.annotation
   if (!experimentId %in% experimentAnnotation$Experiment.ID) {
-    stop("the experiment ID:", experimentId, " provided does not exist in Bgee for the species",
+    stop("the experiment ID:", experimentId, " provided does not exist in Bgee for the species ",
       myBgeeObject$species, ". Please first look at the available annotation using the ",
       "`getAnnotation(myBgeeObject)` function.")
   }

@@ -144,7 +144,7 @@ gene.expression.zebrafish.tpm
 
 The ```getCellProcessedData()``` function will download processed single-cell RNA-seq data at the cell level. In the following example we will focus on downloading UMI counts at cell level for the Gallus gallus experiment ERP132576. The data are stored as h5ad files and can be opened using either the package \"zellkonverter\" (default) or the package \"anndata\" with the attribute ```package = "anndata```. Both \"zellkonverter\" and \"anndata\" packages require a configuration step when used the first time.
 
-``` {r}
+``` {r eval=FALSE}
 #create a bgee object to download droplet based data from Gallus gallus
 bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
 # download cell data for one RNA-seq experiment
