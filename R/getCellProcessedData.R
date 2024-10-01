@@ -16,8 +16,10 @@
 #' @author Julien Wollbrett
 #'
 #' @examples{
+#' \dontrun{
 #'   bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
 #'   cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132576")
+#' }
 #' }
 #'
 #' @import zellkonverter anndata HDF5Array
