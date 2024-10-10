@@ -8,7 +8,7 @@
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species 
 #' and data type.
 #'
-#' @param conditonParameters Specify which condition parameter you are interested
+#' @param conditionParameters Specify which condition parameter you are interested
 #' in. It can be `anatEntity` or `allCondParams`. The `anatEntity` option retrieve calls generated 
 #' using only anatomical entity and cell-type as a condition parameter. The `allCondParams` option retrieve calls generated taking
 #' into consideration all condition parameters present in Bgee (anat, entity, cell-type, developmental stage,
@@ -23,12 +23,10 @@
 #' @param geneIds List of genes for which expression calls have to be retrieved. It has to be ensembl
 #' IDs if the Bgee genome source is Ensembl (e.g ENSG00000244734) or RefSeq IDs if the Bgee genome source
 #' is RefSeq (e.g 734881) but not gene names (e.g HBB, Apoc1, etc.).
-#' 
-#' @param anatEntityIds List of anatomical entity IDs for which expression calls have to be retrieved.
 #'
 #' @return Return a data.table containing all calls from the specified species
 #'
-#' @author Julien Wollbrett, Andrea Komljenovic and Julien Roux.
+#' @author Julien Wollbrett
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Danio_rerio")
@@ -39,7 +37,7 @@
 #' @importFrom R.utils gunzip
 #' @export
 #' 
-getIntegratedCalls <- function(myBgeeObject, conditonParameters="anatEntity", advancedColumns=FALSE,
+getIntegratedCalls <- function(myBgeeObject, conditionParameters="anatEntity", advancedColumns=FALSE,
     geneIds=NULL) {
   if (! conditionParameters %in% c("anatEntity", "allCondParams")) {
     stop("the value of the conditionParameters argument should be either anatEntity or callCondParams.")
@@ -84,7 +82,7 @@ getIntegratedCalls <- function(myBgeeObject, conditonParameters="anatEntity", ad
     if (is.null(anatEntityIds) | !is.null(geneIds) & length(geneIds) < length(anatEntityIds)) {
       print("filter by genes with bread")
       geneSearchPattern <- paste(geneIds, collapse =  "|")
-      timeNeeded <- system.time(outputCalls <- bread(file = uncompressedDestFile,
+      timeNeeded <- system.time(outputCalls <- breadWithErrorManagement(file = uncompressedDestFile,
         patterns = geneSearchPattern, filtered_columns = "Gene ID"))
       if (!is.null(anatEntityIds)) {
         outputCalls <- outputCalls[outputCalls$`Anatomical entity ID` %in% anatEntityIds,]
@@ -109,11 +107,13 @@ breadWithErrorManagement <- function (file, patterns, filtered_columns) {
   outputCalls <- NULL
   tryCatch( {
     outputCalls <- bread(file = uncompressedDestFile,
-      patterns = geneSearchPattern, filtered_columns = "Gene ID")
+      patterns = patterns, filtered_columns = filtered_columns)
     },
-    error = function(e) {stop("can not run the bread function on your system. If you are ",
+    error = function(e) {
+      stop("can not run the bread function on your system. If you are ",
       "on Windows please first install 'RTools', 'Git' or 'Cygwin' to allow Unix commands ",
       "like \'grep\', \'sed\', \'wc\', \'awk\' or \'cut\'. If you do not want to install ",
       "such tools you can also run the getIntegratedCalls() function without geneIds and ",
-      "anatEntityIds and filter afterwards.")})
+      "anatEntityIds and filter afterwards.")
+    })
 }

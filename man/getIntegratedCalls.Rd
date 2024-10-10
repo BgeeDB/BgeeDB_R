@@ -6,7 +6,7 @@
 \usage{
 getIntegratedCalls(
   myBgeeObject,
-  conditonParameters = "anatEntity",
+  conditionParameters = "anatEntity",
   advancedColumns = FALSE,
   geneIds = NULL
 )
@@ -15,7 +15,7 @@ getIntegratedCalls(
 \item{myBgeeObject}{A Reference Class Bgee object, notably specifying the targeted species
 and data type.}
 
-\item{conditonParameters}{Specify which condition parameter you are interested
+\item{conditionParameters}{Specify which condition parameter you are interested
 in. It can be \code{anatEntity} or \code{allCondParams}. The \code{anatEntity} option retrieve calls generated
 using only anatomical entity and cell-type as a condition parameter. The \code{allCondParams} option retrieve calls generated taking
 into consideration all condition parameters present in Bgee (anat, entity, cell-type, developmental stage,
@@ -30,8 +30,6 @@ per datatype.}
 \item{geneIds}{List of genes for which expression calls have to be retrieved. It has to be ensembl
 IDs if the Bgee genome source is Ensembl (e.g ENSG00000244734) or RefSeq IDs if the Bgee genome source
 is RefSeq (e.g 734881) but not gene names (e.g HBB, Apoc1, etc.).}
-
-\item{anatEntityIds}{List of anatomical entity IDs for which expression calls have to be retrieved.}
 }
 \value{
 Return a data.table containing all calls from the specified species
@@ -50,5 +48,5 @@ single-cell RNA-Seq).
 
 }
 \author{
-Julien Wollbrett, Andrea Komljenovic and Julien Roux.
+Julien Wollbrett
 }
