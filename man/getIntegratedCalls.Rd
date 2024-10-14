@@ -8,7 +8,8 @@ getIntegratedCalls(
   myBgeeObject,
   conditionParameters = "anatEntity",
   advancedColumns = FALSE,
-  geneIds = NULL
+  geneIds = NULL,
+  anatEntityIds = NULL
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ per datatype.}
 \item{geneIds}{List of genes for which expression calls have to be retrieved. It has to be ensembl
 IDs if the Bgee genome source is Ensembl (e.g ENSG00000244734) or RefSeq IDs if the Bgee genome source
 is RefSeq (e.g 734881) but not gene names (e.g HBB, Apoc1, etc.).}
+
+\item{anatEntityIds}{List of anatomical entity IDs for which expression calls have to be retrieved.
+It has to be IDs (e.g UBERON:0000955) and not names (e.g brain)}
 }
 \value{
 Return a data.table containing all calls from the specified species
