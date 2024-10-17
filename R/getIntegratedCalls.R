@@ -109,7 +109,7 @@ getIntegratedCalls <- function(myBgeeObject, conditionParameters="anatEntity", a
 breadWithErrorManagement <- function (file, patterns, filtered_columns) {
   outputCalls <- NULL
   tryCatch( {
-    outputCalls <- bread(file = uncompressedDestFile,
+    outputCalls <- bread(file = file,
       patterns = patterns, filtered_columns = filtered_columns)
     },
     error = function(e) {
