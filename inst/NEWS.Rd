@@ -1,6 +1,16 @@
 \name{NEWS}
 \title{News for package \pkg{BgeeDB}}
 
+\section{Version 2.32 (2024-10)}{
+  \itemize{
+    \item Allows to download data from Bgee 15.2
+    \item Possibility to download h5ad single-cell data with the function getCellProcessedData
+    \item Possibility to download integrated Bgee gene expression calls similar to Bgee gene page results with the function getIntegratedCalls
+    \item topAnat has been optimized to run faster
+    \item The getData function has been deprecated and replaced by the function getSampleProcessedData
+    \item 
+  }
+}
 
 \section{Version 2.18.2 (2022-02)}{
   \itemize{
