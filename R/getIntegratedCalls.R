@@ -78,12 +78,10 @@ getIntegratedCalls <- function(myBgeeObject, conditionParameters="anatEntity", a
   outputCalls <- NULL
   timeNeeded <- NULL
   if (is.null(geneIds) & is.null(anatEntityIds)) {
-    print("load without filter")
     timeNeeded <- system.time(outputCalls <- fread(file = uncompressedDestFile, header = TRUE,
       quote = FALSE))
   } else {
     if (is.null(anatEntityIds) | !is.null(geneIds) & length(geneIds) < length(anatEntityIds)) {
-      print("filter by genes with bread")
       geneSearchPattern <- paste(geneIds, collapse =  "|")
       timeNeeded <- system.time(outputCalls <- breadWithErrorManagement(file = uncompressedDestFile,
         patterns = geneSearchPattern, filtered_columns = "Gene ID"))
@@ -91,7 +89,6 @@ getIntegratedCalls <- function(myBgeeObject, conditionParameters="anatEntity", a
         outputCalls <- outputCalls[outputCalls$`Anatomical entity ID` %in% anatEntityIds,]
       }
     } else if (is.null(geneIds) | !is.null(anatEntityIds) & length(anatEntityIds) < length(geneIds)) {
-      print("filter by anatEntities with bread")
       anatEntitySearchPattern <- paste(anatEntityIds, collapse = "|")
       timeNeeded <- system.time(outputCalls <- bfilter(file = uncompressedDestFile,
         patterns = anatEntitySearchPattern, filtered_columns = "Anatomical entity ID"))
@@ -100,8 +97,7 @@ getIntegratedCalls <- function(myBgeeObject, conditionParameters="anatEntity", a
       }
     }
   }
-  message("Expression calls have been retrieved in ", count_time(timeNeeded["user.self"]
-    + timeNeeded["user.child"]))
+  message("Expression calls have been retrieved in ", count_time(timeNeeded["elapsed"]))
   return(outputCalls)
   
 }
