@@ -61,7 +61,7 @@ Bgee <- setRefClass(
 
       ## check data type
       if (length(dataType) == 0) {
-        cat("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"_rna_seq\",\"affymetrix\",\"est\",\"in_situ\",\"sc_full_length\", \"sc_droplet_based\") for the next steps.\n")
+        cat("\nNOTE: You did not specify any data type. The argument dataType will be set to c(\"rna_seq\",\"affymetrix\",\"est\",\"in_situ\",\"sc_full_length\", \"sc_droplet_based\") for the next steps.\n")
         dataType <<- c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")
       } else if ( !sum(dataType %in% c("rna_seq","affymetrix","est","in_situ","sc_full_length", "sc_droplet_based")) %in% 1:6 ){
         stop("ERROR: you need to specify at least one valid data type to be used among \"rna_seq\", \"affymetrix\", \"sc_full_length\", \"sc_droplet_based\", \"est\" and \"in_situ\".")
