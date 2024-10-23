@@ -8,7 +8,6 @@
     \item Possibility to download integrated Bgee gene expression calls similar to Bgee gene page results with the function getIntegratedCalls
     \item topAnat has been optimized to run faster
     \item The getData function has been deprecated and replaced by the function getSampleProcessedData
-    \item 
   }
 }
 
