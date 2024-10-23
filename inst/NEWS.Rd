@@ -3,7 +3,7 @@
 
 \section{Version 2.32 (2024-10)}{
   \itemize{
-    \item Allows to download data from Bgee 15.2
+    \item Allows to download data from Bgee 15.2 with more bulk RNA-Seq and single-cell RNA-Seq
     \item Possibility to download h5ad single-cell data with the function getCellProcessedData
     \item Possibility to download integrated Bgee gene expression calls similar to Bgee gene page results with the function getIntegratedCalls
     \item topAnat has been optimized to run faster
