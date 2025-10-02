@@ -37,3 +37,18 @@ bgee_download_file <- function(url, destfile, quiet = TRUE, mode = NULL) {
     }
   }
 }
+
+count_time <- function(seconds) {
+  if (seconds < 60) {
+    return(paste(seconds, "second(s)"))
+  } else {
+    minutes <- floor(seconds / 60)
+    remaining_seconds <- seconds %% 60
+    
+    if (remaining_seconds == 0) {
+      return(paste(minutes, "minute(s)"))
+    } else {
+      return(paste(minutes, "minute(s) and", remaining_seconds, "second(s)"))
+    }
+  }
+}

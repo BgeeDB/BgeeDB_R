@@ -55,8 +55,8 @@
 #'
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
-#'   dataMouseGSE43721 <- getSampleRawData(bgee, experimentId = "GSE43721")
-#'   dataMouseVariousFilters <- getSampleRawData(bgee, experimentId = c("GSE43721", "GSE36026"), 
+#'   dataMouseGSE43721 <- getSampleProcessedData(bgee, experimentId = "GSE43721")
+#'   dataMouseVariousFilters <- getSampleProcessedData(bgee, experimentId = c("GSE43721", "GSE36026"), 
 #'                              anatEntityId = c("UBERON:0002107", "UBERON:0000956", "UBERON:0002048"))
 #' }
 #'
@@ -64,32 +64,32 @@
 #' @importFrom R.utils gunzip
 #' @export
 #' 
-getSampleRawData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL, 
-                    anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
-                    withDescendantAnatEntities = FALSE, withDescendantStages = FALSE, 
-                    withDescendantCellTypes = FALSE) {
+getSampleProcessedData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL,
+                                   anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL,
+                                   withDescendantAnatEntities = FALSE, withDescendantStages = FALSE,
+                                   withDescendantCellTypes = FALSE) {
   check_object(myBgeeObject)
   # write a warning message if user tried to retrieve ontology terms with descendants for
   # a bgee release where this functionality was not yet implemented
   compare_version_number <- gsub("_", ".", myBgeeObject$release)
-  if ((withDescendantAnatEntities | withDescendantStages | withDescendantCellTypes) &
+  if ((withDescendantAnatEntities || withDescendantStages || withDescendantCellTypes) &
       compareVersion(a = compare_version_number , b = "15.0") < 0) {
     message("withDescendant functionality is available only for Bgee 15.0",
             " release and after. Will not retrieve descendant of selected parameters.")
   }
-  if (withDescendantAnatEntities & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+  if (withDescendantAnatEntities && compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     if(is.null(anatEntityId)) {
       warning("No anatomical entity was provided. Not possible to filter on descendant anatomical entities.")
     }
     anatEntityId <- c(anatEntityId, getDescendantAnatEntities(bgee = myBgeeObject, ids = anatEntityId))
   }
-  if (withDescendantStages & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+  if (withDescendantStages && compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     if(is.null(stageId)) {
       warning("No developmental stage was provided. Not possible to filter on descendant developmental stages.")
     }
     stageId <- c(stageId, getDescendantStages(bgee = myBgeeObject, ids = stageId))
   }
-  if (withDescendantCellTypes & compareVersion(a = compare_version_number , b = "15.0") >= 0) {
+  if (withDescendantCellTypes && compareVersion(a = compare_version_number , b = "15.0") >= 0) {
     if(is.null(cellTypeId)) {
       warning("No cell type was provided. Not possible to filter on descendant cell types.")
     }
@@ -118,7 +118,7 @@ check_object = function(myBgeeObject, experimentId = NULL){
         stop("ERROR: downloading quantitative data is only possible if a single data ", 
              "type (\"rna_seq\", \"sc_full_length\", \"sc_droplet_based\" or \"affymetrix\") is specified ",
              "in the input Bgee class object.")
-      } else if (length(myBgeeObject$dataType) == 1 & !(myBgeeObject$dataType %in% c('rna_seq','sc_full_length',
+      } else if (length(myBgeeObject$dataType) == 1 && !(myBgeeObject$dataType %in% c('rna_seq','sc_full_length',
         'sc_droplet_based', 'affymetrix'))){
         stop("ERROR: downloading quantitative data is not possible for the species and data ", 
              "type specified in the input Bgee class object. Maybe the specified data type is not available ", 
@@ -127,8 +127,8 @@ check_object = function(myBgeeObject, experimentId = NULL){
         stop("ERROR: downloading quantitative data is not possible for the species and data type ", 
              "specified in the input Bgee class object.")
       }
-    } else if (length(myBgeeObject$experimentUrl) == 0 | length(myBgeeObject$allExperimentsUrl) == 0 
-               | length(myBgeeObject$dataType) == 0 | length(myBgeeObject$pathToData) == 0){
+    } else if (length(myBgeeObject$experimentUrl) == 0 || length(myBgeeObject$allExperimentsUrl) == 0 
+               || length(myBgeeObject$dataType) == 0 || length(myBgeeObject$pathToData) == 0){
       stop("ERROR: there seems to be a problem with the input Bgee class object, some fields are ", 
            "empty. Please check that the object was correctly built.")
     }
@@ -140,7 +140,7 @@ check_condition_parameters = function(myBgeeObject, anatEntityId, stageId,
   ## check that the condition parameters queried are compatible with Bgee release
   ## selected
   if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") < 0) {
-    if (!is.null(cellTypeId) | !is.null(sex) | !is.null(strain)) {
+    if (!is.null(cellTypeId) || !is.null(sex) || !is.null(strain)) {
       stop("ERROR: cellTypeId, sex, and strain can be filtered only for Bgee 15.0",
            " release and after.")
     }
@@ -179,7 +179,7 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
     experiments <- experiments[experiments$Experiment.ID %in% experimentId,]
   } 
   if(!is.null(sampleId)) {
-    if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length" | myBgeeObject$dataType == "sc_droplet_based") {
+    if(myBgeeObject$dataType == "rna_seq" || myBgeeObject$dataType == "sc_full_length" || myBgeeObject$dataType == "sc_droplet_based") {
       experiments <- experiments[experiments$Library.ID %in% sampleId,]
     } else if(myBgeeObject$dataType == "affymetrix") {
       experiments <- experiments[experiments$Chip.ID %in% sampleId,]
@@ -202,7 +202,7 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
     experiments <- experiments[experiments$Strain %in% strain,]
   }
   if(!is.null(cellTypeId)) {
-    if (myBgeeObject$dataType == "sc_full_length" | myBgeeObject$dataType == "sc_droplet_based") {
+    if (myBgeeObject$dataType == "sc_full_length" || myBgeeObject$dataType == "sc_droplet_based") {
       #In Bgee 15.0 the name of the column was "Cell type ID" and was changed to "Celltype ID" starting from Bgee 15.2
       if (compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") == 0) {
         experiments <- experiments[experiments$Cell.type.ID %in% cellTypeId,]
@@ -210,7 +210,7 @@ detect_experiments = function(myBgeeObject, experimentId = NULL, sampleId = NULL
         experiments <- experiments[experiments$Celltype.ID %in% cellTypeId,]
       }
     } else {
-      stop("Can only filter on cell type ID when single cell datatype (sc_full_length) is selected.")
+      stop("Can only filter on cell type ID when single cell datatype (sc_full_length or sc_droplet_based) is selected.")
     }
   }
   return(unique(experiments$Experiment.ID))
@@ -260,8 +260,8 @@ integrate_experiments = function(myBgeeObject, experimentId, sqlite_file) {
     if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
       updatePvalues <- dbExecute(conn, paste0("UPDATE ",myBgeeObject$dataType," set [pValue] = NULL 
         where [pValue] = \"NA\""))
-      if(myBgeeObject$dataType == "rna_seq" | myBgeeObject$dataType == "sc_full_length"
-         | myBgeeObject$dataType == "sc_droplet_based") {
+      if(myBgeeObject$dataType == "rna_seq" || myBgeeObject$dataType == "sc_full_length"
+         || myBgeeObject$dataType == "sc_droplet_based") {
         updateRanks <- dbExecute(conn, paste0("UPDATE ", myBgeeObject$dataType, " set [Rank] = NULL 
           where [Rank] = \"NA\""))
       }
@@ -400,8 +400,8 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
   on.exit(dbDisconnect(conn))
   # generate query
   query <- paste0("SELECT * from ", myBgeeObject$dataType)
-  if(! (is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) & is.null(stageId)
-        & is.null(sex) & is.null(strain) & is.null(cellTypeId)) ) {
+  if(! (is.null(experimentId) && is.null(sampleId) && is.null(anatEntityId) && is.null(stageId)
+        && is.null(sex) && is.null(strain) && is.null(cellTypeId)) ) {
     query <- paste0(query, " WHERE ")
     if (!is.null(experimentId)) {
       if(length(experimentId) == 1) {
@@ -429,7 +429,7 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
       }
     }
     if (!is.null(anatEntityId)) {
-      if (!(is.null(experimentId) & is.null(sampleId))) {
+      if (!(is.null(experimentId) && is.null(sampleId))) {
         query <- paste0(query, " AND ")
       }
       if(length(anatEntityId) == 1) {
@@ -439,7 +439,7 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
       }
     }
     if (!is.null(stageId)) {
-      if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId))) {
+      if (!(is.null(experimentId) && is.null(sampleId) && is.null(anatEntityId))) {
         query <- paste0(query, " AND ")
       }
       if(length(stageId) == 1) {
@@ -452,8 +452,8 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
     # All following filters are available for Bgee 15.0 and after
     if(compareVersion(a = gsub("_", ".", myBgeeObject$release), b = "15.0") >= 0) {
       if (!is.null(cellTypeId)) {
-        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
-              & is.null(stageId))) {
+        if (!(is.null(experimentId) && is.null(sampleId) && is.null(anatEntityId) 
+              && is.null(stageId))) {
           query <- paste0(query, " AND ")
         }
 
@@ -471,8 +471,8 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
         }
       }
       if (!is.null(sex)) {
-        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
-              & is.null(stageId) & is.null(cellTypeId))) {
+        if (!(is.null(experimentId) && is.null(sampleId) && is.null(anatEntityId) 
+              && is.null(stageId) && is.null(cellTypeId))) {
           query <- paste0(query, " AND ")
         }
         if(length(sex) == 1) {
@@ -483,8 +483,8 @@ query_data = function(myBgeeObject, experimentId = NULL, sampleId = NULL, anatEn
         }
       }
       if (!is.null(strain)) {
-        if (!(is.null(experimentId) & is.null(sampleId) & is.null(anatEntityId) 
-              & is.null(stageId) & is.null(cellTypeId) & is.null(sex))) {
+        if (!(is.null(experimentId) && is.null(sampleId) && is.null(anatEntityId) 
+              && is.null(stageId) && is.null(cellTypeId) && is.null(sex))) {
           query <- paste0(query, " AND ")
         }
         # rsqlite does not allow to remove double quotes when inserting data in the local database.
@@ -511,7 +511,7 @@ getDescendantAnatEntities <- function (bgee, ids) {
 }
 
 getDescendantCellTypes <- function (bgee, ids) {
-  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "anatEntities"))
+  return(getDescendant(bgee = bgee, ids = ids, conditionParam = "cellTypes"))
 }
 
 getDescendantStages <- function (bgee, ids) {
@@ -523,7 +523,7 @@ getDescendant <- function (bgee, ids, conditionParam) {
                   "?page=r_package&action=COND_PARAM&ENTITIES&species_id=SPECIES&",
                   "propagation=DESCENDANTS&attr_list=ID&display_type=tsv")
   myUrl <- gsub("SPECIES", bgee$speciesId, myUrl, perl = FALSE)
-  if (conditionParam == "anatEntities") {
+  if (conditionParam == "anatEntities" || conditionParam == "cellTypes") {
     myUrl <- gsub("COND_PARAM", "get_propagation_anat_entity", myUrl, perl = TRUE)
     myUrl <- gsub("ENTITIES", paste0("anat_entity_id=",
                                      paste(ids, collapse = "&anat_entity_id=")), myUrl, perl = TRUE)
@@ -539,6 +539,12 @@ getDescendant <- function (bgee, ids, conditionParam) {
   annotation <- suppressMessages(getAnnotation(bgee)$sample.annotation)
   if (conditionParam == "anatEntities") {
     present <- unique(annotation$Anatomical.entity.ID)
+  } else if (conditionParam == "cellTypes") {
+    if (gsub("_", ".", myBgeeObject$release) == "15.0") {
+      present <- unique(annotation$Cell.type.ID)
+    } else {
+      present <- unique(annotation$Celltype.ID)
+    }
   } else if (conditionParam == "stages") {
     present <- unique(annotation$Stage.ID)
   }

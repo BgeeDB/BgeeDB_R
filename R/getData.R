@@ -1,6 +1,6 @@
-#' @title Retrieve Bgee RNA-seq or Affymetrix data.
+#' @title Deprecated : Retrieve Bgee RNA-seq or Affymetrix data.
 #'
-#' @description This function loads the quantitative expression data and presence calls 
+#' @description Deprecated : This function loads the quantitative expression data and presence calls 
 #' for samples available from Bgee (rna_seq, affymetrix, sc_full_length).
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species 
@@ -60,7 +60,7 @@ getData <- function(myBgeeObject, experimentId = NULL, sampleId = NULL,
     anatEntityId = NULL, stageId = NULL, cellTypeId = NULL, sex = NULL, strain = NULL, 
     withDescendantAnatEntities = FALSE, withDescendantStages = FALSE, 
     withDescendantCellTypes = FALSE) {
-  .Deprecated(new = "getSampleRawData")
+  .Deprecated(new = "getSampleProcessedData")
   check_object(myBgeeObject)
   # write a warning message if user tried to retrieve ontology terms with descendants for
   # a bgee release where this functionality was not yet implemented

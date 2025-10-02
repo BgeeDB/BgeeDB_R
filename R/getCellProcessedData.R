@@ -16,16 +16,16 @@
 #' @author Julien Wollbrett
 #'
 #' @examples{
-#'   bgee <- Bgee$new(species = "Drosophila_melanogaster", dataType = "sc_droplet_based")
-#'   flyCellAtlasH5AD <- getCellRawData(bgee, experimentId = "ERP129698")
-#'   
+#' \dontrun{
+#'   bgee <- Bgee$new(species = "Gallus_gallus", dataType = "sc_droplet_based")
+#'   cellProcessedData <- getCellProcessedData(bgee, experimentId = "ERP132576")
+#' }
 #' }
 #'
-#' @import zellkonverter
-#' @import anndata
+#' @import zellkonverter anndata HDF5Array
 #' @export
 #' 
-getCellRawData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
+getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
   if (length(experimentId) != 1) {
     stop("One experimentId has to be provided.")
   }
@@ -38,7 +38,7 @@ getCellRawData <- function(myBgeeObject, experimentId, package = "zellkonverter"
   }
   experimentAnnotation <- getAnnotation(myBgeeObject)$experiment.annotation
   if (!experimentId %in% experimentAnnotation$Experiment.ID) {
-    stop("the experiment ID:", experimentId, " provided does not exist in Bgee for the species",
+    stop("the experiment ID:", experimentId, " provided does not exist in Bgee for the species ",
       myBgeeObject$species, ". Please first look at the available annotation using the ",
       "`getAnnotation(myBgeeObject)` function.")
   }

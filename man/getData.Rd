@@ -2,7 +2,7 @@
 % Please edit documentation in R/getData.R
 \name{getData}
 \alias{getData}
-\title{Retrieve Bgee RNA-seq or Affymetrix data.}
+\title{Deprecated : Retrieve Bgee RNA-seq or Affymetrix data.}
 \usage{
 getData(
   myBgeeObject,
@@ -61,7 +61,7 @@ Return a dataframe containing all Bgee processed expression data from the select
 and datatype using specified filters with operator AND.
 }
 \description{
-This function loads the quantitative expression data and presence calls
+Deprecated : This function loads the quantitative expression data and presence calls
 for samples available from Bgee (rna_seq, affymetrix, sc_full_length).
 }
 \examples{
