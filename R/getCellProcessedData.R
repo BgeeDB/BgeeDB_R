@@ -26,7 +26,7 @@
 #' @export
 #' 
 getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
-  destFile <- downloadCellProcessedFille(myBgeeObject = myBgeeObject, experimentId = experimentId)
+  destFile <- downloadCellProcessedFile(myBgeeObject = myBgeeObject, experimentId = experimentId)
   error_message <- NULL
   experimentH5ad <- NULL
   if (package == "zellkonverter") {
