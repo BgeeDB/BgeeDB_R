@@ -26,28 +26,7 @@
 #' @export
 #' 
 getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonverter") {
-  if (length(experimentId) != 1) {
-    stop("One experimentId has to be provided.")
-  }
-  if(length(package) != 1 | ! package %in% c("anndata", "zellkonverter")) {
-    stop("the R package used to load H5AD cell data should either be anndata or zellkonverter.")
-  }
-  if (length(myBgeeObject$dataType) != 1 | ! myBgeeObject$dataType %in% c("sc_droplet_based", "sc_full_length")) {
-    stop("Cell raw data are only available for single cell data. Please choose \"sc_droplet_based\" or \"sc_full_length\"",
-    " as a datatpe of the Bgee object to be able to download such data")
-  }
-  experimentAnnotation <- getAnnotation(myBgeeObject)$experiment.annotation
-  if (!experimentId %in% experimentAnnotation$Experiment.ID) {
-    stop("the experiment ID:", experimentId, " provided does not exist in Bgee for the species ",
-      myBgeeObject$species, ". Please first look at the available annotation using the ",
-      "`getAnnotation(myBgeeObject)` function.")
-  }
-  destFile <- file.path(myBgeeObject$pathToData, paste0(experimentId, "_", myBgeeObject$dataType, ".h5ad"))
-  downloadURL <- gsub("EXPIDPATTERN", experimentId, myBgeeObject$experimentH5adUrl)
-
-  if (!file.exists(destFile)) {
-    bgee_download_file(url = downloadURL, destfile = destFile, mode = 'wb')
-  }
+  destFile <- downloadCellProcessedFille(myBgeeObject = myBgeeObject, experimentId = experimentId)
   error_message <- NULL
   experimentH5ad <- NULL
   if (package == "zellkonverter") {
@@ -61,4 +40,38 @@ getCellProcessedData <- function(myBgeeObject, experimentId, package = "zellkonv
     stop("an error occured : ", error_message)
   }
   return(experimentH5ad)
+}
+
+#' @title Download Bgee cell processed data
+#'
+#' @description This function allows to donwload Bgee H5AD files
+#' 
+#' @return the path to the downloaded cell processed data file
+#' 
+#' @noMd
+#' @noRd
+downloadCellProcessedFile <- function(myBgeeObject, experimentId) {
+  if (length(experimentId) != 1) {
+    stop("One experimentId has to be provided.")
+  }
+  if(length(package) != 1 | ! package %in% c("anndata", "zellkonverter")) {
+    stop("the R package used to load H5AD cell data should either be anndata or zellkonverter.")
+  }
+  if (length(myBgeeObject$dataType) != 1 | ! myBgeeObject$dataType %in% c("sc_droplet_based", "sc_full_length")) {
+    stop("Cell raw data are only available for single cell data. Please choose \"sc_droplet_based\" or \"sc_full_length\"",
+         " as a datatpe of the Bgee object to be able to download such data")
+  }
+  experimentAnnotation <- getAnnotation(myBgeeObject)$experiment.annotation
+  if (!experimentId %in% experimentAnnotation$Experiment.ID) {
+    stop("the experiment ID:", experimentId, " provided does not exist in Bgee for the species ",
+         myBgeeObject$species, ". Please first look at the available annotation using the ",
+         "`getAnnotation(myBgeeObject)` function.")
+  }
+  destFile <- file.path(myBgeeObject$pathToData, paste0(experimentId, "_", myBgeeObject$dataType, ".h5ad"))
+  downloadURL <- gsub("EXPIDPATTERN", experimentId, myBgeeObject$experimentH5adUrl)
+  
+  if (!file.exists(destFile)) {
+    bgee_download_file(url = downloadURL, destfile = destFile, mode = 'wb')
+  }
+  return(destFile)
 }
