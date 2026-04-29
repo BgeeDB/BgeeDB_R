@@ -111,9 +111,16 @@ getSampleProcessedData_galaxy <-
 #' }
 #' @param foregroundGenes the list of genes for which TopAnat will find anatomical entities that
 #' have over or under-represented expression using annotations for that gene set, compared to the
-#' background genes
+#' background genes. Can be NULL if foregroundGenesFile is provided.
 #'
-#' @param backgroundGenes the list of genes you want to consider as the universe in your analysis
+#' @param backgroundGenes the list of genes you want to consider as the universe in your analysis.
+#' Optional. If NULL and backgroundGenesFile is also NULL, all genes in the species will be used as background.
+#'
+#' @param foregroundGenesFile path to a one-column TSV file without header containing foreground genes.
+#' Can be NULL if foregroundGenes is provided.
+#'
+#' @param backgroundGenesFile path to a one-column TSV file without header containing background genes.
+#' Optional. If NULL and backgroundGenes is also NULL, all genes in the species will be used as background.
 #'
 #' @param nodeSize Minimum number of genes mapped to a node for it to be tested. Default is 10.
 #' 
@@ -180,18 +187,61 @@ getSampleProcessedData_galaxy <-
 #' @export
 #' 
 topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = NULL,
-                           foregroundGenes = NULL, backgroundGenes = NULL, algorithm = "classic",
+                           foregroundGenes = NULL, backgroundGenes = NULL, 
+                           foregroundGenesFile = NULL, backgroundGenesFile = NULL,
+                           algorithm = "classic",
                            statistics = "fisher", resultFile = NULL, nodeSize = 10,
                            confidence = "silver") {
-  myBgeeObject <- createBgeeObject_galaxy(species = species, dataTypes = dataTypes)
-  myTopAnatData <- loadTopAnatData(myBgeeObject = myBgeeObject, stage = stageId)
-  if (is.null(backgroundGenes) || is.null(foregroundGenes)) {
-    stop("foreground and background can not be null")
+  if (is.null(resultFile)) {
+    stop("resultFile parameter is required")
   }
-  # Ensure background genes are unique
-  #TODO : should allow to retrieve all geneIDs of one species to automatically generate a background
-  backgroundGenes <- unique(backgroundGenes)
-  if (length(backgroundGenes[! foregroundGenes %in% backgroundGenes]) > 0) {
+  myBgeeObject <- createBgeeObject_galaxy(species = species, dataTypes = dataTypes)
+  myTopAnatData <- loadTopAnatData(myBgeeObject = myBgeeObject, stage = stageId, 
+                                   confidence = confidence)
+  
+  if (is.null(foregroundGenes) && is.null(foregroundGenesFile)) {
+    stop("Either foregroundGenes or foregroundGenesFile must be provided")
+  }
+  
+  if (!is.null(foregroundGenes) && !is.null(foregroundGenesFile)) {
+    stop("Please provide either foregroundGenes or foregroundGenesFile, not both")
+  }
+
+  if (!is.null(foregroundGenesFile)) {
+    if (!file.exists(foregroundGenesFile)) {
+      stop("Foreground genes file not found: ", foregroundGenesFile)
+    }
+    # Read foreground genes from file
+    foregroundGenes <- read.table(foregroundGenesFile, header = FALSE, sep = "\t", 
+                                  stringsAsFactors = FALSE)[, 1]
+  }
+  # Ensure foreground genes are unique
+  foregroundGenes <- unique(foregroundGenes)
+  
+  if (length(foregroundGenes) == 0) {
+    stop("Foreground genes list is empty")
+  }
+    
+  if (!is.null(backgroundGenes) && !is.null(backgroundGenesFile)) {
+    stop("Please provide either backgroundGenes or backgroundGenesFile, not both")
+  }
+  if (!is.null(backgroundGenesFile)) {
+    if (!file.exists(backgroundGenesFile)) {
+      stop("Background genes file not found: ", backgroundGenesFile)
+    }
+    backgroundGenes <- read.table(backgroundGenesFile, header = FALSE, sep = "\t", 
+                                  stringsAsFactors = FALSE)[, 1]
+  }
+  # If background genes are not provided, use all genes in myTopAnatData as background
+  if (is.null(backgroundGenes)) {
+    # Use all genes available in myTopAnatData as background
+    backgroundGenes <- names(myTopAnatData$gene2anatomy)
+  } else {
+    # Ensure background genes are unique
+    backgroundGenes <- unique(backgroundGenes)
+  }
+
+  if (!all(foregroundGenes %in% backgroundGenes)) {
     stop("All foreground genes should be part of the background")
   }
   # create the geneList vector used as input of topAnat
@@ -205,11 +255,11 @@ topAnat_galaxy <- function(species = NULL, dataTypes = character(0), stageId = N
       myTopAnatObject <- topAnat(topAnatData = myTopAnatData, geneList = geneList, nodeSize = nodeSize)
     },
     error = function(e) {
-      stop("Did not manage to run topAnat. You probably did not provide proper gene list. It",
-           "has to be gene IDs and not gene names.", conditionMessage(e))
+      stop("Did not manage to run topAnat. You probably did not provide proper gene list. ",
+           "It has to be gene IDs and not gene names. ", conditionMessage(e))
     }
   )
-  results <- runTest(object = myTopAnatObject, algorithm = algorithm, statistic = statistic)
+  results <- runTest(object = myTopAnatObject, algorithm = algorithm, statistic = statistics)
   tableOver <- makeTable(myTopAnatData, myTopAnatObject, results)
   write.table(x = tableOver, file = resultFile, quote = FALSE, sep = "\t", row.names = FALSE)
 }
@@ -247,7 +297,7 @@ getIntergratedCalls_galaxy <- function(species = NULL, conditionParameters = "an
   integrated_calls <- getIntegratedCalls(myBgeeObject = myBgeeObject,
                                          conditionParameters = conditionParameters,
                                          advancedColumns = advancedColumns, geneIds = geneIds,
-                                         anatEntityIds = =anatEntityIds)
+                                         anatEntityIds = anatEntityIds)
   write.table(x = integrated_calls, file = callsOutputFile, quote = FALSE, sep = "\t",
               row.names = FALSE)
 }
@@ -294,7 +344,4 @@ createBgeeObject_galaxy <- function(species = NULL, dataTypes = NULL) {
     "`Genus_species` (e.g Homo_sapiens, Mus_musculus, Canis_lupus_familiaris)")
   }
   return(Bgee$new(species = species, dataType = dataTypes))
-}
-
-  
 }
