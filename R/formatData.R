@@ -1,6 +1,6 @@
 #' @title Format RNA-seq or Affymetrix data downloaded from Bgee.
 #'
-#' @description This function formats the data downloaded with the getData() function into an object of the Bioconductor "expressionSet" Class.
+#' @description This function formats the data downloaded with the getSampleRawData() function into an object of the Bioconductor "expressionSet" Class.
 #'
 #' @param myBgeeObject A Reference Class Bgee object, notably specifying the targeted species and data type.
 #'
@@ -8,10 +8,11 @@
 #'
 #' @param stats A character indicating what expression values should be used in the formatted data expressionSet object matrix.
 #'  \itemize{
-#'    \item{"rpkm" for RNA-seq (Bgee release 13.2 and before)}
-#'    \item{"fpkm" for RNA-seq (Bgee release 14 and above)}
+#'    \item{"rpkm" for bulk RNA-seq (Bgee release 13.2 and before)}
+#'    \item{"fpkm" for bulk RNA-seq (Bgee release 14.0 to 14.2)}
 #'    \item{"counts" for RNA-seq}
-#'    \item{"tpm" for RNA-seq (Bgee release 14 and above)}
+#'    \item{"tpm" for bulk RNA-seq or full length single cell RNA-seq (Bgee release 14 and above)}
+#'    \item{"cpm" for droplet based single cell RNA-seq (Bgee release 15.2 and above)}
 #'    \item{"intensities" for Affymetrix microarrays}
 #'  }
 #'
@@ -29,10 +30,10 @@
 #' @examples{
 #'   bgee <- Bgee$new(species = "Mus_musculus", dataType = "rna_seq")
 #'   dataMouseGSE43721 <- getData(bgee, experimentId = "GSE43721")
-#'   dataMouseGSE43721.fpkm <- formatData(bgee,
+#'   dataMouseGSE43721.tpm <- formatData(bgee,
 #'                                        dataMouseGSE43721,
 #'                                        callType = "present",
-#'                                        stats = "fpkm")
+#'                                        stats = "tpm")
 #' }
 #'
 #' @importFrom dplyr %>%
@@ -55,16 +56,26 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     if (myBgeeObject$dataType == "affymetrix"){
       cat("\nWARNING: stats parameter set to \"intensities\" for the next steps.\n")
       stats <- "intensities"
-    } else if (myBgeeObject$dataType == "rna_seq"){
-      stop("Please specify the stats parameters. Should be set to \"rpkm\", \"counts\" or \"tpm\"")
+    } else if (myBgeeObject$dataType %in% c("rna_seq", "sc_full_length")) {
+      stop("Please specify the stats parameters. Should be set to \"counts\", \"tpm\" (For Bgee 14.0 and above), \"rpkm\" (for Bgee 13.2) or \"fpkm\" (between Bgee 14.0 and 14.2)")
+    } else if (myBgeeObject$dataType %in% c("sc_droplet_based")) {
+      stop("Please specify the stats parameters. Should be set to \"counts\" or \"cpm\"")
     }
+  # manage stats error for all datatypes and Bgee releases
   } else if (myBgeeObject$dataType == "affymetrix" & stats != "intensities"){
     cat("\nWARNING: For Affymetrix microarray data, stats parameter can only be set to \"intensities\". This will be used for the next steps.\n")
     stats <- "intensities"
   } else if (myBgeeObject$dataType == "rna_seq" & compareVersion(gsub("_", ".", myBgeeObject$release), "13.2") <= 0 & !(stats %in% c('rpkm', 'counts'))){
     stop("Choose whether data formatting should create a matrix of RPKMs or read counts, with stats option set as \"rpkm\" or \"counts\"")
-  } else if (myBgeeObject$dataType == "rna_seq" & compareVersion(gsub("_", ".", myBgeeObject$release), "13.2") > 0 & !(stats %in% c('fpkm', 'counts', 'tpm'))){
+  } else if (myBgeeObject$dataType == "rna_seq" & compareVersion(gsub("_", ".", myBgeeObject$release), "14.0") >= 0 
+      & compareVersion(gsub("_", ".", myBgeeObject$release), "14.2") <= 0 & !(stats %in% c('fpkm', 'counts', 'tpm'))){
     stop("Choose whether data formatting should create a matrix of FPKMs, TPMs or read counts, with stats option set as \"fpkm\", \"tpm\" or \"counts\"")
+  } else if (myBgeeObject$dataType == "rna_seq" & compareVersion(gsub("_", ".", myBgeeObject$release), "14.2") > 0 & !(stats %in% c('counts', 'tpm'))){
+    stop("Choose whether data formatting should create a matrix of TPMs or read counts, with stats option set as \"tpm\" or \"counts\"")
+  } else if (myBgeeObject$dataType == "sc_full_length" & !(stats %in% c('counts', 'tpm'))){
+    stop("Choose whether data formatting should create a matrix of TPMs or read counts, with stats option set as \"tpm\" or \"counts\"")
+  } else if (myBgeeObject$dataType == "sc_droplet_based" & !(stats %in% c('counts', 'cpm'))){
+    stop("Choose whether data formatting should create a matrix of CPMs or read counts, with stats option set as \"cpm\" or \"counts\"")
   }
 
   if(!(callType %in% c('present','present high quality','all'))){
@@ -85,6 +96,9 @@ formatData = function(myBgeeObject, data, stats = NULL, callType = "all"){
     expr <- .extract.data(data, columns, callType)
   } else if (stats == "counts"){
     columns <- c("Library.ID", "Gene.ID", "Read.count")
+    expr <- .extract.data(data, columns, callType)
+  } else if(stats  == "cpm"){
+    columns <- c("Library.ID", "Gene.ID", "CPM")
     expr <- .extract.data(data, columns, callType)
   } else {
     columns <- c("Chip.ID", "Probeset.ID", "Log.of.normalized.signal.intensity", "Gene.ID")

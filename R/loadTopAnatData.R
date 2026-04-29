@@ -56,7 +56,6 @@
 #'
 #' @import utils digest
 #' @export
-
 loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, stage=NULL, timeout = 1800){
   OLD_WEBSERVICE_VERSION = '13.2'
 
@@ -173,18 +172,41 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
   }
 
   ## Third query: gene to organs mapping
+  
+  # The Java API does not distinguish between full length and droplet based single cell. A topAnat analysis can be run
+  # on all single cell data but not on data coming from a subset of single cell technologies.
+  # Bgee objects have been designed to allow the download of expression files for any datatype and then distinguish between
+  # full length and droplet based single cell.
+  # In order to solve that mismatch we update the type used to run topAnat analysis. If either sc_full_length or sc_droplet_based
+  # datatype is selected, we run a topAnat analysis including all single cell technologies (full length AND droplet based)
+
+  # First write a warning if only one single cell technology is selected
+  if ("sc_full_length" %in% myBgeeObject$dataType & ! "sc_droplet_based" %in% myBgeeObject$dataType | 
+    "sc_droplet_based" %in% myBgeeObject$dataType & ! "sc_full_length" %in% myBgeeObject$dataType) {
+    message("WARNING: TopAnat can not be run on one single cell technology. Both full length and droplet based single cell data will",
+      " be queried for this topAnat analysis. If you do not want to query single cell data please remove \"sc_full_length\" or \"sc_droplet_based\"",
+      " from the list of datatypes of your Bgee object.")
+  }
+
+  # Then update the list of datatypes used to run topAnat
+  topAnat_dataType <- myBgeeObject$dataType
+  if ("sc_full_length" %in% topAnat_dataType | "sc_droplet_based" %in% topAnat_dataType) {
+    topAnat_dataType <- topAnat_dataType[! topAnat_dataType %in% c("sc_full_length", "sc_droplet_based")]
+    topAnat_dataType <- append(topAnat_dataType, "sc_rna_seq")
+  }
+
   gene2anatomyFileName <- paste0("topAnat_GeneToAnatEntities_", myBgeeObject$speciesId, "_", toupper(callType))
   ## If a stage is specified, add it to file name
   if ( !is.null(stage) ){
     gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", gsub(":", "_", stage))
   }
   ## If all data types specified, no need to add anything to file name. Otherwise, specify data types in file name
-  if ( sum(myBgeeObject$dataType %in% c("rna_seq","affymetrix","est","in_situ")) < 4 ){
-    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(myBgeeObject$dataType), collapse="_")))
+  if ( sum(topAnat_dataType %in% c("rna_seq","affymetrix","est","in_situ", "sc_rna_seq")) < 5 ){
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(paste(sort(topAnat_dataType), collapse="_")))
   }
   ## If high quality data needed, specify in file name. Otherwise not specified
   if(compareVersion(gsub("_", ".", myBgeeObject$release), OLD_WEBSERVICE_VERSION) > 0){
-    gene2anatomyFileName <- paste0(gene2anatomyFileName, toupper(confidence))
+    gene2anatomyFileName <- paste0(gene2anatomyFileName, "_", toupper(confidence))
   } else {
     if ( confidence == "high_quality" ){
       gene2anatomyFileName <- paste0(gene2anatomyFileName, "_HIGH")
@@ -207,12 +229,8 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
     }
 
     ## Add data type to file name: only if not all data types asked
-    if ( sum(myBgeeObject$dataType %in% c("rna_seq","sc_full_length","affymetrix","est","in_situ")) < 5 ){
-      for (type in toupper(sort(myBgeeObject$dataType))){
-        # solve mismatch between R package and Java API
-        if (type == "SC_FULL_LENGTH") {
-          type = "FULL_LENGTH"
-        }
+    if ( sum(topAnat_dataType %in% c("rna_seq","sc_rna_seq","affymetrix","est","in_situ")) < 5 ){
+      for (type in toupper(sort(topAnat_dataType))){
         myUrl <- paste0(myUrl, "&data_type=", type)
       }
     }
@@ -231,29 +249,43 @@ loadTopAnatData <- function(myBgeeObject, callType="presence", confidence=NULL, 
 
     ## Query webservice
     cat(paste0("   URL successfully built (", myUrl,")\n   Submitting URL to Bgee webservice (can be long)\n"))
-    success <- bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
-
-    if (success == 0){
-      ## Read 5 last lines of file: should be empty indicating success of data transmission
-      ## We cannot use a system call to UNIX command since some user might be on Windows
-      tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
-      if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
-        ## The file transfer was successful, we rename the temporary file
-        file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
-      } else {
-        ## delete the temporary file
-        file.remove(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
-        stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
-      }
-      cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
-    } else {
-      serverAnswer = try(getURL(myUrl))
-      if (class(serverAnswer) == "try-error"){
-        stop("ERROR: the query to the server was not successful. Is your internet connection working?\n")
-      } else {
-        stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", serverAnswer))
-      }
+    ## this download correspond to a file that can either be 1) generated on the fly if it is the first time this combination of conditions
+    ## is queried or 2) stored on our server otherwise.
+    ## If the file has to be generated it can take a lot of time (sometimes more than one hour if single cell data exist). In order to solve
+    ## download errors due to apache connection stopping while the file is still generating and then throw an error 502, we decided to check
+    ## the error retrieved by that download and restart the download if a specific error was retrieved.
+    catchedError <- 1
+    while (catchedError) {
+      startTime <- Sys.time()
+      tryCatch(
+        {
+          bgee_download_file(url = myUrl, destfile = paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+          catchedError <- 0
+        },
+        error = function(x) {
+          #If it took a lot of time to throw an error there is a high probability that the file is currently generated.
+          # In that case we just wait one minute and try to download the file again
+          # by default the timeout is 60 seconds. In order to be safe we check that the error took more than 50
+          # 40 sec to be thrown
+          stopTime <- Sys.time()
+          if (as.numeric(difftime(time1 = stopTime, time2 = startTime, units = "sec")) <= 40) {
+            stop(paste0("ERROR: the query to the server was not successful. The server returned the following answer:\n", x))
+          }
+        },
+        warning = function(x) {}
+      )
     }
+
+    tmp <- tail(read.table(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), header=TRUE, sep="\t", comment.char="", blank.lines.skip=FALSE, as.is=TRUE), n=5)
+    if ( length(tmp[,1]) == 5 && (sum(tmp[,1] == "") == 5 || sum(is.na(tmp[,1])) == 5) ){
+      ## The file transfer was successful, we rename the temporary file
+      file.rename(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"), paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName))
+    } else {
+      ## delete the temporary file
+      file.remove(paste0(myBgeeObject$pathToData, "/", gene2anatomyFileName, ".tmp"))
+      stop(paste0("File ", gene2anatomyFileName, " is truncated, there may be a temporary problem with the Bgee webservice, or there was an error in the parameters."))
+    }
+    cat(paste0("   Got results from Bgee webservice. Files are written in \"", myBgeeObject$pathToData, "\"\n"))
   }
 
   ## Process the data and build the final list to return

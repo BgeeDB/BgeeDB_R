@@ -13,7 +13,7 @@ getAnnotation(myBgeeObject)
 A list of two elements, including a data frame of the annotation of experiments for chosen species (field "experiment.annotation") and a data frame of the annotation of chips/libraries from these experiments (field "sample.annotation").
 }
 \description{
-This function loads the annotation of experiments and samples of quantitative expression datasets (rna_seq, affymetrix, sc_full_length) that are available from Bgee.
+This function loads the annotation of experiments and samples of quantitative expression datasets (rna_seq, affymetrix, sc_full_length, sc_droplet_based) that are available from Bgee.
 }
 \examples{
 {
